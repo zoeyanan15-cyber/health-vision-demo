@@ -1,0 +1,2101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>百度健康 × 小度 — 银发健康新入口</title>
+  <link href="https://cdn.bootcdn.net/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/animate.css/4.1.1/animate.min.css">
+  <style>
+    @import url('https://fonts.googleapis.cnpmjs.org/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Noto Sans SC', -apple-system, sans-serif; background: #0a0e1a; color: #e2e8f0; overflow: hidden; height: 100vh; }
+    
+    /* === Color System === */
+    .text-primary-300{color:#93c5fd} .text-primary-400{color:#60a5fa} .text-primary-500{color:#3b82f6}
+    .bg-primary-500{background-color:#3b82f6} .bg-primary-600{background-color:#2563eb} .bg-primary-700{background-color:#1d4ed8}
+    .bg-primary-500\/10{background-color:rgba(59,130,246,0.1)} .bg-primary-500\/20{background-color:rgba(59,130,246,0.2)}
+    .border-primary-500\/30{border-color:rgba(59,130,246,0.3)} .border-primary-500\/50{border-color:rgba(59,130,246,0.5)}
+    .text-accent-300{color:#fcd34d} .text-accent-400{color:#fbbf24} .text-accent-500{color:#f59e0b}
+    .bg-accent-500{background-color:#f59e0b} .bg-accent-500\/10{background-color:rgba(245,158,11,0.1)}
+    .text-success-300{color:#6ee7b7} .text-success-400{color:#34d399} .text-success-500{color:#10b981}
+    .bg-success-500{background-color:#10b981} .bg-success-500\/10{background-color:rgba(16,185,129,0.1)} .bg-success-500\/20{background-color:rgba(16,185,129,0.2)}
+    .border-success-500\/30{border-color:rgba(16,185,129,0.3)}
+    .text-danger-300{color:#fca5a5} .text-danger-400{color:#f87171} .text-danger-500{color:#ef4444}
+    .bg-danger-500{background-color:#ef4444} .bg-danger-500\/10{background-color:rgba(239,68,68,0.1)} .bg-danger-500\/20{background-color:rgba(239,68,68,0.2)}
+    .border-danger-500\/30{border-color:rgba(239,68,68,0.3)} .border-danger-700\/30{border-color:rgba(185,28,28,0.3)}
+    .bg-dark-700{background-color:#334155} .bg-dark-800{background-color:#1e293b} .bg-dark-900{background-color:#0f172a}
+    .bg-dark-800\/50{background-color:rgba(30,41,59,0.5)} .bg-dark-800\/70{background-color:rgba(30,41,59,0.7)} .bg-dark-800\/80{background-color:rgba(30,41,59,0.8)}
+    .border-dark-700{border-color:#334155} .border-dark-700\/50{border-color:rgba(51,65,85,0.5)}
+    .text-dark-300{color:#cbd5e1} .text-dark-400{color:#94a3b8} .text-dark-500{color:#64748b}
+
+    /* === Pages === */
+    .page { display: none; min-height: 100vh; padding: 40px 60px 100px; padding-top: 48px; overflow-y: auto; }
+    .page.active { display: flex; }
+    #p1, #p2, #p3 { height: 100vh; max-height: 100vh; overflow-y: scroll; padding-top: 60px; }
+    #p10 { height: 100vh; max-height: 100vh; overflow-y: scroll; }
+    .page-enter { animation: pageEnter 0.6s cubic-bezier(0.2,0.8,0.2,1); }
+    @keyframes pageEnter { from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:translateX(0)} }
+
+    /* === Gradient Text === */
+    .gradient-text { background: linear-gradient(135deg, #60a5fa, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .gradient-text-gold { background: linear-gradient(135deg, #fbbf24, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+    /* === Device Mockup === */
+    .device-frame {
+      width: 480px; height: 320px; border-radius: 20px; overflow: hidden; position: relative;
+      background: #1a1a2e; border: 3px solid #2a2a4a;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05), inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+    .device-frame::before {
+      content: ''; position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+      width: 8px; height: 8px; background: #333; border-radius: 50%; z-index: 10;
+    }
+    .device-screen { width: 100%; height: 100%; overflow: hidden; position: relative; }
+
+    /* === Voice Bubble === */
+    .voice-bubble {
+      background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3);
+      border-radius: 18px 18px 18px 4px; padding: 12px 18px; max-width: 320px;
+      animation: bubbleIn 0.4s ease-out;
+    }
+    .voice-bubble-ai {
+      background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3);
+      border-radius: 18px 18px 4px 18px;
+    }
+    @keyframes bubbleIn { from{opacity:0;transform:translateY(10px) scale(0.95)} to{opacity:1;transform:translateY(0) scale(1)} }
+
+    /* === Navigation === */
+    .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; padding: 16px 40px;
+      background: linear-gradient(to top, rgba(10,14,26,0.95), rgba(10,14,26,0.7), transparent);
+      display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .nav-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.2); cursor: pointer; transition: all 0.3s; }
+    .nav-dot.active { width: 28px; border-radius: 6px; background: #3b82f6; }
+    .nav-dot:hover { background: rgba(255,255,255,0.4); }
+
+    /* === Waveform === */
+    .wave-bar { width: 4px; border-radius: 2px; background: #3b82f6; animation: waveAnim 1.2s ease-in-out infinite; }
+    @keyframes waveAnim { 0%,100%{height:8px} 50%{height:28px} }
+
+
+
+    /* === Animations === */
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+    @keyframes pulse-ring { 0%{box-shadow:0 0 0 0 rgba(59,130,246,0.4)} 100%{box-shadow:0 0 0 20px rgba(59,130,246,0)} }
+    @keyframes sosPulse { 0%{box-shadow:0 0 0 0 rgba(239,68,68,0.5)} 100%{box-shadow:0 0 0 40px rgba(239,68,68,0)} }
+    @keyframes typing { 0%{opacity:0.3} 50%{opacity:1} 100%{opacity:0.3} }
+    @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+    @keyframes progressFill { from{width:0} to{width:100%} }
+    @keyframes heartbeat { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+    .animate-float { animation: float 3s ease-in-out infinite; }
+    .animate-pulse-ring { animation: pulse-ring 2s infinite; }
+
+    /* === Cards === */
+    .glass-card { background: rgba(30,41,59,0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; }
+    .metric-card { background: linear-gradient(135deg, rgba(30,41,59,0.8), rgba(15,23,42,0.9)); border: 1px solid rgba(255,255,255,0.06); border-radius: 20px; padding: 28px; }
+
+    /* === Timeline === */
+    .timeline-item { position: relative; padding-left: 32px; }
+    .timeline-item::before { content:''; position: absolute; left: 10px; top: 28px; bottom: -20px; width: 2px; background: rgba(59,130,246,0.2); }
+    .timeline-item:last-child::before { display: none; }
+    .timeline-dot { position: absolute; left: 4px; top: 6px; width: 14px; height: 14px; border-radius: 50%; border: 3px solid #3b82f6; background: #0a0e1a; }
+
+    /* === Quiz === */
+    .quiz-option { border: 2px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 16px 20px; cursor: pointer; transition: all 0.3s; }
+    .quiz-option:hover { border-color: rgba(59,130,246,0.5); background: rgba(59,130,246,0.05); }
+    .quiz-option.correct { border-color: #10b981; background: rgba(16,185,129,0.1); }
+    .quiz-option.wrong { border-color: #ef4444; background: rgba(239,68,68,0.1); }
+
+    /* === Progress === */
+    .progress-bar { height: 6px; border-radius: 3px; background: rgba(255,255,255,0.1); overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #3b82f6, #10b981); transition: width 0.5s; }
+
+    /* === SOS === */
+    .sos-btn { width: 140px; height: 140px; border-radius: 50%; background: linear-gradient(135deg, #dc2626, #ef4444); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; animation: sosPulse 2s infinite; }
+    .sos-btn:hover { transform: scale(1.05); }
+
+    /* === Scrollbar === */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+    .device-screen::-webkit-scrollbar { width: 3px; }
+    .device-screen::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+    .arch-layer { border: 1px solid rgba(51,65,85,0.5); border-radius: 12px; padding: 16px; background: rgba(30,41,59,0.3); transition: all 0.3s; }
+    .arch-layer:hover { border-color: rgba(59,130,246,0.3); background: rgba(30,41,59,0.5); }
+  </style>
+</head>
+<body>
+
+<!-- Navigation Bar -->
+  <div class="nav-bar">
+    <span id="page-label" class="text-xs text-dark-400 mr-4 hidden sm:block">开场</span>
+    <div class="nav-dot active" onclick="goPage(0)"></div>
+    <div class="nav-dot" onclick="goPage(1)"></div>
+    <div class="nav-dot" onclick="goPage(2)"></div>
+    <div class="nav-dot" onclick="goPage(3)"></div>
+    <div class="nav-dot" onclick="goPage(4)"></div>
+    <div class="nav-dot" onclick="goPage(5)"></div>
+    <div class="nav-dot" onclick="goPage(6)"></div>
+    <div class="nav-dot" onclick="goPage(7)"></div>
+    <div class="nav-dot" onclick="goPage(8)"></div>
+    <div class="nav-dot" onclick="goPage(9)"></div>
+    <div class="nav-dot" onclick="goPage(10)"></div>
+    <div class="nav-dot" onclick="goPage(11)"></div>
+    <div class="nav-dot" onclick="goPage(12)"></div>
+  </div>
+
+  <!-- ===== P0: 开场 ===== -->
+  <div class="page active flex-col justify-center items-center" id="p0">
+    <div class="max-w-3xl mx-auto text-center">
+      <p class="text-primary-400 text-sm font-bold tracking-wider mb-6 animate__animated animate__fadeInDown">百度健康 × 小度</p>
+      <h1 class="text-5xl font-black leading-tight mb-6">
+        让每一位银发用户<br><span class="gradient-text">在家就有专属健康管家</span>
+      </h1>
+      <p class="text-dark-300 text-lg mb-10 max-w-xl mx-auto">基于小度智能屏的家庭场景，结合百度健康的医疗能力，为老年用户打造全天候、主动式的健康陪伴服务</p>
+      <div class="flex justify-center gap-8 mb-12">
+        <div class="text-center">
+          <p class="text-3xl font-black text-primary-400">全天候</p>
+          <p class="text-dark-400 text-xs mt-1">7×24h 主动健康管理</p>
+        </div>
+        <div class="text-center">
+          <p class="text-3xl font-black text-success-400">零门槛</p>
+          <p class="text-dark-400 text-xs mt-1">语音交互 无需学习</p>
+        </div>
+        <div class="text-center">
+          <p class="text-3xl font-black text-accent-400">强闭环</p>
+          <p class="text-dark-400 text-xs mt-1">目标驱动 每日复盘</p>
+        </div>
+      </div>
+      <button onclick="goPage(3)" class="bg-primary-600 hover:bg-primary-500 px-8 py-3 rounded-xl font-bold transition-all hover:scale-105 text-lg">
+        体验「张爷爷的健康一天」 →
+      </button>
+      <p class="text-dark-500 text-xs mt-4">按右方向键或点击下方导航翻页</p>
+    </div>
+  </div>
+
+  <!-- ===== P1: 一天体验总览 ===== -->
+  <div class="page flex-col" id="p3">
+    <div class="max-w-5xl mx-auto w-full">
+      <div class="text-center mb-10">
+        <p class="text-primary-400 text-sm font-bold tracking-wider mb-3">场景体验</p>
+        <h2 class="text-4xl font-black mb-3">张爷爷的<span class="gradient-text">智慧健康一天</span></h2>
+        <p class="text-dark-400">点击任意场景，体验完整交互 ↓</p>
+      </div>
+
+      <div class="flex gap-8">
+        <!-- Left: Timeline -->
+        <div class="flex-1 space-y-4" style="overflow-y:auto;max-height:600px;">
+          <div class="timeline-item cursor-pointer group" onclick="goPage(4)">
+            <div class="timeline-dot"></div>
+            <div class="glass-card p-4 group-hover:border-primary-500\/30 transition-all">
+              <div class="flex items-center gap-3">
+                <span class="text-primary-400 font-mono text-sm font-bold">07:30</span>
+                <span class="text-lg">🌅</span>
+                <span class="font-bold">晨起养生</span>
+                <span class="text-dark-500 text-sm ml-auto group-hover:text-primary-400 transition-all">›</span>
+              </div>
+              <p class="text-dark-400 text-xs mt-2 ml-16">语音唤醒 → 轻音乐 → 天气提醒 → 节气养生</p>
+            </div>
+          </div>
+          <div class="timeline-item cursor-pointer group" onclick="goPage(5)">
+            <div class="timeline-dot" style="border-color:#f59e0b"></div>
+            <div class="glass-card p-4 group-hover:border-accent-500\/10 transition-all">
+              <div class="flex items-center gap-3">
+                <span class="text-accent-400 font-mono text-sm font-bold">08:30</span>
+                <span class="text-lg">💊</span>
+                <span class="font-bold">用药提醒 + 血压自测</span>
+                <span class="text-dark-500 text-sm ml-auto group-hover:text-accent-400 transition-all">›</span>
+              </div>
+              <p class="text-dark-400 text-xs mt-2 ml-16">AI提醒服药 → 打卡同步子女 → 血压趋势</p>
+            </div>
+          </div>
+          <div class="timeline-item cursor-pointer group" onclick="goPage(6)">
+            <div class="timeline-dot" style="border-color:#10b981"></div>
+            <div class="glass-card p-4 group-hover:border-success-500\/30 transition-all">
+              <div class="flex items-center gap-3">
+                <span class="text-success-400 font-mono text-sm font-bold">10:00</span>
+                <span class="text-lg">🧘</span>
+                <span class="font-bold">AI 问诊 + 八段锦跟练</span>
+                <span class="text-dark-500 text-sm ml-auto group-hover:text-success-400 transition-all">›</span>
+              </div>
+              <p class="text-dark-400 text-xs mt-2 ml-16">症状分析 → 医生匹配 → 康复运动跟练</p>
+            </div>
+          </div>
+          <div class="timeline-item cursor-pointer group" onclick="goPage(7)">
+            <div class="timeline-dot" style="border-color:#8b5cf6"></div>
+            <div class="glass-card p-4 group-hover:border-primary-500\/30 transition-all">
+              <div class="flex items-center gap-3">
+                <span class="text-primary-300 font-mono text-sm font-bold">15:00</span>
+                <span class="text-lg">🧠</span>
+                <span class="font-bold">健脑答题 + 辟谣科普</span>
+                <span class="text-dark-500 text-sm ml-auto group-hover:text-primary-300 transition-all">›</span>
+              </div>
+              <p class="text-dark-400 text-xs mt-2 ml-16">趣味问答 → 知识科普 → 积分排行 → 兑奖</p>
+            </div>
+          </div>
+          <div class="timeline-item cursor-pointer group" onclick="goPage(8)">
+            <div class="timeline-dot" style="border-color:#ec4899"></div>
+            <div class="glass-card p-4 group-hover:border-primary-500\/30 transition-all">
+              <div class="flex items-center gap-3">
+                <span class="text-pink-400 font-mono text-sm font-bold">16:30</span>
+                <span class="text-lg">📺</span>
+                <span class="font-bold">三甲专家健康直播</span>
+                <span class="text-dark-500 text-sm ml-auto group-hover:text-pink-400 transition-all">›</span>
+              </div>
+              <p class="text-dark-400 text-xs mt-2 ml-16">名医科普 → 弹幕互动 → 语音提问</p>
+            </div>
+          </div>
+          <div class="timeline-item cursor-pointer group" onclick="goPage(9)">
+            <div class="timeline-dot" style="border-color:#f97316"></div>
+            <div class="glass-card p-4 group-hover:border-orange-500\/30 transition-all" style="background:rgba(249,115,22,0.05)">
+              <div class="flex items-center gap-3">
+                <span class="text-orange-400 font-mono text-sm font-bold">17:00</span>
+                <span class="text-lg">🍽️</span>
+                <span class="font-bold text-orange-300">备餐干预 + 饮食管控</span>
+                <span class="text-dark-500 text-sm ml-auto group-hover:text-orange-400 transition-all">›</span>
+              </div>
+              <p class="text-dark-400 text-xs mt-2 ml-16">主动提醒 → 营养分析 → 食材替换 → 闭环追踪</p>
+            </div>
+          </div>
+          <div class="timeline-item cursor-pointer group" onclick="goPage(10)">
+            <div class="timeline-dot" style="border-color:#ef4444"></div>
+            <div class="glass-card p-4 group-hover:border-danger-500\/30 transition-all" style="background:rgba(239,68,68,0.05)">
+              <div class="flex items-center gap-3">
+                <span class="text-danger-400 font-mono text-sm font-bold">24H</span>
+                <span class="text-lg">🆘</span>
+                <span class="font-bold text-danger-300">紧急求助 + 亲友联动</span>
+                <span class="text-dark-500 text-sm ml-auto group-hover:text-danger-400 transition-all">›</span>
+              </div>
+              <p class="text-dark-400 text-xs mt-2 ml-16">跌倒检测 → 一键呼救 → 通知家属</p>
+            </div>
+          </div>
+          <div class="timeline-item cursor-pointer group" onclick="goPage(11)">
+            <div class="timeline-dot" style="border-color:#a78bfa"></div>
+            <div class="glass-card p-4 group-hover:border-purple-500\/30 transition-all">
+              <div class="flex items-center gap-3">
+                <span class="text-purple-400 font-mono text-sm font-bold">21:00</span>
+                <span class="text-lg">🌙</span>
+                <span class="font-bold">晚间复盘 + 家人同步</span>
+                <span class="text-dark-500 text-sm ml-auto group-hover:text-purple-400 transition-all">›</span>
+              </div>
+              <p class="text-dark-400 text-xs mt-2 ml-16">目标总结 → 健康积分 → 推送子女端</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Health Goal Progress -->
+        <div class="flex flex-col items-center justify-center">
+          <div class="glass-card p-5" style="width:280px;border-color:rgba(59,130,246,0.2)">
+            <div class="flex items-center gap-2 mb-4">
+              <span class="text-lg">🎯</span>
+              <p class="font-bold text-sm">今日健康目标</p>
+              <span class="ml-auto text-xs text-success-300 font-bold">4/6</span>
+            </div>
+            <div class="space-y-3">
+              <div class="flex items-center gap-2 text-xs">
+                <span class="w-4 h-4 rounded-full bg-success-500 flex items-center justify-center text-white" style="font-size:8px">✓</span>
+                <span class="text-dark-200">按时服药</span>
+                <span class="ml-auto text-dark-500 text-xs">08:30 完成</span>
+              </div>
+              <div class="flex items-center gap-2 text-xs">
+                <span class="w-4 h-4 rounded-full bg-success-500 flex items-center justify-center text-white" style="font-size:8px">✓</span>
+                <span class="text-dark-200">测量血压</span>
+                <span class="ml-auto text-dark-500 text-xs">08:35 完成</span>
+              </div>
+              <div class="flex items-center gap-2 text-xs">
+                <span class="w-4 h-4 rounded-full bg-success-500 flex items-center justify-center text-white" style="font-size:8px">✓</span>
+                <span class="text-dark-200">八段锦跟练 15分钟</span>
+                <span class="ml-auto text-dark-500 text-xs">10:20 完成</span>
+              </div>
+              <div class="flex items-center gap-2 text-xs">
+                <span class="w-4 h-4 rounded-full bg-success-500 flex items-center justify-center text-white" style="font-size:8px">✓</span>
+                <span class="text-dark-200">健脑答题 3 道</span>
+                <span class="ml-auto text-dark-500 text-xs">15:10 完成</span>
+              </div>
+              <div class="flex items-center gap-2 text-xs">
+                <span class="w-4 h-4 rounded border border-dark-600"></span>
+                <span class="text-dark-400">步行 3000 步</span>
+                <span class="ml-auto text-dark-600 text-xs">进行中</span>
+              </div>
+              <div class="flex items-center gap-2 text-xs">
+                <span class="w-4 h-4 rounded border border-dark-600"></span>
+                <span class="text-dark-400">晚餐少盐</span>
+                <span class="ml-auto text-dark-600 text-xs">待完成</span>
+              </div>
+            </div>
+            <div class="mt-4 pt-3 border-t border-dark-700">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-xs text-dark-400">今日进度</span>
+                <span class="text-xs text-success-300 font-bold">75%</span>
+              </div>
+              <div class="w-full h-2 rounded bg-dark-700 overflow-hidden">
+                <div class="h-full rounded" style="width:75%;background:linear-gradient(90deg,#10b981,#34d399)"></div>
+              </div>
+              <p class="text-xs text-dark-500 mt-2 text-center">连续完成 7 天 → 可兑换「颈椎按摩仪」🎁</p>
+            </div>
+          </div>
+          <p class="text-dark-500 text-xs mt-3">健康目标贯穿全天场景</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== P2: Agent 架构 (from hackathon) ===== -->
+  <div class="page flex-col" id="p1">
+    <div class="max-w-5xl mx-auto w-full">
+      <div class="text-center mb-8">
+        <p class="text-primary-400 text-sm font-bold tracking-wider mb-3">HOW — 技术架构</p>
+        <h2 class="text-4xl font-black mb-3">Multi-Agent <span class="gradient-text">协作架构</span></h2>
+        <p class="text-dark-400">一个 Orchestrator + 七个专业 Agent + 统一记忆层</p>
+      </div>
+      <div class="space-y-4">
+        <div class="arch-layer text-center" style="border-color:rgba(59,130,246,0.4);background:rgba(59,130,246,0.05)">
+          <p class="text-primary-400 font-bold text-sm mb-2">🧠 Health Orchestrator Agent（调度中枢）</p>
+          <p class="text-dark-400 text-xs">感知用户状态 → 判断意图/时机 → 调度专业 Agent → 闭环反馈</p>
+          <div class="flex justify-center gap-3 mt-3">
+            <span class="text-xs px-2 py-1 rounded-full bg-primary-500/20 text-primary-300">时间感知</span>
+            <span class="text-xs px-2 py-1 rounded-full bg-primary-500/20 text-primary-300">健康画像</span>
+            <span class="text-xs px-2 py-1 rounded-full bg-primary-500/20 text-primary-300">目标引擎</span>
+            <span class="text-xs px-2 py-1 rounded-full bg-primary-500/20 text-primary-300">紧急判断</span>
+          </div>
+        </div>
+        <div class="text-center text-dark-500 text-lg">↓ 调度 ↓</div>
+        <div class="grid grid-cols-3 gap-4">
+          <div class="arch-layer" style="border-color:rgba(59,130,246,0.2)">
+            <p class="text-primary-300 font-bold text-sm">🌅 晨起养生 Agent</p>
+            <p class="text-dark-500 text-xs mt-1">天气 API + 节气知识图谱 + 五行养生 Prompt</p>
+            <div class="flex flex-wrap gap-1 mt-2">
+              <span class="text-xs px-1.5 py-0.5 rounded bg-dark-700 text-dark-400">Tool: 天气API</span>
+              <span class="text-xs px-1.5 py-0.5 rounded bg-dark-700 text-dark-400">Tool: 节气库</span>
+            </div>
+          </div>
+          <div class="arch-layer" style="border-color:rgba(245,158,11,0.2)">
+            <p class="text-accent-300 font-bold text-sm">💊 用药管理 Agent</p>
+            <p class="text-dark-500 text-xs mt-1">处方数据 + 服药时间窗 + 子女同步通道</p>
+            <div class="flex flex-wrap gap-1 mt-2">
+              <span class="text-xs px-1.5 py-0.5 rounded bg-dark-700 text-dark-400">Tool: 处方DB</span>
+              <span class="text-xs px-1.5 py-0.5 rounded bg-dark-700 text-dark-400">Tool: 推送</span>
+            </div>
+          </div>
+          <div class="arch-layer" style="border-color:rgba(16,185,129,0.2)">
+            <p class="text-success-300 font-bold text-sm">🏥 AI 问诊 Agent</p>
+            <p class="text-dark-500 text-xs mt-1">多轮对话 + 症状知识图谱 + 医生匹配</p>
+            <div class="flex flex-wrap gap-1 mt-2">
+              <span class="text-xs px-1.5 py-0.5 rounded bg-dark-700 text-dark-400">Tool: 辅诊API</span>
+              <span class="text-xs px-1.5 py-0.5 rounded bg-dark-700 text-dark-400">Tool: 医典</span>
+            </div>
+          </div>
+          <div class="arch-layer" style="border-color:rgba(139,92,246,0.2)">
+            <p class="text-purple-300 font-bold text-sm">🧠 健脑互动 Agent</p>
+            <p class="text-dark-500 text-xs mt-1">辟谣知识库 + 难度自适应 + 积分激励</p>
+            <div class="flex flex-wrap gap-1 mt-2">
+              <span class="text-xs px-1.5 py-0.5 rounded bg-dark-700 text-dark-400">Tool: 辟谣库</span>
+              <span class="text-xs px-1.5 py-0.5 rounded bg-dark-700 text-dark-400">Skill: 出题</span>
+            </div>
+          </div>
+          <div class="arch-layer" style="border-color:rgba(249,115,22,0.2)">
+            <p class="font-bold text-sm" style="color:#fb923c">🍽️ 饮食识别 Agent</p>
+            <p class="text-dark-500 text-xs mt-1">饮食偏好记忆 + 营养/GI数据库 + 慢病饮食规则 + 备餐前干预</p>
+            <div class="flex flex-wrap gap-1 mt-2">
+              <span class="text-xs px-1.5 py-0.5 rounded bg-dark-700 text-dark-400">Tool: 营养库</span>
+              <span class="text-xs px-1.5 py-0.5 rounded bg-dark-700 text-dark-400">Memory: 饮食偏好</span>
+            </div>
+          </div>
+          <div class="arch-layer" style="border-color:rgba(239,68,68,0.2)">
+            <p class="text-danger-300 font-bold text-sm">🆘 紧急守护 Agent</p>
+            <p class="text-dark-500 text-xs mt-1">异常检测 + 定位 + 多通道联络 + 社区联动</p>
+            <div class="flex flex-wrap gap-1 mt-2">
+              <span class="text-xs px-1.5 py-0.5 rounded bg-dark-700 text-dark-400">Tool: GPS</span>
+              <span class="text-xs px-1.5 py-0.5 rounded bg-dark-700 text-dark-400">Tool: 通话</span>
+            </div>
+          </div>
+          <div class="arch-layer" style="border-color:rgba(168,85,247,0.2)">
+            <p class="text-purple-400 font-bold text-sm">🌙 复盘总结 Agent</p>
+            <p class="text-dark-500 text-xs mt-1">全天数据汇总 + 评分模型 + 次日目标生成</p>
+            <div class="flex flex-wrap gap-1 mt-2">
+              <span class="text-xs px-1.5 py-0.5 rounded bg-dark-700 text-dark-400">Tool: 数据聚合</span>
+              <span class="text-xs px-1.5 py-0.5 rounded bg-dark-700 text-dark-400">Skill: 报告</span>
+            </div>
+          </div>
+        </div>
+        <div class="text-center text-dark-500 text-lg">↓ 读写 ↓</div>
+        <div class="arch-layer text-center" style="border-color:rgba(16,185,129,0.4);background:rgba(16,185,129,0.05)">
+          <p class="text-success-400 font-bold text-sm mb-2">💾 统一记忆层（User Health Memory）</p>
+          <div class="flex justify-center gap-4 text-xs text-dark-400">
+            <span>健康画像</span><span>·</span>
+            <span>用药记录</span><span>·</span>
+            <span>血压趋势</span><span>·</span>
+            <span>目标完成率</span><span>·</span>
+            <span>家人关系</span><span>·</span>
+            <span>偏好习惯</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== P3: 调度实例 (from hackathon) ===== -->
+  <div class="page flex-col" id="p2" style="overflow-y:auto;-webkit-overflow-scrolling:touch;">
+    <div class="max-w-5xl mx-auto w-full" style="margin-top:0;margin-bottom:0;">
+      <div class="text-center mb-5">
+        <p class="text-primary-400 text-sm font-bold tracking-wider mb-2">WORKFLOW</p>
+        <h2 class="text-3xl font-black mb-2">Agent <span class="gradient-text">调度实例</span></h2>
+        <p class="text-dark-400 text-sm">以「张爷爷的一天」展示 Orchestrator 如何调度各 Agent</p>
+      </div>
+      <div class="glass-card p-4">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="text-lg">🎯</span>
+          <p class="font-bold text-sm">Orchestrator 今日调度计划（基于健康画像自动生成）</p>
+          <span class="ml-auto text-xs text-dark-500">张爷爷 · 72岁 · 高血压 · 膝关节退行性变</span>
+        </div>
+        <div class="space-y-2">
+          <div class="flex items-center gap-4 p-3 rounded-lg transition-all cursor-pointer hover:bg-dark-800/50" onclick="goPage(4)">
+            <span class="text-primary-400 font-mono text-sm font-bold w-14">07:30</span>
+            <div class="w-2 h-2 rounded-full bg-primary-500"></div>
+            <div class="flex-1">
+              <p class="text-sm font-bold">调度 → <span class="text-primary-300">晨起养生 Agent</span></p>
+              <p class="text-dark-500 text-xs">触发条件：到达设定起床时间 | 输入：天气数据、节气、用户画像 | 输出：个性化晨间问候+养生建议+今日目标</p>
+            </div>
+            <span class="text-dark-500 text-xs">›</span>
+          </div>
+          <div class="flex items-center gap-4 p-3 rounded-lg transition-all cursor-pointer hover:bg-dark-800/50" onclick="goPage(5)">
+            <span class="text-accent-400 font-mono text-sm font-bold w-14">08:30</span>
+            <div class="w-2 h-2 rounded-full bg-accent-500"></div>
+            <div class="flex-1">
+              <p class="text-sm font-bold">调度 → <span class="text-accent-300">用药管理 Agent</span></p>
+              <p class="text-dark-500 text-xs">触发条件：饭后30分钟（服药窗口）| 输入：处方信息、打卡历史 | 输出：语音提醒+打卡确认+血压引导+子女同步</p>
+            </div>
+            <span class="text-dark-500 text-xs">›</span>
+          </div>
+          <div class="flex items-center gap-4 p-3 rounded-lg transition-all cursor-pointer hover:bg-dark-800/50" onclick="goPage(6)">
+            <span class="text-success-400 font-mono text-sm font-bold w-14">10:00</span>
+            <div class="w-2 h-2 rounded-full bg-success-500"></div>
+            <div class="flex-1">
+              <p class="text-sm font-bold">调度 → <span class="text-success-300">AI 问诊 Agent</span></p>
+              <p class="text-dark-500 text-xs">触发条件：用户主动询问身体不适 | 输入：症状描述、既往史、用药记录 | 输出：辅诊建议+运动处方+医生匹配</p>
+            </div>
+            <span class="text-dark-500 text-xs">›</span>
+          </div>
+          <div class="flex items-center gap-4 p-3 rounded-lg transition-all cursor-pointer hover:bg-dark-800/50" onclick="goPage(7)">
+            <span class="text-purple-400 font-mono text-sm font-bold w-14">15:00</span>
+            <div class="w-2 h-2 rounded-full" style="background:#8b5cf6"></div>
+            <div class="flex-1">
+              <p class="text-sm font-bold">调度 → <span class="text-purple-300">健脑互动 Agent</span></p>
+                          <p class="text-dark-500 text-xs">触发条件：检测到久坐1小时 | 输入：知识水平、历史答题、辟谣库 | 输出：个性化题目+科普+积分激励</p>
+            </div>
+            <span class="text-dark-500 text-xs">›</span>
+          </div>
+          <div class="flex items-center gap-4 p-3 rounded-lg transition-all cursor-pointer hover:bg-dark-800/50" onclick="goPage(8)">
+            <span class="font-mono text-sm font-bold w-14" style="color:#fb923c">16:30</span>
+            <div class="w-2 h-2 rounded-full" style="background:#f59e0b"></div>
+            <div class="flex-1">
+              <p class="text-sm font-bold">调度 → <span style="color:#fb923c">健康直播 Agent</span></p>
+              <p class="text-dark-500 text-xs">触发条件：直播时段到达 | 输入：用户健康画像、关注领域 | 输出：推荐直播+弹幕互动+积分奖励</p>
+            </div>
+            <span class="text-dark-500 text-xs">›</span>
+          </div>
+          <div class="flex items-center gap-4 p-3 rounded-lg transition-all cursor-pointer hover:bg-dark-800/50" onclick="goPage(9)">
+            <span class="font-mono text-sm font-bold w-14" style="color:#f97316">17:00</span>
+            <div class="w-2 h-2 rounded-full" style="background:#f97316"></div>
+            <div class="flex-1">
+              <p class="text-sm font-bold">调度 → <span style="color:#f97316">饮食管控 Agent</span></p>
+              <p class="text-dark-500 text-xs">触发条件：备餐时段到达 | 输入：饮食偏好Memory、慢病画像 | 输出：食材替换方案+营养分析+闭环追踪</p>
+            </div>
+            <span class="text-dark-500 text-xs">›</span>
+          </div>
+          <div class="flex items-center gap-4 p-3 rounded-lg transition-all" style="background:rgba(239,68,68,0.05)">
+            <span class="text-danger-400 font-mono text-sm font-bold w-14">24H</span>
+            <div class="w-2 h-2 rounded-full bg-danger-500 animate-pulse"></div>
+            <div class="flex-1">
+              <p class="text-sm font-bold">常驻 → <span class="text-danger-300">紧急守护 Agent</span></p>
+              <p class="text-dark-500 text-xs">触发条件：跌倒检测/异常静默/语音求助 | 输入：传感器数据、位置 | 输出：自动定位+呼叫家属+社区联动</p>
+            </div>
+            <span class="text-danger-400 text-xs font-bold">始终在线</span>
+          </div>
+          <div class="flex items-center gap-4 p-3 rounded-lg transition-all cursor-pointer hover:bg-dark-800/50" onclick="goPage(11)">
+            <span class="text-purple-400 font-mono text-sm font-bold w-14">21:00</span>
+            <div class="w-2 h-2 rounded-full" style="background:#a78bfa"></div>
+            <div class="flex-1">
+              <p class="text-sm font-bold">调度 → <span class="text-purple-400">复盘总结 Agent</span></p>
+              <p class="text-dark-500 text-xs">触发条件：晚间自动 | 输入：全天行为数据、目标完成情况 | 输出：健康评分+对比报告+次日目标+家人推送</p>
+            </div>
+            <span class="text-dark-500 text-xs">›</span>
+          </div>
+        </div>
+        <div class="mt-3 pt-3 border-t border-dark-700 text-center">
+          <p class="text-dark-400 text-xs">点击任意场景查看 Agent 交互演示 ↑</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== P4: 晨起养生 ===== -->
+  <div class="page flex-col justify-center" id="p4">
+    <div class="max-w-5xl mx-auto w-full">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <p class="text-primary-400 text-sm font-bold">场景一 · 07:30 客厅</p>
+          <h2 class="text-3xl font-black mt-1">晨起养生 + 天气关怀</h2>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs px-2 py-1 rounded-full bg-primary-500/20 text-primary-300 border border-primary-500/30">🎯 生成今日目标</span>
+          <button onclick="goPage(3)" class="text-dark-400 hover:text-white text-sm flex items-center gap-1">← 总览</button>
+        </div>
+      </div>
+
+      <div class="flex gap-6">
+        <!-- Device Mockup -->
+        <div class="flex-shrink-0">
+          <div class="device-frame" id="morning-device">
+            <div class="device-screen p-5 flex flex-col" style="background: linear-gradient(180deg, #0f172a, #1e293b); overflow-y: auto;">
+              <!-- Initial State -->
+              <div id="morning-state-0" class="flex-1 flex flex-col justify-center items-center cursor-pointer" onclick="startMorning()">
+                <div class="flex gap-1 mb-4" id="morning-wave">
+                  <div class="wave-bar" style="animation-delay:0s;height:12px"></div>
+                  <div class="wave-bar" style="animation-delay:0.2s;height:20px"></div>
+                  <div class="wave-bar" style="animation-delay:0.4s;height:16px"></div>
+                  <div class="wave-bar" style="animation-delay:0.6s;height:24px"></div>
+                  <div class="wave-bar" style="animation-delay:0.8s;height:12px"></div>
+                </div>
+                <p class="text-primary-300 text-sm font-medium">点击或说 "小度小度" 唤醒</p>
+                <p class="text-dark-500 text-xs mt-2">点击屏幕模拟语音唤醒</p>
+              </div>
+              <!-- Conversation State -->
+              <div id="morning-state-1" class="flex-1 flex-col gap-3 overflow-y-auto" style="display:none">
+                <div class="voice-bubble text-sm" id="m-bubble-1" style="display:none">
+                  <span class="text-primary-300">🗣 张爷爷：</span> 小度小度，早上好
+                </div>
+                <div class="voice-bubble voice-bubble-ai text-sm ml-auto" id="m-bubble-2" style="display:none">
+                  <span class="text-success-300">🤖 小度：</span> 早上好张爷爷！小满时节气温升高，我给您放一段轻柔的音乐舒缓一下，顺便看看今天的天气和注意事项～
+                </div>
+                <div id="m-bubble-3" style="display:none" class="mt-2">
+                  <p class="text-xs text-dark-400 mb-2">🎵 正在播放：轻柔钢琴曲 - 晨间治愈</p>
+                  <div class="flex gap-1 items-end h-8">
+                    <div class="wave-bar" style="animation-delay:0s;background:#10b981"></div>
+                    <div class="wave-bar" style="animation-delay:0.15s;background:#10b981"></div>
+                    <div class="wave-bar" style="animation-delay:0.3s;background:#10b981"></div>
+                    <div class="wave-bar" style="animation-delay:0.45s;background:#10b981"></div>
+                    <div class="wave-bar" style="animation-delay:0.6s;background:#10b981"></div>
+                    <div class="wave-bar" style="animation-delay:0.75s;background:#10b981"></div>
+                    <div class="wave-bar" style="animation-delay:0.9s;background:#10b981"></div>
+                  </div>
+                </div>
+                <div id="m-bubble-4" style="display:none" class="mt-3 glass-card p-3">
+                  <p class="text-xs font-bold text-primary-300 mb-2">🌤️ 今日天气 · 北京</p>
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2">
+                      <span class="text-2xl">⛅</span>
+                      <div>
+                        <p class="text-lg font-bold text-white">28°C</p>
+                        <p class="text-xs text-dark-400">多云转晴 · 湿度 65%</p>
+                      </div>
+                    </div>
+                    <div class="text-right text-xs text-dark-400">
+                      <p>紫外线：较强</p>
+                      <p>空气质量：良</p>
+                    </div>
+                  </div>
+                  <div class="border-t border-dark-700 pt-2 space-y-1">
+                    <p class="text-xs text-accent-300 font-bold">⚠️ 健康注意事项</p>
+                    <p class="text-xs text-dark-300">• 午间气温高，避免 11:00-15:00 外出，防中暑</p>
+                    <p class="text-xs text-dark-300">• 紫外线较强，外出请戴帽子、涂防晒</p>
+                    <p class="text-xs text-dark-300">• 高血压患者注意：气温升高血管扩张，监测血压变化</p>
+                  </div>
+                  <div class="border-t border-dark-700 pt-2 mt-2">
+                    <p class="text-xs text-purple-300 font-bold">☯ 五行养生·小满</p>
+                    <div class="flex items-center gap-2 mt-1">
+                      <span class="w-5 h-5 rounded-full flex items-center justify-center text-xs" style="background:rgba(239,68,68,0.2);color:#f87171">火</span>
+                      <span class="text-xs text-dark-300">当令：心 → 养心安神、清热降火</span>
+                    </div>
+                    <p class="text-xs text-dark-400 mt-1">宜食：红枣、番茄、莲子 | 忌：辛辣燥热</p>
+                  </div>
+                </div>
+                <div class="voice-bubble voice-bubble-ai text-sm ml-auto mt-3" id="m-bubble-5" style="display:none">
+                  <span class="text-success-300">🤖</span> 小满属火，对应心脏。五行养生建议：宜养心安神，食红色食物（番茄、红枣），午后饮莲子百合汤，晚间泡脚15分钟助眠~
+                </div>
+                <div id="m-bubble-6" style="display:none" class="mt-3 glass-card p-3">
+                  <p class="text-xs font-bold text-accent-300 mb-2">🎯 今日健康目标</p>
+                  <div class="space-y-1.5">
+                    <div class="flex items-center gap-2 text-xs">
+                      <span class="w-4 h-4 rounded border border-success-500 flex items-center justify-center text-success-400" style="font-size:10px">✓</span>
+                      <span class="text-dark-300">按时服药（苯磺酸氨氯地平）</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                      <span class="w-4 h-4 rounded border border-dark-700"></span>
+                      <span class="text-dark-300">步行 3000 步</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                      <span class="w-4 h-4 rounded border border-dark-700"></span>
+                      <span class="text-dark-300">午休 30 分钟</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                      <span class="w-4 h-4 rounded border border-dark-700"></span>
+                      <span class="text-dark-300">晚餐少盐（＜5g）</span>
+                    </div>
+                  </div>
+                  <div class="mt-2 pt-2 border-t border-dark-700 flex items-center justify-between">
+                    <span class="text-xs text-dark-400">本周完成率</span>
+                    <div class="flex items-center gap-2">
+                      <div class="w-20 h-1.5 rounded bg-dark-700 overflow-hidden"><div class="h-full rounded" style="width:72%;background:linear-gradient(90deg,#10b981,#34d399)"></div></div>
+                      <span class="text-xs text-success-300 font-bold">72%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Controls & Value -->
+        <div class="flex-1 flex flex-col gap-4">
+          <div class="glass-card p-5">
+            <h4 class="font-bold mb-3">交互流程</h4>
+            <button onclick="startMorning()" class="w-full bg-primary-600 hover:bg-primary-500 py-3 rounded-xl font-bold transition-all hover:scale-102 mb-3">
+              🎙️ 模拟语音唤醒
+            </button>
+            <div class="space-y-2 text-sm text-dark-400" id="morning-steps">
+              <div class="flex items-center gap-2" id="ms-1"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">1</span>语音唤醒 → 识别用户</div>
+              <div class="flex items-center gap-2" id="ms-2"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">2</span>播放轻音乐 + 问候</div>
+              <div class="flex items-center gap-2" id="ms-3"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">3</span>天气播报 + 健康注意事项</div>
+              <div class="flex items-center gap-2" id="ms-4"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">4</span>五行节气养生建议</div>
+              <div class="flex items-center gap-2" id="ms-5"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">5</span>展示今日个人健康目标</div>
+            </div>
+          </div>
+          <div class="glass-card p-5">
+            <h4 class="font-bold mb-2 text-sm">商业价值</h4>
+            <div class="text-dark-400 text-xs space-y-1">
+              <p>• 每日首次唤醒 → 构建用户习惯，提升次日留存</p>
+              <p>• 健康目标 → 个性化任务驱动长期活跃</p>
+              <p>• 天气关怀 → 结合健康状况的个性化提醒，提升信任感</p>
+              <p>• 目标完成率 → 子女可见，促进家庭付费决策</p>
+            </div>
+          </div>
+          <button onclick="goPage(5)" class="text-sm text-dark-400 hover:text-primary-400 transition-all self-end flex items-center gap-1">下一场景 →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== P3: 用药提醒 + 血压自测 ===== -->
+  <div class="page flex-col justify-center" id="p5">
+    <div class="max-w-5xl mx-auto w-full">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <p class="text-accent-400 text-sm font-bold">场景二 · 08:30 客厅</p>
+          <h2 class="text-3xl font-black mt-1">用药提醒 + 血压自测</h2>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs px-2 py-1 rounded-full bg-accent-500/20 text-accent-300 border border-accent-500/30">🎯 服药+测血压</span>
+          <button onclick="goPage(3)" class="text-dark-400 hover:text-white text-sm flex items-center gap-1">← 总览</button>
+        </div>
+      </div>
+
+      <div class="flex gap-6">
+        <div class="flex-shrink-0">
+          <div class="device-frame" id="med-device">
+            <div class="device-screen p-5 flex flex-col gap-3" style="background: linear-gradient(180deg, #0f172a, #1a1a2e); overflow-y: auto;">
+              <div id="med-state-0" class="flex-1 flex flex-col justify-center items-center text-center cursor-pointer" onclick="startMed()">
+                <span class="text-accent-400 text-4xl mb-2">💊</span>
+                <p class="text-accent-300 font-bold">用药提醒</p>
+                <p class="text-dark-400 text-xs mt-1">点击屏幕开始演示</p>
+              </div>
+              <div id="med-state-1" class="flex-1 flex-col gap-2" style="display:none">
+                <div class="voice-bubble voice-bubble-ai text-xs" id="med-b1" style="display:none">
+                  <span class="text-success-300">🤖</span> 张爷爷，该吃降压药了！今天的苯磺酸氨氯地平 5mg，饭后半小时服用哦～
+                </div>
+                <div class="voice-bubble text-xs" id="med-b2" style="display:none">
+                  <span class="text-primary-300">🗣</span> 好的，吃了
+                </div>
+                <div id="med-b3" style="display:none" class="glass-card p-3 text-xs">
+                  <p class="text-success-400 font-bold mb-1">✅ 打卡成功！连续第 23 天</p>
+                  <div class="flex gap-1 mt-2">
+                    <span class="w-4 h-4 rounded bg-success-500 text-xs flex items-center justify-center">✓</span>
+                    <span class="w-4 h-4 rounded bg-success-500 text-xs flex items-center justify-center">✓</span>
+                    <span class="w-4 h-4 rounded bg-success-500 text-xs flex items-center justify-center">✓</span>
+                    <span class="w-4 h-4 rounded bg-success-500 text-xs flex items-center justify-center">✓</span>
+                    <span class="w-4 h-4 rounded bg-success-500 text-xs flex items-center justify-center">✓</span>
+                    <span class="w-4 h-4 rounded bg-primary-500 text-xs flex items-center justify-center">★</span>
+                    <span class="w-4 h-4 rounded bg-dark-700"></span>
+                  </div>
+                       <p class="text-dark-400 mt-2">📱 已同步至儿子小张的手机</p>
+                </div>
+                <div id="med-b4" style="display:none" class="mt-1">
+                  <div class="voice-bubble voice-bubble-ai text-xs">
+                    <span class="text-success-300">🤖</span> 顺便测个血压吧？我来一步步引导您~
+                  </div>
+                </div>
+                <div id="med-b5" style="display:none" class="glass-card p-3 text-xs mt-1">
+                  <p class="text-primary-300 font-bold mb-2">📋 血压测量引导</p>
+                  <div class="space-y-1.5">
+                    <div class="flex items-start gap-2">
+                      <span class="w-4 h-4 rounded-full bg-primary-500 text-white flex items-center justify-center text-xs flex-shrink-0 mt-0.5">1</span>
+                      <span>坐姿端正，安静休息 <span class="text-success-300 font-bold">5分钟</span></span>
+                    </div>
+                    <div class="flex items-start gap-2">
+                      <span class="w-4 h-4 rounded-full bg-primary-500 text-white flex items-center justify-center text-xs flex-shrink-0 mt-0.5">2</span>
+                      <span>将袖带绑在<span class="text-success-300 font-bold">左上臂</span>，距肘窝 2~3cm</span>
+                    </div>
+                    <div class="flex items-start gap-2">
+                      <span class="w-4 h-4 rounded-full bg-primary-500 text-white flex items-center justify-center text-xs flex-shrink-0 mt-0.5">3</span>
+                      <span>手臂平放桌上，掌心朝上，与<span class="text-success-300 font-bold">心脏同高</span></span>
+                    </div>
+                    <div class="flex items-start gap-2">
+                      <span class="w-4 h-4 rounded-full bg-primary-500 text-white flex items-center justify-center text-xs flex-shrink-0 mt-0.5">4</span>
+                      <span>按下测量键，测量中<span class="text-danger-300">不要说话和移动</span></span>
+                    </div>
+                  </div>
+                  <p class="text-dark-400 mt-2 italic">— 参考《百度健康医典·高血压测量规范》</p>
+                </div>
+                <div id="med-b6" style="display:none" class="glass-card p-3 text-xs mt-1">
+                  <p class="text-primary-300 font-bold mb-1">📊 血压趋势（近7天）</p>
+                  <div class="flex items-end gap-2 h-12 mt-2">
+                    <div class="flex-1 rounded-t" style="height:70%;background:linear-gradient(to top,#3b82f6,#60a5fa)"></div>
+                    <div class="flex-1 rounded-t" style="height:65%;background:linear-gradient(to top,#3b82f6,#60a5fa)"></div>
+                    <div class="flex-1 rounded-t" style="height:80%;background:linear-gradient(to top,#f59e0b,#fbbf24)"></div>
+                    <div class="flex-1 rounded-t" style="height:60%;background:linear-gradient(to top,#10b981,#34d399)"></div>
+                    <div class="flex-1 rounded-t" style="height:55%;background:linear-gradient(to top,#10b981,#34d399)"></div>
+                    <div class="flex-1 rounded-t" style="height:58%;background:linear-gradient(to top,#10b981,#34d399)"></div>
+                    <div class="flex-1 rounded-t animate-pulse" style="height:52%;background:linear-gradient(to top,#10b981,#6ee7b7)"></div>
+                  </div>
+                  <div class="flex justify-between text-dark-500 mt-1" style="font-size:10px"><span>周一</span><span>周二</span><span>周三</span><span>周四</span><span>周五</span><span>周六</span><span>今天</span></div>
+                  <p class="text-success-300 mt-2">✓ 今日 128/82 mmHg · 控制良好</p>
+                  <p class="text-dark-400 mt-1">较上周下降 5mmHg，继续保持用药+低盐饮食</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-1 flex flex-col gap-4">
+          <div class="glass-card p-5">
+            <h4 class="font-bold mb-3">交互流程</h4>
+            <button onclick="startMed()" class="w-full bg-accent-500 hover:bg-yellow-500 text-gray-900 py-3 rounded-xl font-bold transition-all hover:scale-102 mb-3">
+              ⏰ 触发用药提醒
+            </button>
+            <div class="space-y-2 text-sm text-dark-400" id="med-steps">
+              <div class="flex items-center gap-2" id="meds-1"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">1</span>智能提醒（药名+剂量+时间）</div>
+              <div class="flex items-center gap-2" id="meds-2"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">2</span>语音确认打卡</div>
+              <div class="flex items-center gap-2" id="meds-3"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">3</span>同步子女端 + 连续记录</div>
+              <div class="flex items-center gap-2" id="meds-4"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">4</span>引导血压测量 + 趋势可视化</div>
+            </div>
+          </div>
+          <div class="glass-card p-5">
+            <h4 class="font-bold mb-2 text-sm">商业价值</h4>
+            <div class="text-dark-400 text-xs space-y-1">
+              <p>• 用药打卡 → 慢病管理增值服务（会员付费）</p>
+              <p>• 血压数据 → 对接线上复诊，续方购药闭环</p>
+              <p>• 子女同步 → 家庭账号渗透，拉新获客</p>
+            </div>
+          </div>
+          <button onclick="goPage(6)" class="text-sm text-dark-400 hover:text-primary-400 transition-all self-end flex items-center gap-1">下一场景 →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== P4: AI问诊 + 八段锦 ===== -->
+  <div class="page flex-col justify-center" id="p6">
+    <div class="max-w-5xl mx-auto w-full">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <p class="text-success-400 text-sm font-bold">场景三 · 10:00 客厅</p>
+          <h2 class="text-3xl font-black mt-1">AI 问诊 + 八段锦跟练</h2>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs px-2 py-1 rounded-full bg-success-500/20 text-success-300 border border-success-500/30">🎯 跟练15分钟</span>
+          <button onclick="goPage(3)" class="text-dark-400 hover:text-white text-sm flex items-center gap-1">← 总览</button>
+        </div>
+      </div>
+
+      <div class="flex gap-6">
+        <div class="flex-shrink-0">
+          <div class="device-frame" id="consult-device">
+            <div class="device-screen p-5 flex flex-col gap-2" style="background: linear-gradient(180deg, #0f172a, #1a1a2e); overflow-y: auto;">
+              <div id="consult-state-0" class="flex-1 flex flex-col justify-center items-center text-center cursor-pointer" onclick="startConsult()">
+                <span class="text-success-400 text-4xl mb-2">🏥</span>
+                <p class="text-success-300 font-bold">AI 智能问诊</p>
+                <p class="text-dark-400 text-xs mt-1">点击屏幕开始演示</p>
+              </div>
+              <div id="consult-state-1" class="flex-1 flex-col gap-2 overflow-y-auto" style="display:none">
+                <div class="voice-bubble text-xs" id="c-b1" style="display:none">
+                  <span class="text-primary-300">🗣</span> 小度，我最近膝盖有点疼，上下楼梯的时候
+                </div>
+                <div class="voice-bubble voice-bubble-ai text-xs" id="c-b2" style="display:none">
+                  <span class="text-success-300">🤖</span> 了解。请问是哪个膝盖？疼痛是刺痛还是酸胀？有没有肿？
+                </div>
+                <div class="voice-bubble text-xs" id="c-b3" style="display:none">
+                  <span class="text-primary-300">🗣</span> 右边膝盖，酸胀，没有肿
+                </div>
+                <div class="voice-bubble voice-bubble-ai text-xs" id="c-b4" style="display:none">
+                  <span class="text-success-300">🤖</span> 根据您的描述，初步判断可能是<span class="text-white font-bold">膝关节退行性变</span>。建议：
+                </div>
+                <div id="c-b5" style="display:none" class="glass-card p-3 text-xs">
+                  <p class="font-bold text-success-300 mb-2">🏥 AI辅诊建议</p>
+                  <p class="text-dark-300">1. 避免长时间站立和爬楼</p>
+                  <p class="text-dark-300">2. 推荐做八段锦中的"摇头摆尾去心火"式</p>
+                  <p class="text-dark-300">3. 如持续1周未好转，建议骨科问诊</p>
+                  <div class="mt-2 flex gap-2">
+                    <span class="bg-primary-500\/20 text-primary-300 text-xs px-2 py-1 rounded-full cursor-pointer hover:bg-primary-500\/30 transition-all" onclick="showBaduanjin()">▶ 跟练八段锦</span>
+                    <span class="bg-success-500\/20 text-success-300 text-xs px-2 py-1 rounded-full">预约骨科医生</span>
+                  </div>
+                </div>
+                <div id="c-b6" style="display:none" class="mt-1 rounded-lg overflow-hidden">
+                  <div class="cursor-pointer relative" onclick="showBaduanjin()">
+                    <div class="flex items-center justify-center h-16 rounded-lg transition-all" style="background:linear-gradient(135deg,rgba(16,185,129,0.2),rgba(59,130,246,0.2));border:1px solid rgba(16,185,129,0.3)">
+                      <span class="text-success-400 text-2xl mr-2">▶️</span>
+                      <div>
+                        <p class="text-xs font-bold text-success-300">点击播放：八段锦 · 第五式跟练视频</p>
+                        <p class="text-dark-400" style="font-size:10px">国家体育总局推广版 · 722万次播放</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-1 flex flex-col gap-4">
+          <div class="glass-card p-5">
+            <h4 class="font-bold mb-3">交互流程</h4>
+            <button onclick="startConsult()" class="w-full bg-success-500 hover:bg-green-400 text-gray-900 py-3 rounded-xl font-bold transition-all hover:scale-102 mb-3">
+              💬 开始问诊对话
+            </button>
+            <div class="space-y-2 text-sm text-dark-400">
+              <div class="flex items-center gap-2" id="cs-1"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">1</span>用户描述症状（语音）</div>
+              <div class="flex items-center gap-2" id="cs-2"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">2</span>AI追问 → 多轮对话收集信息</div>
+              <div class="flex items-center gap-2" id="cs-3"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">3</span>出具辅诊建议 + 运动处方</div>
+              <div class="flex items-center gap-2" id="cs-4"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">4</span>八段锦跟练 / 预约真人医生</div>
+            </div>
+          </div>
+          <div class="glass-card p-5">
+            <h4 class="font-bold mb-2 text-sm">商业价值</h4>
+            <div class="text-dark-400 text-xs space-y-1">
+              <p>• AI辅诊 → 百度健康核心能力输出</p>
+              <p>• 预约问诊 → 互联网医院收入分成</p>
+              <p>• 运动跟练 → 健康内容付费/广告</p>
+            </div>
+          </div>
+          <button onclick="goPage(7)" class="text-sm text-dark-400 hover:text-primary-400 transition-all self-end flex items-center gap-1">下一场景 →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== P5: 健脑答题 + 辟谣 ===== -->
+  <div class="page flex-col justify-center" id="p7">
+    <div class="max-w-5xl mx-auto w-full">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <p class="text-primary-300 text-sm font-bold">场景四 · 15:00 客厅</p>
+          <h2 class="text-3xl font-black mt-1">健脑答题 + 辟谣科普</h2>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs px-2 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">🎯 答题3道</span>
+          <button onclick="goPage(3)" class="text-dark-400 hover:text-white text-sm flex items-center gap-1">← 总览</button>
+        </div>
+      </div>
+
+      <div class="flex gap-6">
+        <div class="flex-shrink-0">
+          <div class="device-frame" id="quiz-device">
+            <div class="device-screen p-4 flex flex-col" style="background: linear-gradient(180deg, #0f172a, #1a1a2e);">
+              <!-- Quiz Progress -->
+              <div class="flex items-center gap-2 mb-3">
+                <span class="text-xs text-dark-400" id="quiz-progress-text">第 1/3 题</span>
+                <div class="progress-bar flex-1"><div class="progress-fill" id="quiz-progress-bar" style="width:33%"></div></div>
+                <span class="text-xs text-accent-400" id="quiz-score">0分</span>
+              </div>
+              <!-- Question -->
+              <div id="quiz-question" class="text-sm font-bold mb-3"></div>
+              <!-- Options -->
+              <div id="quiz-options" class="space-y-2"></div>
+              <!-- Feedback -->
+              <div id="quiz-feedback" class="mt-2 text-xs glass-card p-3" style="display:none"></div>
+              <!-- Result -->
+              <div id="quiz-result" class="flex-1 flex-col items-center justify-center text-center overflow-y-auto" style="display:none">
+                <div class="text-2xl mb-1">🎉</div>
+                <p class="font-bold text-sm">答题完成！</p>
+                <p class="text-accent-400 font-bold text-lg" id="quiz-final-score"></p>
+                <!-- Prize Progress -->
+                <div class="w-full mt-2 p-2 rounded-xl text-left" style="background:linear-gradient(135deg,rgba(245,158,11,0.1),rgba(239,68,68,0.05));border:1px solid rgba(245,158,11,0.2)">
+                  <p class="text-xs font-bold text-accent-300 mb-1">🎁 奖品兑换进度</p>
+                  <div class="flex items-center gap-2 mb-1">
+                    <div class="progress-bar flex-1"><div class="progress-fill" id="prize-progress" style="width:78%;background:linear-gradient(90deg,#f59e0b,#ef4444)"></div></div>
+                    <span class="text-xs text-accent-400 font-bold" id="prize-pct">78%</span>
+                  </div>
+                  <p class="text-xs text-dark-400">再得 <span class="text-accent-300 font-bold">220分</span> 即可兑换奖品</p>
+                </div>
+                <!-- Prize Items -->
+                <div class="w-full grid grid-cols-3 gap-1 mt-2">
+                  <div class="text-center p-1 rounded-lg" style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2)">
+                    <div class="text-xl">🍚</div>
+                    <p class="text-xs font-bold text-success-300">5kg大米</p>
+                    <p class="text-xs text-success-400">1000分✓</p>
+                  </div>
+                  <div class="text-center p-1 rounded-lg" style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2)">
+                    <div class="text-xl">🫒</div>
+                        <p class="text-xs font-bold text-accent-300">花生油</p>
+                    <p class="text-xs text-dark-400">1200分</p>
+                  </div>
+                  <div class="text-center p-1 rounded-lg" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1)">
+                    <div class="text-xl">🌾</div>
+                    <p class="text-xs font-bold text-dark-300">面粉10斤</p>
+                    <p class="text-xs text-dark-400">1500分</p>
+                  </div>
+                </div>
+                <!-- Leaderboard -->
+                <div class="w-full mt-2 text-xs text-dark-400 text-left">
+                  <p class="font-bold text-dark-300 mb-1">📊 本月排行</p>
+                  <p>🥇 王奶奶 1280分 <span class="text-success-300">已兑花生油</span></p>
+                  <p>🥈 李爷爷 1150分 <span class="text-success-300">已兑大米</span></p>
+                  <p>⭐ 您 <span id="quiz-rank-score"></span></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-1 flex flex-col gap-4">
+          <div class="glass-card p-5">
+            <h4 class="font-bold mb-3">交互流程</h4>
+            <button onclick="startQuiz()" class="w-full bg-primary-600 hover:bg-primary-500 py-3 rounded-xl font-bold transition-all hover:scale-102 mb-3">
+              🧠 开始答题
+            </button>
+            <div class="space-y-2 text-sm text-dark-400">
+              <div class="flex items-center gap-2"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">1</span>语音播报题目（也可屏幕阅读）</div>
+              <div class="flex items-center gap-2"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">2</span>点击/语音作答</div>
+              <div class="flex items-center gap-2"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">3</span>即时反馈 + 辟谣科普</div>
+              <div class="flex items-center gap-2"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">4</span>积分排行 + 奖品兑换</div>
+            </div>
+          </div>
+          <div class="glass-card p-5">
+            <h4 class="font-bold mb-2 text-sm">商业价值</h4>
+            <div class="text-dark-400 text-xs space-y-1">
+              <p>• 答题 → 高频互动，日均打开3+次</p>
+              <p>• 辟谣科普 → 健康内容品牌合作</p>
+              <p>• 积分体系 → 会员/电商导流</p>
+              <p>• 排行榜 → 社交传播，老人带老人</p>
+            </div>
+          </div>
+          <button onclick="goPage(8)" class="text-sm text-dark-400 hover:text-primary-400 transition-all self-end flex items-center gap-1">下一场景 →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== P6: 健康直播 ===== -->
+  <div class="page flex-col justify-center" id="p8">
+    <div class="max-w-5xl mx-auto w-full">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <p class="text-pink-400 text-sm font-bold">场景五 · 16:30 客厅</p>
+          <h2 class="text-3xl font-black mt-1">三甲专家健康直播</h2>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs px-2 py-1 rounded-full bg-pink-500/20 text-pink-300 border border-pink-500/30">🎯 观看直播</span>
+          <button onclick="goPage(3)" class="text-dark-400 hover:text-white text-sm flex items-center gap-1">← 总览</button>
+        </div>
+      </div>
+
+      <div class="flex gap-6">
+        <div class="flex-shrink-0">
+          <div class="device-frame" id="live-device">
+            <div class="device-screen flex flex-col" style="background:#000">
+              <div id="live-state-0" class="flex-1 flex flex-col justify-center items-center text-center p-5 cursor-pointer" onclick="startLive()">
+                <span class="text-pink-400 text-4xl mb-2">📺</span>
+                <p class="text-pink-300 font-bold">健康直播间</p>
+                <p class="text-dark-400 text-xs mt-1">点击屏幕进入直播</p>
+              </div>
+              <div id="live-state-1" class="flex-1 flex-col relative" style="display:none">
+                <!-- Live header -->
+                <div class="absolute top-0 left-0 right-0 p-3 flex items-center gap-2 z-10" style="background:linear-gradient(to bottom,rgba(0,0,0,0.7),transparent)">
+                  <div class="w-7 h-7 rounded-full bg-pink-500 flex items-center justify-center text-xs font-bold">李</div>
+                  <div class="text-xs">
+                    <p class="font-bold">李医生·北京协和骨科</p>
+                    <p class="text-dark-400">膝关节保养专题</p>
+                  </div>
+                  <span class="ml-auto bg-danger-500 text-xs px-2 py-0.5 rounded-full animate-pulse">直播中</span>
+                  <span class="text-xs text-dark-400">3.2万</span>
+                </div>
+                <!-- Live content -->
+                <div class="flex-1" style="background:#000">
+                  <iframe src="https://player.bilibili.com/player.html?bvid=BV13r4y1o7ik&page=1&high_quality=1&danmaku=0&autoplay=1" style="width:100%;height:100%;border:none;" allowfullscreen></iframe>
+                </div>
+                <!-- Danmaku area -->
+                <div class="absolute bottom-12 left-3 right-3 space-y-1" id="danmaku-area"></div>
+                <!-- Bottom interaction -->
+                <div class="p-2 flex items-center gap-2" style="background:rgba(0,0,0,0.8)">
+                  <button class="flex-1 bg-dark-700 rounded-full px-3 py-1.5 text-xs text-dark-400 text-left">说点什么...</button>
+                  <button class="bg-pink-500 rounded-full px-3 py-1.5 text-xs font-bold">🎤 提问</button>
+                  <button onclick="likeLive()" class="text-pink-400"><span class="text-xl" id="live-heart">♡</span></button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-1 flex flex-col gap-4">
+          <div class="glass-card p-5">
+            <h4 class="font-bold mb-3">交互流程</h4>
+            <button onclick="startLive()" class="w-full py-3 rounded-xl font-bold transition-all hover:scale-102 mb-3" style="background:linear-gradient(135deg,#ec4899,#8b5cf6)">
+              📺 进入直播间
+            </button>
+            <div class="space-y-2 text-sm text-dark-400">
+              <div class="flex items-center gap-2"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">1</span>AI根据健康画像推荐直播</div>
+              <div class="flex items-center gap-2"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">2</span>语音发弹幕互动</div>
+              <div class="flex items-center gap-2"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">3</span>一键语音向医生提问</div>
+              <div class="flex items-center gap-2"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">4</span>直播结束 → 预约该医生问诊</div>
+            </div>
+          </div>
+          <div class="glass-card p-5">
+            <h4 class="font-bold mb-2 text-sm">商业价值</h4>
+            <div class="text-dark-400 text-xs space-y-1">
+              <p>• 直播 → 百度健康医生资源变现</p>
+              <p>• 问诊转化 → 直播后预约率15%+</p>
+              <p>• 时长贡献 → 单场30min+高粘性内容</p>
+                 <p>• 品牌合作 → 医疗品牌赞助/冠名</p>
+            </div>
+          </div>
+          <button onclick="goPage(9)" class="text-sm text-dark-400 hover:text-primary-400 transition-all self-end flex items-center gap-1">下一场景 →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 饮食识别 Agent ===== -->
+  <div class="page flex-col justify-center" id="p9">
+    <div class="max-w-5xl mx-auto w-full">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <p class="text-orange-400 text-sm font-bold">场景六 · 17:00 厨房</p>
+          <h2 class="text-3xl font-black mt-1">备餐前主动干预 + 慢病饮食管控</h2>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs px-2 py-1 rounded-full bg-orange-500/20 text-orange-300 border border-orange-500/30">🎯 饮食管控</span>
+          <button onclick="goPage(3)" class="text-dark-400 hover:text-white text-sm flex items-center gap-1">← 总览</button>
+        </div>
+      </div>
+
+      <div class="flex gap-6">
+        <!-- Device Mockup -->
+        <div class="flex-shrink-0">
+          <div class="device-frame" id="diet-device">
+            <div class="device-screen p-5 flex flex-col items-center justify-center" style="background: linear-gradient(180deg, #0f172a, #1a1a2e);">
+              <div id="diet-state-0" class="flex-1 flex flex-col justify-center items-center cursor-pointer text-center" onclick="startDiet()">
+                <span class="text-4xl mb-3">🔍</span>
+                <p class="text-orange-300 font-bold">点击模拟备餐提醒</p>
+                <p class="text-dark-500 text-xs mt-2">17:00 Agent 主动在备餐前介入，提前调整食材</p>
+              </div>
+              <div id="diet-state-1" class="w-full flex-1 flex-col gap-3 overflow-y-auto p-2" style="display:none">
+                <div class="voice-bubble voice-bubble-ai text-sm" id="diet-bubble-1" style="display:none">
+                  <span class="text-success-300">🤖 小度：</span> 张爷爷，您准备做晚饭了吧？我看您常做白粥配咸菜，今天建议换一下～
+                </div>
+                <div class="voice-bubble text-sm" id="diet-bubble-2" style="display:none">
+                  <span class="text-primary-300">🗣 张爷爷：</span> 白粥不是挺健康的吗？
+                </div>
+                <div class="voice-bubble voice-bubble-ai text-sm" id="diet-bubble-3" style="display:none">
+                  <span class="text-success-300">🤖 小度：</span> 白粥升糖指数很高（GI=69），您有糖前期，建议换成杂粮粥，加燕麦和荞麦，GI降到45左右。咸菜含盐也太高，换成凉拌木耳更好～
+                </div>
+                <div id="diet-bubble-4" style="display:none" class="mt-2 glass-card p-3">
+                  <p class="text-xs font-bold text-orange-300 mb-2">🍽️ 今日备餐替换方案</p>
+                  <div class="space-y-1.5 text-xs">
+                    <div class="flex items-center gap-2">
+                      <span class="text-danger-400">✗</span>
+                      <span class="text-dark-400 line-through">白粥</span>
+                      <span class="text-dark-500">→</span>
+                      <span class="text-success-300">杂粮粥（燕麦+荞麦）</span>
+                      <span class="text-dark-500 ml-auto">GI 69→45</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-danger-400">✗</span>
+                      <span class="text-dark-400 line-through">咸菜</span>
+                      <span class="text-dark-500">→</span>
+                      <span class="text-success-300">凉拌木耳</span>
+                      <span class="text-dark-500 ml-auto">盐 8g→2g</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-success-400">✓</span>
+                      <span class="text-dark-300">清蒸鱼（保留）</span>
+                      <span class="text-dark-500 ml-auto">优质蛋白</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="voice-bubble voice-bubble-ai text-sm mt-2" id="diet-bubble-5" style="display:none">
+                  <span class="text-success-300">🤖</span> 方案已记录，饭后我会问您实际吃了什么，帮您追踪～
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right side -->
+        <div class="flex-1 flex flex-col gap-4">
+          <div class="glass-card p-5">
+            <h4 class="font-bold mb-3">Agent 工作流</h4>
+            <button onclick="startDiet()" class="w-full py-3 rounded-xl font-bold transition-all hover:scale-102 mb-3" style="background:linear-gradient(135deg,#f97316,#ef4444)">
+              🔍 触发备餐提醒
+            </button>
+            <div class="space-y-2 text-sm text-dark-400" id="diet-steps">
+              <div class="flex items-center gap-2" id="ds-1"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">1</span>17:00 备餐前主动触发，读取 Memory 饮食偏好</div>
+              <div class="flex items-center gap-2" id="ds-2"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">2</span>营养成分分析 + 匹配慢病画像（高血压+糖前期）</div>
+              <div class="flex items-center gap-2" id="ds-3"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">3</span>做饭前风险预警 + 认知纠偏（白粥≠安全）</div>
+              <div class="flex items-center gap-2" id="ds-4"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">4</span>输出备餐替换方案 + 写入 Memory 供复盘</div>
+            </div>
+          </div>
+          <div class="glass-card p-5">
+            <h4 class="font-bold mb-2 text-sm" style="color:#fb923c">Agentic 特性</h4>
+            <div class="text-dark-400 text-xs space-y-1.5">
+              <p><span style="color:#fb923c">●</span> <strong class="text-dark-200">主动感知</strong>：备餐前主动介入，而非饭做好了才提醒</p>
+              <p><span style="color:#fb923c">●</span> <strong class="text-dark-200">Memory 驱动</strong>：记住用户饮食偏好，精准命中常吃食材</p>
+              <p><span style="color:#fb923c">●</span> <strong class="text-dark-200">个性化</strong>：结合高血压（限盐）+ 糖前期（限GI）画像</p>
+              <p><span style="color:#fb923c">●</span> <strong class="text-dark-200">认知纠偏</strong>：打破"不甜=不升糖"等常见误区</p>
+              <p><span style="color:#fb923c">●</span> <strong class="text-dark-200">闭环</strong>：建议→记录→饭后核实→次日优化</p>
+            </div>
+          </div>
+          <button onclick="goPage(10)" class="text-sm text-dark-400 hover:text-primary-400 transition-all self-end flex items-center gap-1">下一场景 →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== P8: 紧急求助 ===== -->
+  <div class="page flex-col justify-center" id="p10">
+    <div class="max-w-5xl mx-auto w-full">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <p class="text-danger-400 text-sm font-bold">场景七 · 全天候守护</p>
+          <h2 class="text-3xl font-black mt-1">紧急求助 + 亲友联动</h2>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs px-2 py-1 rounded-full bg-danger-500/20 text-danger-300 border border-danger-500/30">🎯 安全守护</span>
+          <button onclick="goPage(3)" class="text-dark-400 hover:text-white text-sm flex items-center gap-1">← 总览</button>
+        </div>
+      </div>
+
+      <div class="flex gap-6">
+        <div class="flex-shrink-0">
+          <div class="device-frame" id="sos-device">
+            <div class="device-screen p-5 flex flex-col items-center justify-center" style="background: linear-gradient(180deg, #0f172a, #1a0a0a);">
+              <div id="sos-state-0">
+                <div class="sos-btn" onclick="triggerSOS()">
+                  <span class="text-white text-3xl font-black">SOS</span>
+                </div>
+                <p class="text-danger-300 text-xs mt-4 text-center">长按或喊"小度救命"触发</p>
+              </div>
+              <div id="sos-state-1" class="w-full space-y-2" style="display:none">
+                <div class="text-center mb-2">
+                  <span class="text-danger-400 text-2xl animate-pulse">🚨</span>
+                  <p class="text-danger-300 font-bold text-sm">紧急求助已触发</p>
+                </div>
+                <div id="sos-step-1" class="flex items-center gap-2 text-xs glass-card p-2" style="display:none">
+                  <span class="text-success-400 text-sm">✅</span>
+                  <span>定位成功：北京市海淀区XX小区3号楼</span>
+                </div>
+                <div id="sos-step-2" class="flex items-center gap-2 text-xs glass-card p-2" style="display:none">
+                  <span class="text-primary-400 text-sm animate-pulse">📞</span>
+                  <span>正在呼叫：儿子小张 138****6789</span>
+                </div>
+                <div id="sos-step-3" class="flex items-center gap-2 text-xs glass-card p-2" style="display:none">
+                  <span class="text-success-400 text-sm">✅</span>
+                  <span>通话已接通 · 位置已共享</span>
+                </div>
+                <div id="sos-step-4" class="flex items-center gap-2 text-xs glass-card p-2" style="display:none">
+                  <span class="text-accent-400 text-sm">👨‍👩‍👧</span>
+                  <span>社区物业已通知 · 预计3分钟到达</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-1 flex flex-col gap-4">
+          <div class="glass-card p-5">
+            <h4 class="font-bold mb-3">交互流程</h4>
+            <button onclick="triggerSOS()" class="w-full bg-danger-500 hover:bg-red-400 text-white py-3 rounded-xl font-bold transition-all hover:scale-102 mb-3">
+              🚨 模拟紧急求助
+            </button>
+            <div class="space-y-2 text-sm text-dark-400">
+              <div class="flex items-center gap-2" id="sos-s1"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">1</span>触发方式：长按SOS / 语音 / 跌倒检测</div>
+              <div class="flex items-center gap-2" id="sos-s2"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">2</span>自动获取地理定位</div>
+              <div class="flex items-center gap-2" id="sos-s3"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">3</span>自动拨打紧急联系人</div>
+              <div class="flex items-center gap-2" id="sos-s4"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">4</span>通知社区/物业 + 120联动</div>
+            </div>
+          </div>
+          <div class="glass-card p-5">
+            <h4 class="font-bold mb-2 text-sm">战略意义</h4>
+            <div class="text-dark-400 text-xs space-y-1">
+                      <p>• <span class="text-danger-300">安全刚需</span> → 子女购买决策的第一理由</p>
+              <p>• 政府/社区合作 → 养老服务B端收入</p>
+              <p>• 设备不可替代性 → 用户终身绑定</p>
+              <p>• 保险联动 → 意外险增值服务</p>
+            </div>
+          </div>
+          <button onclick="goPage(11)" class="text-sm text-dark-400 hover:text-primary-400 transition-all self-end flex items-center gap-1">下一场景 →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== P9: 晚间复盘 ===== -->
+  <div class="page flex-col justify-center" id="p11">
+    <div class="max-w-5xl mx-auto w-full">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <p class="text-purple-400 text-sm font-bold">场景八 · 21:00 卧室</p>
+          <h2 class="text-3xl font-black mt-1">晚间复盘 · 今日健康总结</h2>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs px-2 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">🎯 全天总结</span>
+          <button onclick="goPage(3)" class="text-dark-400 hover:text-white text-sm flex items-center gap-1">← 总览</button>
+        </div>
+      </div>
+
+      <div class="flex gap-6">
+        <div class="flex-shrink-0">
+          <div class="device-frame" id="review-device">
+            <div class="device-screen p-5 flex flex-col" style="background: linear-gradient(180deg, #0f172a, #1e293b); overflow-y: auto;">
+              <div id="review-state-0" class="flex-1 flex flex-col justify-center items-center cursor-pointer" onclick="startReview()">
+                <span class="text-4xl mb-3">🌙</span>
+                <p class="text-purple-300 text-sm font-medium">点击查看今日健康复盘</p>
+              </div>
+              <div id="review-state-1" class="flex-1 flex-col gap-3 overflow-y-auto" style="display:none">
+                <div class="voice-bubble voice-bubble-ai text-xs" id="rv-b1" style="display:none">
+                  <span class="text-success-300">🤖</span> 张爷爷，今天辛苦啦！来看看今天的健康成绩单～
+                </div>
+                <div id="rv-b2" style="display:none" class="mt-2 glass-card p-3">
+                  <p class="text-xs font-bold text-accent-300 mb-2">📋 今日目标完成情况</p>
+                  <div class="space-y-2" id="review-goals">
+                    <div class="flex items-center gap-2 text-xs">
+                      <span class="w-5 h-5 rounded-full bg-success-500 flex items-center justify-center text-white" style="font-size:10px">✓</span>
+                      <span class="text-dark-200 flex-1">按时服药（苯磺酸氨氯地平）</span>
+                      <span class="text-success-400 text-xs">+10分</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                      <span class="w-5 h-5 rounded-full bg-success-500 flex items-center justify-center text-white" style="font-size:10px">✓</span>
+                      <span class="text-dark-200 flex-1">测量血压</span>
+                      <span class="text-success-400 text-xs">+10分</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                      <span class="w-5 h-5 rounded-full bg-success-500 flex items-center justify-center text-white" style="font-size:10px">✓</span>
+                      <span class="text-dark-200 flex-1">八段锦跟练 15分钟</span>
+                      <span class="text-success-400 text-xs">+15分</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                      <span class="w-5 h-5 rounded-full bg-success-500 flex items-center justify-center text-white" style="font-size:10px">✓</span>
+                      <span class="text-dark-200 flex-1">健脑答题 3 道</span>
+                      <span class="text-success-400 text-xs">+10分</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                      <span class="w-5 h-5 rounded-full bg-dark-600 flex items-center justify-center text-dark-400" style="font-size:10px">○</span>
+                      <span class="text-dark-400 flex-1">步行 3000 步</span>
+                      <span class="text-dark-500 text-xs">未完成</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                      <span class="w-5 h-5 rounded-full bg-dark-600 flex items-center justify-center text-dark-400" style="font-size:10px">○</span>
+                      <span class="text-dark-400 flex-1">晚餐少盐（＜5g）</span>
+                      <span class="text-dark-500 text-xs">未记录</span>
+                    </div>
+                  </div>
+                  <div class="mt-3 pt-2 border-t border-dark-700">
+                    <div class="flex items-center justify-between mb-1">
+                      <span class="text-xs text-dark-400">今日得分</span>
+                      <span class="text-sm font-black text-success-300">45 / 60 分</span>
+                    </div>
+                    <div class="w-full h-2 rounded bg-dark-700 overflow-hidden">
+                      <div class="h-full rounded" style="width:75%;background:linear-gradient(90deg,#10b981,#34d399);transition:width 1s ease"></div>
+                    </div>
+                    <p class="text-xs text-success-400 mt-1">👏 超过 78% 的同龄用户，继续保持！</p>
+                  </div>
+                </div>
+                <div id="rv-b3" style="display:none" class="mt-2 glass-card p-3">
+                  <p class="text-xs font-bold text-primary-300 mb-2">📱 已同步家人</p>
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center text-xs">女儿</div>
+                    <div class="flex-1">
+                      <p class="text-xs text-dark-200">小丽已收到今日健康报告</p>
+                      <p class="text-xs text-dark-500 mt-0.5">"爸，今天表现不错！步数明天补上～"</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="voice-bubble voice-bubble-ai text-xs mt-2" id="rv-b4" style="display:none">
+                  <span class="text-success-300">🤖</span> 明天的目标已根据今天表现自动调整，早点休息，晚安张爷爷～🌙
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-1 flex flex-col gap-4">
+          <div class="glass-card p-5">
+            <h4 class="font-bold mb-3">交互流程</h4>
+            <button onclick="startReview()" class="w-full bg-purple-600 hover:bg-purple-500 py-3 rounded-xl font-bold transition-all hover:scale-102 mb-3">
+              📊 查看今日复盘
+            </button>
+            <div class="space-y-2 text-sm text-dark-400" id="review-steps">
+              <div class="flex items-center gap-2" id="rvs-1"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">1</span>自动汇总全天健康数据</div>
+              <div class="flex items-center gap-2" id="rvs-2"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">2</span>计算健康得分 + 同龄对比</div>
+              <div class="flex items-center gap-2" id="rvs-3"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">3</span>推送家人端 + 互动留言</div>
+              <div class="flex items-center gap-2" id="rvs-4"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">4</span>自动生成明日目标建议</div>
+            </div>
+          </div>
+          <div class="glass-card p-5">
+            <h4 class="font-bold mb-2 text-sm">商业价值</h4>
+            <div class="text-dark-400 text-xs space-y-1">
+              <p>• 每日复盘 → 形成"打卡"心智，次日留存核心抓手</p>
+              <p>• 家人同步 → 子女端活跃，促进续费/增购决策</p>
+              <p>• 健康积分 → 连接会员体系、保险权益</p>
+              <p>• 目标自适应 → AI动态调难度，持续驱动活跃</p>
+            </div>
+          </div>
+          <button onclick="goPage(3)" class="text-sm text-dark-400 hover:text-primary-400 transition-all self-end flex items-center gap-1">↺ 回到总览</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Video Overlay Modal -->
+  <div id="video-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:9999; background:rgba(0,0,0,0.85); display:none; align-items:center; justify-content:center;" onclick="closeBaduanjin(event)">
+    <div style="width:720px; max-width:90vw; background:#0f172a; border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,0.1);">
+      <div style="padding:16px 20px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.06);">
+        <div>
+          <p style="font-weight:bold; font-size:16px;">🧘 八段锦跟练 · 第五式 摇头摆尾去心火</p>
+          <p style="color:#94a3b8; font-size:12px; margin-top:4px;">国家体育总局推广版 · 适合膝关节养护 · 722万次播放</p>
+        </div>
+        <span style="cursor:pointer; color:#94a3b8; font-size:28px;" onclick="closeBaduanjin(event)">✕</span>
+      </div>
+      <div id="video-container" style="width:100%; aspect-ratio:16/9;">
+        <!-- iframe inserted dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== P10: 原子能力总览 ===== -->
+  <div class="page flex-col items-center" id="p12" style="padding-top:60px;justify-content:flex-start;">
+
+    <!-- 标题区 -->
+    <div class="text-center mb-8">
+      <p class="text-primary-400 text-xs font-bold tracking-widest mb-2" style="letter-spacing:4px;">ATOMIC CAPABILITIES</p>
+      <h2 class="text-4xl font-black leading-tight">百度健康 <span class="gradient-text">原子能力</span> 总览</h2>
+      <p class="text-dark-400 text-sm mt-3">丰富的健康服务能力，为 Health Agent 提供强大的 Tool 支撑</p>
+    </div>
+
+    <!-- 主体：左-中-右 三栏 -->
+    <div style="display:flex;align-items:stretch;gap:24px;max-width:1100px;width:100%;">
+
+      <!-- 左栏：AI 能力（12项，双列网格） -->
+      <div style="flex:1;display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+          <div style="width:8px;height:8px;border-radius:50%;background:#3b82f6;box-shadow:0 0 8px rgba(59,130,246,0.6);"></div>
+          <span class="text-xs font-bold text-primary-400" style="letter-spacing:2px;">AI 能力</span>
+          <span style="font-size:12px;color:#64748b;margin-left:auto;">12 项</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div onclick="showCapModal('ai_consult')" style="background:linear-gradient(135deg,rgba(59,130,246,0.28),rgba(16,185,129,0.12));border:1px solid rgba(59,130,246,0.25);border-radius:12px;padding:16px;transition:all 0.3s;cursor:pointer;" onmouseenter="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(59,130,246,0.15)'" onmouseleave="this.style.transform='';this.style.boxShadow=''">
+            <p class="font-bold text-white text-sm">AI 问诊</p>
+            <p class="text-dark-500" style="font-size:12px;">多轮对话 · 智能分诊</p>
+          </div>
+          <div onclick="showCapModal('doctor_ai')" style="background:linear-gradient(135deg,rgba(59,130,246,0.28),rgba(16,185,129,0.12));border:1px solid rgba(59,130,246,0.25);border-radius:12px;padding:16px;transition:all 0.3s;cursor:pointer;" onmouseenter="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(59,130,246,0.15)'" onmouseleave="this.style.transform='';this.style.boxShadow=''">
+            <p class="font-bold text-white text-sm">医生 AI 助理</p>
+            <p class="text-dark-500" style="font-size:12px;">辅助诊断 · 效率提升</p>
+          </div>
+          <div onclick="showCapModal('report')" style="background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.15);border-radius:12px;padding:16px;transition:all 0.3s;cursor:pointer;" onmouseenter="this.style.transform='translateY(-2px)';this.style.borderColor='rgba(59,130,246,0.3)'" onmouseleave="this.style.transform='';this.style.borderColor='rgba(59,130,246,0.12)'">
+            <p class="font-bold text-white text-sm">报告单解读</p>
+            <p class="text-dark-500" style="font-size:12px;">OCR 识别 · 指标分析</p>
+          </div>
+          <div onclick="showCapModal('skin')" style="background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.15);border-radius:12px;padding:16px;transition:all 0.3s;cursor:pointer;" onmouseenter="this.style.transform='translateY(-2px)';this.style.borderColor='rgba(59,130,246,0.3)'" onmouseleave="this.style.transform='';this.style.borderColor='rgba(59,130,246,0.12)'">
+            <p class="font-bold text-white text-sm">皮肤病识别</p>
+            <p class="text-dark-500" style="font-size:12px;">拍照即诊 · AI 判读</p>
+          </div>
+          <div onclick="showCapModal('tongue')" style="background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.15);border-radius:12px;padding:16px;transition:all 0.3s;cursor:pointer;" onmouseenter="this.style.transform='translateY(-2px)';this.style.borderColor='rgba(59,130,246,0.3)'" onmouseleave="this.style.transform='';this.style.borderColor='rgba(59,130,246,0.12)'">
+            <p class="font-bold text-white text-sm">中医舌诊</p>
+            <p class="text-dark-500" style="font-size:12px;">舌象分析 · 体质辨识</p>
+          </div>
+          <div onclick="showCapModal('drugbox')" style="background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.15);border-radius:12px;padding:16px;transition:all 0.3s;cursor:pointer;" onmouseenter="this.style.transform='translateY(-2px)';this.style.borderColor='rgba(59,130,246,0.3)'" onmouseleave="this.style.transform='';this.style.borderColor='rgba(59,130,246,0.12)'">
+            <p class="font-bold text-white text-sm">拍药盒</p>
+            <p class="text-dark-500" style="font-size:12px;">识别药品 · 用药指导</p>
+          </div>
+          <div onclick="showCapModal('food')" style="background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.15);border-radius:12px;padding:16px;transition:all 0.3s;cursor:pointer;" onmouseenter="this.style.transform='translateY(-2px)';this.style.borderColor='rgba(59,130,246,0.3)'" onmouseleave="this.style.transform='';this.style.borderColor='rgba(59,130,246,0.12)'">
+            <p class="font-bold text-white text-sm">拍饮食解读</p>
+            <p class="text-dark-500" style="font-size:12px;">食物识别 · 营养分析</p>
+          </div>
+          <div onclick="showCapModal('medication')" style="background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.15);border-radius:12px;padding:16px;transition:all 0.3s;cursor:pointer;" onmouseenter="this.style.transform='translateY(-2px)';this.style.borderColor='rgba(59,130,246,0.3)'" onmouseleave="this.style.transform='';this.style.borderColor='rgba(59,130,246,0.12)'">
+            <p class="font-bold text-white text-sm">用药管理</p>
+            <p class="text-dark-500" style="font-size:12px;">处方管理 · 用药提醒</p>
+          </div>
+          <div onclick="showCapModal('health_file')" style="background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.15);border-radius:12px;padding:16px;transition:all 0.3s;cursor:pointer;" onmouseenter="this.style.transform='translateY(-2px)';this.style.borderColor='rgba(59,130,246,0.3)'" onmouseleave="this.style.transform='';this.style.borderColor='rgba(59,130,246,0.12)'">
+            <p class="font-bold text-white text-sm">健康档案管理</p>
+            <p class="text-dark-500" style="font-size:12px;">数据沉淀 · 长期追踪</p>
+          </div>
+          <div onclick="showCapModal('risk')" style="background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.15);border-radius:12px;padding:16px;transition:all 0.3s;cursor:pointer;" onmouseenter="this.style.transform='translateY(-2px)';this.style.borderColor='rgba(59,130,246,0.3)'" onmouseleave="this.style.transform='';this.style.borderColor='rgba(59,130,246,0.12)'">
+            <p class="font-bold text-white text-sm">疾病风险自测</p>
+            <p class="text-dark-500" style="font-size:12px;">量表评估 · 风险预警</p>
+          </div>
+          <div onclick="showCapModal('calc')" style="background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.15);border-radius:12px;padding:16px;transition:all 0.3s;cursor:pointer;" onmouseenter="this.style.transform='translateY(-2px)';this.style.borderColor='rgba(59,130,246,0.3)'" onmouseleave="this.style.transform='';this.style.borderColor='rgba(59,130,246,0.12)'">
+            <p class="font-bold text-white text-sm">健康数值计算</p>
+            <p class="text-dark-500" style="font-size:12px;">BMI · 卡路里 · 指标换算</p>
+          </div>
+          <div onclick="showCapModal('tcm_master')" style="background:linear-gradient(135deg,rgba(59,130,246,0.28),rgba(245,158,11,0.08));border:1px solid rgba(59,130,246,0.25);border-radius:12px;padding:16px;transition:all 0.3s;cursor:pointer;" onmouseenter="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(59,130,246,0.15)'" onmouseleave="this.style.transform='';this.style.boxShadow=''">
+            <p class="font-bold text-white text-sm">国医大师</p>
+            <p class="text-dark-500" style="font-size:12px;">名医经验 · AI 传承</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 中栏：中心 Hub -->
+      <div style="width:140px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;">
+        <div style="flex:1;width:1px;border-left:2px dashed rgba(59,130,246,0.15);"></div>
+        <div style="width:120px;height:120px;border-radius:50%;background:linear-gradient(135deg,#1e40af,#0891b2);display:flex;align-items:center;justify-content:center;box-shadow:0 0 50px rgba(59,130,246,0.25),0 0 100px rgba(59,130,246,0.12);position:relative;z-index:2;">
+          <div style="width:102px;height:102px;border-radius:50%;border:2px solid rgba(255,255,255,0.1);display:flex;flex-direction:column;align-items:center;justify-content:center;">
+            <p class="font-black text-sm leading-tight">百度健康</p>
+            <p style="font-size:12px;margin-top:2px;color:rgba(147,197,253,0.9);">Health Agent</p>
+            <div style="width:24px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent);margin-top:4px;"></div>
+            <p style="font-size:12px;margin-top:3px;color:rgba(255,255,255,0.45);">12+10 Tools</p>
+          </div>
+        </div>
+        <div style="position:absolute;top:50%;left:0;width:16px;height:1px;background:linear-gradient(90deg,transparent,rgba(59,130,246,0.4));"></div>
+        <div style="position:absolute;top:50%;right:0;width:16px;height:1px;background:linear-gradient(270deg,transparent,rgba(16,185,129,0.4));"></div>
+        <div style="flex:1;width:1px;border-left:2px dashed rgba(16,185,129,0.15);"></div>
+      </div>
+
+      <!-- 右栏：服务 & 内容（10项，双列网格） -->
+      <div style="flex:1;display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+          <div style="width:8px;height:8px;border-radius:50%;background:#10b981;box-shadow:0 0 8px rgba(16,185,129,0.6);"></div>
+          <span class="text-xs font-bold text-success-400" style="letter-spacing:2px;">服务 & 内容</span>
+          <span style="font-size:12px;color:#64748b;margin-left:auto;">10 项</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div onclick="showCapModal('online_consult')" style="background:linear-gradient(135deg,rgba(16,185,129,0.28),rgba(59,130,246,0.12));border:1px solid rgba(16,185,129,0.25);border-radius:12px;padding:16px;transition:all 0.3s;cursor:pointer;" onmouseenter="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(16,185,129,0.15)'" onmouseleave="this.style.transform='';this.style.boxShadow=''">
+            <p class="font-bold text-white text-sm">在线问诊服务</p>
+            <p class="text-dark-500" style="font-size:12px;">真人医生 · 图文问诊</p>
+          </div>
+          <div onclick="showCapModal('appointment')" style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.15);border-radius:12px;padding:16px;transition:all 0.3s;cursor:pointer;" onmouseenter="this.style.transform='translateY(-2px)';this.style.borderColor='rgba(16,185,129,0.3)'" onmouseleave="this.style.transform='';this.style.borderColor='rgba(16,185,129,0.12)'">
+            <p class="font-bold text-white text-sm">挂号</p>
+            <p class="text-dark-500" style="font-size:12px;">预约挂号 · 智能排期</p>
+          </div>
+          <div onclick="showCapModal('pharmacy')" style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.15);border-radius:12px;padding:16px;transition:all 0.3s;cursor:pointer;" onmouseenter="this.style.transform='translateY(-2px)';this.style.borderColor='rgba(16,185,129,0.3)'" onmouseleave="this.style.transform='';this.style.borderColor='rgba(16,185,129,0.12)'">
+            <p class="font-bold text-white text-sm">购药</p>
+            <p class="text-dark-500" style="font-size:12px;">在线药房 · 快速配送</p>
+          </div>
+          <div onclick="showCapModal('find_doctor')" style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.15);border-radius:12px;padding:16px;transition:all 0.3s;cursor:pointer;" onmouseenter="this.style.transform='translateY(-2px)';this.style.borderColor='rgba(16,185,129,0.3)'" onmouseleave="this.style.transform='';this.style.borderColor='rgba(16,185,129,0.12)'">
+            <p class="font-bold text-white text-sm">找医生</p>
+            <p class="text-dark-500" style="font-size:12px;">专科匹配 · 医生主页</p>
+          </div>
+          <div onclick="showCapModal('find_hospital')" style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.15);border-radius:12px;padding:16px;transition:all 0.3s;cursor:pointer;" onmouseenter="this.style.transform='translateY(-2px)';this.style.borderColor='rgba(16,185,129,0.3)'" onmouseleave="this.style.transform='';this.style.borderColor='rgba(16,185,129,0.12)'">
+            <p class="font-bold text-white text-sm">找医院</p>
+            <p class="text-dark-500" style="font-size:12px;">智能推荐 · 距离排序</p>
+          </div>
+          <div onclick="showCapModal('encyclopedia')" style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.15);border-radius:12px;padding:16px;transition:all 0.3s;cursor:pointer;" onmouseenter="this.style.transform='translateY(-2px)';this.style.borderColor='rgba(16,185,129,0.3)'" onmouseleave="this.style.transform='';this.style.borderColor='rgba(16,185,129,0.12)'">
+            <p class="font-bold text-white text-sm">健康医典</p>
+            <p class="text-dark-500" style="font-size:12px;">权威百科 · 疾病词条</p>
+          </div>
+          <div onclick="showCapModal('star_talk')" style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.15);border-radius:12px;padding:16px;transition:all 0.3s;cursor:pointer;" onmouseenter="this.style.transform='translateY(-2px)';this.style.borderColor='rgba(16,185,129,0.3)'" onmouseleave="this.style.transform='';this.style.borderColor='rgba(16,185,129,0.12)'">
+            <p class="font-bold text-white text-sm">星讲 IP</p>
+            <p class="text-dark-500" style="font-size:12px;">专家讲堂 · 精品内容</p>
+          </div>
+          <div onclick="showCapModal('expert_talk')" style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.15);border-radius:12px;padding:16px;transition:all 0.3s;cursor:pointer;" onmouseenter="this.style.transform='translateY(-2px)';this.style.borderColor='rgba(16,185,129,0.3)'" onmouseleave="this.style.transform='';this.style.borderColor='rgba(16,185,129,0.12)'">
+            <p class="font-bold text-white text-sm">医典大家说 IP</p>
+            <p class="text-dark-500" style="font-size:12px;">权威医生 · 深度科普</p>
+          </div>
+          <div onclick="showCapModal('live')" style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.15);border-radius:12px;padding:16px;transition:all 0.3s;cursor:pointer;" onmouseenter="this.style.transform='translateY(-2px)';this.style.borderColor='rgba(16,185,129,0.3)'" onmouseleave="this.style.transform='';this.style.borderColor='rgba(16,185,129,0.12)'">
+            <p class="font-bold text-white text-sm">医生直播</p>
+            <p class="text-dark-500" style="font-size:12px;">实时互动 · 专家答疑</p>
+          </div>
+          <div onclick="showCapModal('baijia')" style="background:linear-gradient(135deg,rgba(16,185,129,0.28),rgba(245,158,11,0.08));border:1px solid rgba(16,185,129,0.25);border-radius:12px;padding:16px;transition:all 0.3s;cursor:pointer;" onmouseenter="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(16,185,129,0.15)'" onmouseleave="this.style.transform='';this.style.boxShadow=''">
+            <p class="font-bold text-white text-sm">百家号内容</p>
+            <p class="text-dark-500" style="font-size:12px;">海量资讯 · 内容生态</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 能力详情弹窗 -->
+    <div id="capability-modal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:rgba(0,0,0,0.75);backdrop-filter:blur(12px);overflow-y:auto;" onclick="if(event.target===this)closeCapModal()">
+      <div style="max-width:800px;margin:40px auto;background:linear-gradient(135deg,#0f172a,#1e293b);border:1px solid rgba(255,255,255,0.08);border-radius:20px;overflow:hidden;animation:modalIn 0.3s ease-out;">
+        <!-- 顶部色带 -->
+        <div id="cm-header" style="padding:28px 32px 20px;position:relative;">
+          <button onclick="closeCapModal()" style="position:absolute;top:16px;right:20px;background:rgba(255,255,255,0.08);border:none;color:#94a3b8;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;" onmouseenter="this.style.background='rgba(255,255,255,0.15)';this.style.color='#fff'" onmouseleave="this.style.background='rgba(255,255,255,0.08)';this.style.color='#94a3b8'">✕</button>
+          <span id="cm-tag" style="font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600;letter-spacing:1px;"></span>
+          <h3 id="cm-title" style="font-size:24px;font-weight:900;color:#fff;margin-top:10px;"></h3>
+          <p id="cm-subtitle" style="font-size:13px;color:#94a3b8;margin-top:6px;"></p>
+        </div>
+        <!-- 核心数据 -->
+        <div id="cm-stats" style="display:flex;gap:12px;padding:0 32px 20px;flex-wrap:wrap;"></div>
+        <!-- 分隔线 -->
+        <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent);margin:0 32px;"></div>
+        <!-- 详细描述 -->
+        <div style="padding:20px 32px;">
+          <h4 style="font-size:14px;font-weight:700;color:#e2e8f0;margin-bottom:10px;">能力介绍</h4>
+          <div id="cm-desc" style="font-size:13px;color:#94a3b8;line-height:1.8;"></div>
+        </div>
+        <!-- 产品截图 -->
+        <div id="cm-images-wrap" style="padding:0 32px 20px;display:none;">
+          <h4 style="font-size:14px;font-weight:700;color:#e2e8f0;margin-bottom:12px;">产品截图</h4>
+          <div id="cm-images" style="display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;-webkit-overflow-scrolling:touch;"></div>
+        </div>
+        <!-- 亮点特性 -->
+        <div id="cm-features-wrap" style="padding:0 32px 24px;">
+          <h4 style="font-size:14px;font-weight:700;color:#e2e8f0;margin-bottom:10px;">核心亮点</h4>
+          <div id="cm-features" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>
+        </div>
+      </div>
+    </div>
+    <style>
+      @keyframes modalIn{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+      #capability-modal::-webkit-scrollbar{width:6px}
+      #capability-modal::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px}
+      #cm-images::-webkit-scrollbar{height:4px}
+      #cm-images::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px}
+    </style>
+  </div>
+
+  <!-- ===== JavaScript ===== -->
+  <script>
+    // ===== P9 Capability Modal =====
+    const IMG = k => 'https://rte.weiyun.baidu.com/wiki/attach/image/api/imageDownloadAddress?attachId='+k+'&docGuid=';
+    const D1='LTxlBlqojDh24M', D2='Lnkk8gPy-KGkGN', D3='eUG6K-PlW5rSfU', D4='-eLnt5O2PgVH8q', D5='lJGx397F-5EDtF';
+    const I = (aid,did) => IMG(aid)+did;
+    const capData = {
+      ai_consult: {
+        tag:'AI 能力', tagColor:'#3b82f6', title:'AI 问诊',
+        subtitle:'行业首创"AI+真人"双保障模式，让 AI 有医靠',
+        stats:['日均服务 8000万+次','幻觉率低至 3.2%','用户点赞率 90%+','7x24 小时响应'],
+        desc:'基于百度文心灵医大模型 4.0，整合 4000+ 临床指南、3亿+ 病历数据，提供基于询证医学的多轮沟通问诊。AI 生成健康建议后由真人医生在线背书确认，分钟级极速响应。支持图文+语音多模态交互，覆盖多科室的专业问诊场景。',
+        features:['多轮对话 · 智能分诊','真人医生实时审核背书','基于询证医学出具分析小结','图文+语音多模态交互'],
+        images:[I('4a834831453c44efa0471e987d346471',D2),I('6a294f287b77403ba798698406b8c3e1',D2)]
+      },
+      doctor_ai: {
+        tag:'AI 能力', tagColor:'#3b82f6', title:'医生 AI 助理',
+        subtitle:'"1个AI健康管家 + N个AI专科医生"模式，24小时全能家庭医生',
+        stats:['覆盖多科室 ~7000人','病例收集+科普患教','挂号精筛+报告解读','诊后随访能力'],
+        desc:'覆盖多科室的多位权威医生 AI 助理约 7000 人，支持病例收集、科普患教、健康建议、挂号精筛、报告单解读、诊后随访等功能。AI 健康管家有温度、专业化、懂用户，自动整合健康档案，提供诊疗服务、多模解读、健康计算及分析。',
+        features:['多科室权威医生 AI 助理','健康档案自动整合分类','主动随访独家能力','诊疗+解读+健康计算'],
+        images:[I('7cd6a397fcfb471d834167ab8535802b',D1),I('c9a9cc8c752d456b98631f3d95b3ffc5',D1)]
+      },
+      report: {
+        tag:'AI 能力', tagColor:'#3b82f6', title:'报告单解读',
+        subtitle:'多医学单据覆盖，高准确识别+通俗化解读+稳定输出',
+        stats:['累计解读 1000万+次','准确率 98%+','覆盖全品类报告','关键指标可视化'],
+        desc:'支持检查/检验/超声/核磁/体检报告、处方、病历、出入院记录等多种医学单据。高准确 OCR 识别配合通俗化解读，结合用户主诉和病史，提供就医及康养相关健康建议。关键指标可视化追踪，行动建议清晰可执行。',
+        features:['检查/检验/超声/核磁全覆盖','结合主诉病史综合分析','通俗化解读+行动建议','关键指标可视化追踪'],
+        images:[I('7ef296d02c0a429596f1203be41f80ac',D1),I('577faf59298c4447992a195f05466e00',D1)]
+      },
+      skin: {
+        tag:'AI 能力', tagColor:'#3b82f6', title:'皮肤病识别',
+        subtitle:'AI 模型识别、衔接真人服务、健康管理一体化',
+        stats:['覆盖 127 种皮肤病','累计使用 5000万+次','识别一致率 95%+','支持多图识别'],
+        desc:'覆盖湿疹、皮炎、色斑等百种皮肤疾病，高准确率 AI 识别。支持多图识别和图+文识别模式，拍照即可获得初步诊断。识别后可衔接真人医生问诊服务，形成从识别到诊疗的完整闭环。',
+        features:['127种皮肤疾病覆盖','多图+图文混合识别','衔接真人医生服务','识别到诊疗完整闭环'],
+        images:[I('74b767c175cb40558013d34b8ee0e922',D1),I('0d208e3ce9cb4dfc93f97086f2eecb96',D1)]
+      },
+      tongue: {
+        tag:'AI 能力', tagColor:'#3b82f6', title:'中医舌诊',
+        subtitle:'多模图像识别技术结合百度健康权威中医内容',
+        stats:['精准体质辨识','权威中医内容','个性化解读方案','AI 图像识别'],
+        desc:'通过多模图像识别技术，结合百度健康权威中医内容，精准辨识中医体质及健康状态，提供相应的解读方案。用户只需拍摄舌头照片，即可获得专业的舌象分析和体质辨识结果。',
+        features:['多模图像识别技术','精准中医体质辨识','权威中医内容支撑','个性化调理方案'],
+        images:[I('88450392bf0e4f2c8e26b6a22447ec49',D1),I('dfe00cf9f67f4220966c4f42796788ce',D1)]
+      },
+      drugbox: {
+        tag:'AI 能力', tagColor:'#3b82f6', title:'拍药盒',
+        subtitle:'严格基于药品说明书证据给出信息，覆盖万种药品',
+        stats:['覆盖万种药品','基于说明书证据','高识别准确率','用药指导'],
+        desc:'高识别准确率，严格基于药品说明书证据给出信息，覆盖万种药品。用户拍摄药品包装即可获取详细的药品信息、用法用量、注意事项和相互作用提醒，实现智能化用药指导。',
+        features:['药品包装智能识别','说明书全信息解析','用法用量精准指导','药物相互作用提醒'],
+        images:[I('68198e8431f44880962eba2fb9618282',D2),I('294fba6a4f0d494e9191fed78aa0ef31',D2)]
+      },
+      food: {
+        tag:'AI 能力', tagColor:'#3b82f6', title:'拍饮食解读',
+        subtitle:'高效准确、全面丰富的食物识别与营养分析',
+        stats:['全品类食物识别','结构化营养信息','饮食禁忌提醒','特殊人群建议'],
+        desc:'准确识别解读各类食材、菜品、食物外包装、配料表图片。提供结构化营养信息、热量、成分、饮食禁忌以及全面的用餐建议，针对特殊人群（如糖尿病、高血压患者）给到专业的营养学及医学建议。',
+        features:['食材/菜品/包装全识别','热量+成分结构化展示','饮食禁忌智能提醒','特殊人群专业建议'],
+        images:[I('e400229944cf491ca0134af36b856186',D3),I('68a10c273c1e438ba35bf6bc4e00fb05',D3),I('414de7f2086e416ba5653640b55a8d8e',D3)]
+      },
+      medication: {
+        tag:'AI 能力', tagColor:'#3b82f6', title:'用药管理',
+        subtitle:'依托 OCR 自动识别药盒，AI 生成个性化用药计划',
+        stats:['OCR 自动识别','个性化用药计划','准时提醒服务','防漏服误服'],
+        desc:'依托 OCR 自动识别药盒信息、解析医患对话，并结合个人健康档案，智能提炼关键用药指南。AI 基于识别结果自动生成个性化用药计划，提供准时提醒服务，有效防止漏服、误服。',
+        features:['OCR 药盒信息识别','医患对话智能解析','个性化用药计划生成','准时用药提醒服务'],
+        images:[I('c66dc9fc31ad42709b7773048b685129',D1),I('9378ac15128d4471960a6a594c2b7456',D1),I('6c5baa7e9dce4460a8d0a1d0d4ca7e12',D1)]
+      },
+      health_file: {
+        tag:'AI 能力', tagColor:'#3b82f6', title:'健康档案管理',
+        subtitle:'一键拍照上传，AI 自动识别整理，精细化长效管理',
+        stats:['一键拍照归档','AI 自动分类','指标可视化追踪','全生命周期管理'],
+        desc:'一键拍照上传，AI 自动识别整理，便捷管理全生命周期的就医资料。关键指标可视化追踪，趋势变化一目了然。提供可执行的健康建议和清晰的行动导航，实现精细化长效健康管理。',
+        features:['一键拍照自动归档','全品类报告 AI 分类','关键指标趋势追踪','可执行健康行动建议'],
+        images:[I('cfeb807098f34299bf92d0a35008b3fd',D1),I('368ca87abf4044a78ee352097faf43c9',D1),I('946f3b9c329e4948b85351cf62d74005',D1)]
+      },
+      risk: {
+        tag:'AI 能力', tagColor:'#3b82f6', title:'疾病风险自测',
+        subtitle:'超 600 种疾病专业医学量表覆盖，平均 2 分钟可自测',
+        stats:['600+ 种疾病量表','平均 2 分钟自测','权威三甲医生背书','免费无限次测试'],
+        desc:'超 600 种疾病专业医学量表覆盖，供用户自测疾病风险、了解健康状况。平均 2 分钟可完成自测，量表均由权威三甲医生背书。免费无限次测试，帮助用户早发现、早干预。',
+        features:['600+ 专业医学量表','2 分钟快速自测','三甲医生权威背书','免费无限次使用'],
+        images:[I('903a76644be5474eb0b7b4d6934b0682',D1),I('0fb561b00e284e59ab52ab28d956f7b1',D1)]
+      },
+      calc: {
+        tag:'AI 能力', tagColor:'#3b82f6', title:'健康数值计算',
+        subtitle:'BMI / 经期 / 排卵期计算，提供个性化建议',
+        stats:['BMI 计算','经期/排卵期','卡路里计算','指标换算'],
+        desc:'提供 BMI、经期、排卵期等多种健康数值计算工具，基于计算结果提供个性化的健康建议。涵盖体重管理、女性健康、营养摄入等多个维度，帮助用户科学管理个人健康。',
+        features:['BMI 智能计算','经期排卵期预测','卡路里摄入分析','个性化健康建议'],
+        images:[I('b08050ffc1fe4f35a7d663243f86ec13',D2),I('c2e5a338d5594053ac3d6a98a31ec749',D1),I('fd88a4f88c374986a251a5c403ca2448',D1)]
+      },
+      tcm_master: {
+        tag:'AI 能力', tagColor:'#f59e0b', title:'国医大师',
+        subtitle:'百度与固生堂深度合作共建，降低用户获取中医服务门槛',
+        stats:['多轮动态问诊','科普患教','个性化健康建议','中药/食疗/运动调理'],
+        desc:'百度和固生堂深度合作共建的中医诊疗 Agent，降低了用户获取中医服务的门槛，同时提升了医疗机构的运营效率。支持多轮动态问诊、科普患教、健康建议、调理养生（涵盖中药、食疗、情志调理、运动等建议）。',
+        features:['多轮动态中医问诊','科普患教通俗讲解','个性化调理养生方案','中药+食疗+情志+运动'],
+        images:[I('2d304cd065f148c4809be9bf61c95f9b',D5),I('8fa5e0856ecb4ee9a0fddbc4343b3bf5',D5),I('63b8c46f46194e8f9b3e359798f7de79',D5)]
+      },
+      online_consult: {
+        tag:'服务', tagColor:'#10b981', title:'在线问诊服务',
+        subtitle:'超 10 万医生，5 万三甲副主任+级别，多种沟通方式',
+        stats:['10万+在线医生','5万三甲副主任+','图文/电话多方式','极速低价'],
+        desc:'超 10 万医生在线服务，5 万三甲副主任+级别医生。涵盖非定向匹配、定向选择、图文/电话多种沟通方式，更极速、更低价。7x24 小时在线，用户点赞率 90%+。',
+        features:['非定向匹配+定向选择','图文/电话多种沟通','极速响应低价服务','7x24 小时在线'],
+        images:[I('05a8c7e9247b4939bcf9d32178347760',D3),I('7261db1f9c6e450aa864e507e6c78e5c',D3),I('94261223e7b9425386a844a5a77a1f43',D3)]
+      },
+      appointment: {
+        tag:'服务', tagColor:'#10b981', title:'挂号',
+        subtitle:'覆盖近 5 万专家稀缺号源',
+        stats:['5万专家号源','稀缺号源覆盖','智能排期匹配','全科室覆盖'],
+        desc:'覆盖近 5 万专家稀缺号源，智能排期匹配最合适的就诊时间。支持全科室挂号预约，帮助用户便捷获取优质医疗资源。',
+        features:['专家稀缺号源','智能就诊排期','全科室覆盖','便捷预约流程'],
+        images:[I('567f29ec65b04c31a9b129978d7eec21',D3),I('4f97df3acbe745b89a25aacdb864c703',D3)]
+      },
+      pharmacy: {
+        tag:'服务', tagColor:'#10b981', title:'购药',
+        subtitle:'常见药品覆盖 95% 以上，含药品、器械、保健品等',
+        stats:['药品覆盖 95%+','O2O 即时配送','B2C 药品服务','器械+保健品'],
+        desc:'常见药品覆盖 95% 以上，含药品、器械、保健品、特医食品等。对接美团/饿了么 O2O、B2C 药品服务，实现线上下单、快速配送。',
+        features:['95%+ 常见药品覆盖','O2O 即时配送到家','B2C 品类全覆盖','器械保健品一站购'],
+        images:[I('0d7a5e652d9d4f84b1b063a4809f071b',D3),I('9893aad14747410984b4a773f18cc737',D3),I('74f724a7f51e46ffbcf1050224ab81f2',D3)]
+      },
+      find_doctor: {
+        tag:'服务', tagColor:'#10b981', title:'找医生',
+        subtitle:'收录全网超 100 万位医生信息，超 30 万医生入驻提供服务',
+        stats:['100万+医生收录','30万+入驻服务','匹配准确率 98%+','精准分科策略'],
+        desc:'收录全网超 100 万位医生信息，超 30 万医生入驻并提供健康医疗服务。基于全面精准的分科策略、丰富的医生擅长、患者评价与患者个性化信息进行匹配，匹配准确率 > 98%。',
+        features:['全网医生信息收录','精准医患匹配 98%+','丰富擅长+患者评价','专科疾病多维筛选'],
+        images:[I('f64afe2ab1aa4a77b99849490a7d3b3d',D3),I('7772bff084c44891a3d17dbca885e1c5',D3)]
+      },
+      find_hospital: {
+        tag:'服务', tagColor:'#10b981', title:'找医院',
+        subtitle:'收录全网 1 万+家医院，二级以上公立医院覆盖率 90%+',
+        stats:['1万+医院收录','90%+ 公立医院','智能距离排序','全面决策信息'],
+        desc:'收录全网 1 万+家医院，全国二级以上公立医院覆盖率 90%+。提供全面精准的医院决策信息支持，支持按距离、科室实力等智能排序。',
+        features:['全网万家医院收录','二级以上 90%+ 覆盖','智能距离排序','科室实力对比'],
+        images:[I('0a67f1de9437490b902c5d49a4e0e696',D3),I('e2d93b9aa89945baa1122652c1d3ca0c',D3)]
+      },
+      encyclopedia: {
+        tag:'内容', tagColor:'#10b981', title:'健康医典',
+        subtitle:'权威医学科普知识库，累计 6 亿条专业健康内容',
+        stats:['6亿条专业内容','医生审核把关','疾病百科覆盖','搜索直接展示'],
+        desc:'权威医学科普知识库，累计 6 亿条专业健康内容，覆盖疾病百科、药品说明、检查检验指导。所有内容经专业医生审核，在百度搜索健康词条时直接展示，为用户提供权威可信的健康知识。',
+        features:['6亿条权威健康内容','疾病+药品+检验覆盖','专业医生审核','搜索场景直接展示'],
+        images:[I('a57656e788ed4ad59e49a4926dcfbbd6',D4)]
+      },
+      star_talk: {
+        tag:'内容 IP', tagColor:'#10b981', title:'星讲 IP',
+        subtitle:'深度医学访谈 IP，面向顶级三甲医院专家',
+        stats:['已完成 10 期','累计播放 367万+','单期最高 33万','切片最高 52.5万'],
+        desc:'深度医学访谈 IP，面向顶级三甲医院专家，采用六段式深度访谈形式。内容覆盖疾病诊断、治疗决策、患者故事等核心场景。已完成 10 期，累计播放 367 万+。',
+        features:['顶级三甲专家访谈','六段式深度访谈','疾病诊断+治疗决策','核心场景全覆盖'],
+        images:[]
+      },
+      expert_talk: {
+        tag:'内容 IP', tagColor:'#10b981', title:'医典大家说 IP',
+        subtitle:'知名主持人与健康领域院士及顶尖专家深度访谈',
+        stats:['累计播放 203万+','曝光 9300万+','院士级专家','头部 IP 栏目'],
+        desc:'医典头部 IP 栏目，以知名主持人作为嘉宾或发起人，与健康领域院士及该领域顶尖专家开展深度访谈。从权威和高维的属性角度为节目 IP 初期心智奠定重量级基础，打透大部头专家和塑造医典在学科深度上的探究呈现。',
+        features:['知名主持人+院士对话','学科深度权威呈现','重量级基础心智建设','头部 IP 影响力'],
+        images:[]
+      },
+      live: {
+        tag:'服务', tagColor:'#10b981', title:'医生直播',
+        subtitle:'三甲专家在线直播互动，实时答疑',
+        stats:['三甲专家直播','实时弹幕互动','语音提问','直播后预约问诊'],
+        desc:'三甲医院专家在线健康直播，用户可实时观看并通过弹幕、语音等方式与医生互动提问。直播结束后可一键预约该医生的在线问诊服务，实现从科普到诊疗的转化闭环。',
+        features:['三甲专家在线直播','实时弹幕语音互动','一键预约医生问诊','科普到诊疗闭环'],
+        images:[]
+      },
+      baijia: {
+        tag:'内容', tagColor:'#f59e0b', title:'百家号内容（百看）',
+        subtitle:'健康搜索场景下的笔记/内容产品，构建专业权威内容生态',
+        stats:['10万+健康创作者','3万+认证医生','日供给 10万+篇','430+ 三甲医院合作'],
+        desc:'百度健康致力于构建全网领先的专业、权威、可信赖的医疗健康科普内容生态。平台汇聚 10 万+健康创作者，持证认证医生作者超 3 万人。3000+ 行业顶级权威专家深度合作，430+ 三甲医院及国家级科研机构合作。日供给 10 万+篇，视频、图文、动态、直播四大体裁全面覆盖。',
+        features:['10万+ 健康创作者','视频/图文/直播全覆盖','3000+ 顶级专家合作','多渠道精准触达'],
+        images:[I('c6940479671443838d8d2a09499b4e20',D4)]
+      }
+    };
+
+    function showCapModal(key) {
+      const d = capData[key];
+      if (!d) return;
+      const modal = document.getElementById('capability-modal');
+      const header = document.getElementById('cm-header');
+      const isBlue = d.tagColor === '#3b82f6';
+      const isAmber = d.tagColor === '#f59e0b';
+      let gradBg, tagBg;
+      if (isAmber) {
+        gradBg = 'linear-gradient(135deg,rgba(245,158,11,0.12),transparent 60%)';
+        tagBg = 'rgba(245,158,11,0.15)'; 
+      } else if (isBlue) {
+        gradBg = 'linear-gradient(135deg,rgba(59,130,246,0.12),transparent 60%)';
+        tagBg = 'rgba(59,130,246,0.15)';
+      } else {
+        gradBg = 'linear-gradient(135deg,rgba(16,185,129,0.12),transparent 60%)';
+        tagBg = 'rgba(16,185,129,0.15)';
+      }
+      header.style.background = gradBg;
+      const tag = document.getElementById('cm-tag');
+      tag.textContent = d.tag;
+      tag.style.background = tagBg;
+      tag.style.color = d.tagColor;
+      document.getElementById('cm-title').textContent = d.title;
+      document.getElementById('cm-subtitle').textContent = d.subtitle;
+      // Stats
+      const statsEl = document.getElementById('cm-stats');
+      statsEl.innerHTML = d.stats.map(s =>
+        '<div style="flex:1;min-width:140px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:12px 14px;text-align:center;"><p style="font-size:13px;font-weight:700;color:#e2e8f0;line-height:1.4;">'+s+'</p></div>'
+      ).join('');
+      // Description
+      document.getElementById('cm-desc').innerHTML = d.desc;
+      // Images
+      const imagesWrap = document.getElementById('cm-images-wrap');
+      const imagesEl = document.getElementById('cm-images');
+      if (d.images && d.images.length > 0) {
+        imagesEl.innerHTML = d.images.map(src =>
+          '<img src="'+src+'" style="height:360px;border-radius:12px;border:1px solid rgba(255,255,255,0.08);flex-shrink:0;object-fit:contain;background:#0a0f1a;" loading="lazy">'
+        ).join('');
+        imagesWrap.style.display = 'block';
+      } else {
+        imagesWrap.style.display = 'none';
+      }
+      // Features
+      const featEl = document.getElementById('cm-features');
+      featEl.innerHTML = d.features.map(f =>
+        '<div style="display:flex;align-items:flex-start;gap:8px;background:rgba(255,255,255,0.03);border-radius:8px;padding:10px 12px;"><span style="color:'+d.tagColor+';font-size:14px;line-height:1;flex-shrink:0;margin-top:1px;">&#10003;</span><span style="font-size:12px;color:#cbd5e1;">'+f+'</span></div>'
+      ).join('');
+      modal.style.display = 'block';
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeCapModal() {
+      document.getElementById('capability-modal').style.display = 'none';
+      document.body.style.overflow = '';
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeCapModal();
+    });
+
+    // ===== Navigation =====
+    let currentPage = 0;
+    let audioAllowed = false;
+
+    function allowAudio() {
+      audioAllowed = true;
+      document.getElementById('audio-consent').style.display = 'none';
+      // Pre-warm audio context
+      const audio = document.getElementById('piano-audio');
+      audio.volume = 0.35;
+      audio.play().then(() => { audio.pause(); audio.currentTime = 0; }).catch(()=>{});
+    }
+    function denyAudio() {
+      audioAllowed = false;
+      document.getElementById('audio-consent').style.display = 'none';
+    }
+    const pageLabels = ['开场','Agent 架构','调度实例','场景总览','晨起养生','用药提醒','AI问诊','健脑答题','健康直播','饮食识别','紧急求助','晚间复盘','原子能力'];
+
+    function goPage(idx) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active','page-enter'));
+      const target = document.getElementById('p'+idx);
+      if(!target) return;
+      target.classList.add('active','page-enter');
+      currentPage = idx;
+      document.querySelectorAll('.nav-dot').forEach((d,i) => {
+        d.classList.toggle('active', i===idx);
+      });
+      document.getElementById('page-label').textContent = pageLabels[idx] || '';
+      // Stop piano when leaving morning scene
+      if(idx !== 4) { const a = document.getElementById('piano-audio'); if(!a.paused){ let v=a.volume; const fade=setInterval(()=>{v-=0.05;if(v<=0){clearInterval(fade);a.pause();a.currentTime=0;a.volume=0.35;}else{a.volume=v;}},80); } }
+      // Trigger page-specific animations
+      if(idx === 7) resetQuiz();
+    }
+
+    document.addEventListener('keydown', e => {
+      if(e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); if(currentPage < 12) goPage(currentPage+1); }
+      if(e.key === 'ArrowLeft') { if(currentPage > 0) goPage(currentPage-1); }
+    });
+
+
+    // ===== P2: Morning Wellness =====
+    function startMorning() {
+      document.getElementById('morning-state-0').style.display = 'none';
+      document.getElementById('morning-state-1').style.display = 'flex';
+      const bubbles = ['m-bubble-1','m-bubble-2','m-bubble-3','m-bubble-4','m-bubble-5','m-bubble-6'];
+      const steps = ['ms-1','ms-2','ms-3','ms-4','ms-5'];
+      bubbles.forEach((id,i) => {
+        setTimeout(() => {
+          document.getElementById(id).style.display = 'block';
+          document.getElementById(id).style.animation = 'bubbleIn 0.4s ease-out';
+          if(id === 'm-bubble-3' && audioAllowed) {
+            const audio = document.getElementById('piano-audio');
+            audio.volume = 0.35;
+            audio.play().catch(()=>{});
+          }
+          if(steps[i]) {
+            document.getElementById(steps[i]).querySelector('span').style.background = '#3b82f6';
+            document.getElementById(steps[i]).style.color = '#e2e8f0';
+          }
+          // Auto scroll
+          document.getElementById('morning-state-1').scrollTop = document.getElementById('morning-state-1').scrollHeight;
+        }, i * 2500);
+      });
+    }
+
+    // ===== P3: Medication =====
+    function startMed() {
+      document.getElementById('med-state-0').style.display = 'none';
+      document.getElementById('med-state-1').style.display = 'flex';
+      const items = ['med-b1','med-b2','med-b3','med-b4','med-b5','med-b6'];
+      const steps = ['meds-1','meds-2','meds-3','meds-4',null,null];
+      items.forEach((id,i) => {
+        setTimeout(() => {
+          document.getElementById(id).style.display = 'block';
+          document.getElementById(id).style.animation = 'bubbleIn 0.4s ease-out';
+          if(steps[i]) {
+            document.getElementById(steps[i]).querySelector('span').style.background = '#f59e0b';
+            document.getElementById(steps[i]).style.color = '#e2e8f0';
+          }
+          // Auto scroll
+          document.getElementById('med-state-1').parentElement.scrollTop = document.getElementById('med-state-1').parentElement.scrollHeight;
+        }, i * 1000);
+      });
+    }
+
+    // ===== P4: AI Consultation =====
+    function startConsult() {
+      document.getElementById('consult-state-0').style.display = 'none';
+      document.getElementById('consult-state-1').style.display = 'flex';
+      const items = ['c-b1','c-b2','c-b3','c-b4','c-b5','c-b6'];
+      const steps = ['cs-1','cs-2','cs-3','cs-4'];
+      items.forEach((id,i) => {
+        setTimeout(() => {
+          document.getElementById(id).style.display = 'block';
+          document.getElementById(id).style.animation = 'bubbleIn 0.4s ease-out';
+          if(i < steps.length) {
+            document.getElementById(steps[i]).querySelector('span').style.background = '#10b981';
+            document.getElementById(steps[i]).style.color = '#e2e8f0';
+          }
+          // Auto-scroll the device screen
+          document.getElementById('consult-state-1').scrollTop = document.getElementById('consult-state-1').scrollHeight;
+        }, i * 1200);
+      });
+    }
+
+    function showBaduanjin() {
+      const modal = document.getElementById('video-modal');
+      const container = document.getElementById('video-container');
+      container.innerHTML = '<iframe src="https://player.bilibili.com/player.html?bvid=BV1VsDpYXEqD&autoplay=1&t=195&high_quality=1" width="100%" height="100%" frameborder="0" allowfullscreen allow="autoplay" style="display:block;"></iframe>';
+      modal.style.display = 'flex';
+    }
+
+    function closeBaduanjin(e) {
+      if(e.target === document.getElementById('video-modal') || e.target.textContent === '✕') {
+        document.getElementById('video-modal').style.display = 'none';
+        document.getElementById('video-container').innerHTML = '';
+      }
+    }
+
+    // ===== P5: Quiz =====
+    const quizData = [
+      { q: '长期吃芹菜可以完全替代降压药吗？', opts: ['可以，芹菜天然降压','不可以，必须遵医嘱'], correct: 1, exp: '❌ 辟谣：芹菜含芹菜素有轻微辅助作用，但绝不能替代降压药。擅自停药可能导致血压骤升，引发脑卒中等严重后果。' },
+      { q: '老年人每天喝8杯水才健康？', opts: ['是的，必须8杯','不一定，因人而异'], correct: 1, exp: '✅ 科普：老年人肾功能减退，盲目大量饮水可能加重心肾负担。应根据体重、活动量、季节灵活调整，少量多次为宜。' },
+      { q: '饭后立即散步有助于消化？', opts: ['对，饭后百步走','不对，应休息30分钟'], correct: 1, exp: '❌ 辟谣：饭后立即运动会导致血液从消化系统分流到四肢，反而影响消化。建议饭后休息20-30分钟再进行轻度活动。' }
+    ];
+    let quizIdx = 0, quizScore = 0;
+
+    function startQuiz() {
+      quizIdx = 0; quizScore = 0;
+      document.getElementById('quiz-result').style.display = 'none';
+      showQuestion();
+    }
+    function resetQuiz() { startQuiz(); }
+
+    function showQuestion() {
+      if(quizIdx >= quizData.length) { showQuizResult(); return; }
+      const q = quizData[quizIdx];
+      document.getElementById('quiz-progress-text').textContent = `第 ${quizIdx+1}/${quizData.length} 题`;
+      document.getElementById('quiz-progress-bar').style.width = ((quizIdx+1)/quizData.length*100)+'%';
+      document.getElementById('quiz-score').textContent = quizScore + '分';
+      document.getElementById('quiz-question').textContent = q.q;
+      document.getElementById('quiz-feedback').style.display = 'none';
+      const optDiv = document.getElementById('quiz-options');
+      optDiv.innerHTML = '';
+      q.opts.forEach((opt, i) => {
+        const btn = document.createElement('div');
+        btn.className = 'quiz-option text-xs';
+        btn.textContent = (i===0?'A. ':'B. ') + opt;
+        btn.onclick = () => answerQuiz(i);
+        optDiv.appendChild(btn);
+      });
+    }
+
+    function answerQuiz(idx) {
+      const q = quizData[quizIdx];
+      const opts = document.querySelectorAll('#quiz-options .quiz-option');
+      opts.forEach((o,i) => {
+        o.onclick = null;
+        if(i === q.correct) o.classList.add('correct');
+        if(i === idx && i !== q.correct) o.classList.add('wrong');
+      });
+      if(idx === q.correct) {
+        quizScore += 100;
+      }
+      document.getElementById('quiz-score').textContent = quizScore + '分';
+      // Show feedback
+      const fb = document.getElementById('quiz-feedback');
+      fb.style.display = 'block';
+      fb.innerHTML = `<p class="${idx===q.correct?'text-success-300':'text-danger-300'} font-bold mb-1">${idx===q.correct?'✅ 回答正确！':'❌ 回答错误'}</p><p class="text-dark-300">${q.exp}</p>`;
+      setTimeout(() => { quizIdx++; showQuestion(); }, 3000);
+    }
+
+    function showQuizResult() {
+      document.getElementById('quiz-question').textContent = '';
+      document.getElementById('quiz-options').innerHTML = '';
+      document.getElementById('quiz-feedback').style.display = 'none';
+      document.getElementById('quiz-result').style.display = 'flex';
+      document.getElementById('quiz-final-score').textContent = quizScore + ' 分';
+      document.getElementById('quiz-rank-score').textContent = (980+quizScore) + '分（第4名）';
+    }
+
+    // ===== P6: Live Stream =====
+    let danmakuInterval;
+    const danmakuMsgs = ['李医生讲得真好👍','我也是膝盖不好','记住了，谢谢医生','转发给老伴看看','积分+10 🎉','有没有颈椎的建议？'];
+    let danmakuIdx = 0;
+
+    function startLive() {
+      document.getElementById('live-state-0').style.display = 'none';
+      document.getElementById('live-state-1').style.display = 'flex';
+      danmakuIdx = 0;
+      danmakuInterval = setInterval(() => {
+        addDanmaku(danmakuMsgs[danmakuIdx % danmakuMsgs.length]);
+        danmakuIdx++;
+        if(danmakuIdx >= 8) clearInterval(danmakuInterval);
+      }, 1500);
+    }
+
+    function addDanmaku(text) {
+      const area = document.getElementById('danmaku-area');
+      const d = document.createElement('div');
+      d.className = 'text-xs py-1 px-2 rounded-full inline-block';
+      d.style.cssText = 'background:rgba(0,0,0,0.5);animation:slideUp 0.3s ease-out;max-width:200px';
+      d.textContent = text;
+      area.appendChild(d);
+      if(area.children.length > 4) area.removeChild(area.firstChild);
+    }
+
+    function sendDanmaku() { addDanmaku('张爷爷：膝盖保养要注意什么？'); }
+    function askDoctor() {
+      addDanmaku('🎤 张爷爷正在语音提问...');
+      setTimeout(() => addDanmaku('李医生：好问题！膝盖保养最重要是...'), 2000);
+    }
+    function likeLive() {
+      const heart = document.getElementById('live-heart');
+      heart.textContent = '❤️';
+      heart.style.animation = 'heartbeat 0.3s ease';
+      setTimeout(() => heart.style.animation = '', 300);
+    }
+
+    // ===== 饮食识别 Agent =====
+    function startDiet() {
+      document.getElementById('diet-state-0').style.display = 'none';
+      document.getElementById('diet-state-1').style.display = 'flex';
+      const bubbles = ['diet-bubble-1','diet-bubble-2','diet-bubble-3','diet-bubble-4','diet-bubble-5'];
+      const steps = ['ds-1','ds-2','ds-3','ds-4'];
+      bubbles.forEach((id,i) => {
+        setTimeout(() => {
+          document.getElementById(id).style.display = 'block';
+          document.getElementById(id).style.animation = 'bubbleIn 0.4s ease-out';
+          if(steps[i]) {
+            document.getElementById(steps[i]).querySelector('span').style.background = '#f97316';
+            document.getElementById(steps[i]).style.color = '#e2e8f0';
+          }
+          document.getElementById('diet-state-1').scrollTop = document.getElementById('diet-state-1').scrollHeight;
+        }, i * 1500);
+      });
+    }
+
+    // ===== P7: SOS =====
+    let sosTriggered = false;
+    function triggerSOS() {
+      if(sosTriggered) return;
+      sosTriggered = true;
+      document.getElementById('sos-state-0').style.display = 'none';
+      document.getElementById('sos-state-1').style.display = 'block';
+      const steps = ['sos-step-1','sos-step-2','sos-step-3','sos-step-4'];
+      const sideSteps = ['sos-s1','sos-s2','sos-s3','sos-s4'];
+      steps.forEach((id,i) => {
+        setTimeout(() => {
+          document.getElementById(id).style.display = 'flex';
+          document.getElementById(id).style.animation = 'slideUp 0.4s ease-out';
+          document.getElementById(sideSteps[i]).querySelector('span').style.background = '#ef4444';
+          document.getElementById(sideSteps[i]).style.color = '#e2e8f0';
+        }, i * 1500);
+      });
+      // Reset after 8s
+      setTimeout(() => {
+        sosTriggered = false;
+        document.getElementById('sos-state-0').style.display = 'block';
+        document.getElementById('sos-state-1').style.display = 'none';
+        steps.forEach(id => document.getElementById(id).style.display = 'none');
+        sideSteps.forEach(id => {
+          document.getElementById(id).querySelector('span').style.background = '#334155';
+          document.getElementById(id).style.color = '#94a3b8';
+        });
+      }, 8000);
+    }
+    // ===== P8: Evening Review =====
+    function startReview() {
+      document.getElementById('review-state-0').style.display = 'none';
+      document.getElementById('review-state-1').style.display = 'flex';
+      const bubbles = ['rv-b1','rv-b2','rv-b3','rv-b4'];
+      const steps = ['rvs-1','rvs-2','rvs-3','rvs-4'];
+      bubbles.forEach((id,i) => {
+        setTimeout(() => {
+          document.getElementById(id).style.display = 'block';
+          document.getElementById(id).style.animation = 'bubbleIn 0.4s ease-out';
+          if(steps[i]) {
+            document.getElementById(steps[i]).querySelector('span').style.background = '#8b5cf6';
+            document.getElementById(steps[i]).style.color = '#e2e8f0';
+          }
+          document.getElementById('review-state-1').scrollTop = document.getElementById('review-state-1').scrollHeight;
+        }, i * 1500);
+      });
+    }
+  </script>
+  <audio id="piano-audio" src="https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3" preload="auto"></audio>
+  <!-- Audio Consent Modal -->
+  <div id="audio-consent" style="position:fixed; top:0; left:0; right:0; bottom:0; z-index:9999; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
+    <div style="background:#1e293b; border-radius:20px; padding:32px 40px; text-align:center; border:1px solid rgba(255,255,255,0.1); max-width:360px;">
+      <p style="font-size:32px; margin-bottom:12px;">🎵</p>
+      <p style="font-weight:bold; font-size:16px; margin-bottom:8px;">开启背景音乐</p>
+      <p style="color:#94a3b8; font-size:13px; margin-bottom:24px;">本演示包含舒缓背景音乐<br>是否允许播放音频？</p>
+      <div style="display:flex; gap:12px; justify-content:center;">
+        <button onclick="allowAudio()" style="background:linear-gradient(135deg,#3b82f6,#2563eb); color:white; border:none; padding:10px 24px; border-radius:10px; font-weight:bold; cursor:pointer; font-size:14px;">允许播放</button>
+        <button onclick="denyAudio()" style="background:#334155; color:#94a3b8; border:none; padding:10px 24px; border-radius:10px; cursor:pointer; font-size:14px;">暂不需要</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

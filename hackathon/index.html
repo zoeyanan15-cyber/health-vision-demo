@@ -1,0 +1,1523 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>银发健康管家 Agent — 百度健康 Hackathon</title>
+  <link href="https://cdn.bootcdn.net/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/animate.css/4.1.1/animate.min.css">
+  <style>
+    @import url('https://fonts.googleapis.cnpmjs.org/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Noto Sans SC', -apple-system, sans-serif; background: #0a0e1a; color: #e2e8f0; overflow: hidden; height: 100vh; }
+
+    /* Color System */
+    .text-primary-300{color:#93c5fd} .text-primary-400{color:#60a5fa} .text-primary-500{color:#3b82f6}
+    .bg-primary-500{background-color:#3b82f6} .bg-primary-600{background-color:#2563eb} .bg-primary-700{background-color:#1d4ed8}
+    .bg-primary-500\/10{background-color:rgba(59,130,246,0.1)} .bg-primary-500\/20{background-color:rgba(59,130,246,0.2)}
+    .border-primary-500\/30{border-color:rgba(59,130,246,0.3)}
+    .text-accent-300{color:#fcd34d} .text-accent-400{color:#fbbf24} .text-accent-500{color:#f59e0b}
+    .bg-accent-500{background-color:#f59e0b} .bg-accent-500\/10{background-color:rgba(245,158,11,0.1)}
+    .text-success-300{color:#6ee7b7} .text-success-400{color:#34d399} .text-success-500{color:#10b981}
+    .bg-success-500{background-color:#10b981} .bg-success-500\/10{background-color:rgba(16,185,129,0.1)} .bg-success-500\/20{background-color:rgba(16,185,129,0.2)}
+    .border-success-500\/30{border-color:rgba(16,185,129,0.3)}
+    .text-danger-300{color:#fca5a5} .text-danger-400{color:#f87171} .text-danger-500{color:#ef4444}
+    .bg-danger-500{background-color:#ef4444} .bg-danger-500\/10{background-color:rgba(239,68,68,0.1)} .bg-danger-500\/20{background-color:rgba(239,68,68,0.2)}
+    .border-danger-500\/30{border-color:rgba(239,68,68,0.3)}
+    .bg-dark-700{background-color:#334155} .bg-dark-800{background-color:#1e293b} .bg-dark-900{background-color:#0f172a}
+    .bg-dark-800\/50{background-color:rgba(30,41,59,0.5)} .bg-dark-800\/80{background-color:rgba(30,41,59,0.8)}
+    .border-dark-700{border-color:#334155}
+    .text-dark-300{color:#cbd5e1} .text-dark-400{color:#94a3b8} .text-dark-500{color:#64748b}
+
+    /* Pages */
+    .page { display: none; min-height: 100vh; padding: 30px 60px 80px; overflow-y: auto; box-sizing: border-box; }
+    .page.active { display: flex; }
+    .page > .max-w-5xl, .page > .max-w-4xl { margin: auto; flex-shrink: 0; }
+
+    /* 强制显示滚动条 */
+    #p2, #p3 { height: 100vh; max-height: 100vh; overflow-y: scroll; }
+    #p2::-webkit-scrollbar, #p3::-webkit-scrollbar { width: 6px; display: block; }
+    #p2::-webkit-scrollbar-track, #p3::-webkit-scrollbar-track { background: rgba(30,41,59,0.3); border-radius: 3px; }
+    #p2::-webkit-scrollbar-thumb, #p3::-webkit-scrollbar-thumb { background: rgba(100,116,139,0.5); border-radius: 3px; }
+    #p2::-webkit-scrollbar-thumb:hover, #p3::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.6); }
+    .page-enter { animation: pageEnter 0.6s cubic-bezier(0.2,0.8,0.2,1); }
+    @keyframes pageEnter { from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:translateX(0)} }
+
+    /* Gradient */
+    .gradient-text { background: linear-gradient(135deg, #60a5fa, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .gradient-text-fire { background: linear-gradient(135deg, #f59e0b, #ef4444); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+    /* Glass Card */
+    .glass-card {
+      background: rgba(30,41,59,0.5); border: 1px solid rgba(51,65,85,0.5);
+      border-radius: 16px; backdrop-filter: blur(12px);
+    }
+
+    /* Device Mockup */
+    .device-frame {
+      width: 480px; min-height: 320px; height: 100%; border-radius: 20px; overflow: hidden; position: relative;
+      background: #1a1a2e; border: 3px solid #2a2a4a;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05), inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+    .device-frame::before {
+      content: ''; position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+      width: 8px; height: 8px; background: #333; border-radius: 50%; z-index: 10;
+    }
+    .device-screen { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+    .flex-shrink-0:has(.device-frame) { align-self: stretch; }
+
+    /* Nav */
+    .nav-bar {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 8px; padding: 8px 16px; background: rgba(30,41,59,0.8);
+      border-radius: 20px; border: 1px solid rgba(51,65,85,0.5); z-index: 100;
+      backdrop-filter: blur(12px); align-items: center;
+    }
+    .nav-dot {
+      width: 8px; height: 8px; border-radius: 50%; background: #334155;
+      cursor: pointer; transition: all 0.3s;
+    }
+    .nav-dot.active { background: #3b82f6; width: 24px; border-radius: 4px; }
+
+    /* Voice Bubbles */
+    .voice-bubble {
+      background: rgba(30,41,59,0.8); border: 1px solid rgba(51,65,85,0.5);
+      border-radius: 12px; padding: 10px 14px; max-width: 90%;
+    }
+    .voice-bubble-ai {
+      background: rgba(16,185,129,0.08); border-color: rgba(16,185,129,0.2);
+    }
+    @keyframes bubbleIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+    /* Wave bars */
+    .wave-bar {
+      width: 3px; border-radius: 2px; background: #3b82f6;
+      animation: wave 1s ease-in-out infinite alternate;
+    }
+    @keyframes wave { from{height:4px} to{height:20px} }
+
+    /* Agent flow */
+    .agent-node {
+      padding: 12px 16px; border-radius: 12px; text-align: center; position: relative;
+      transition: all 0.3s;
+    }
+    .agent-node.active { box-shadow: 0 0 20px rgba(59,130,246,0.3); }
+    .agent-arrow { color: #334155; font-size: 20px; display: flex; align-items: center; }
+    .agent-arrow.active { color: #3b82f6; }
+
+    @keyframes flowPulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
+    .flow-active { animation: flowPulse 1.5s ease-in-out infinite; }
+
+    /* SOS */
+    .sos-btn {
+      width: 120px; height: 120px; border-radius: 50%;
+      background: radial-gradient(circle, #ef4444, #b91c1c);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; box-shadow: 0 0 40px rgba(239,68,68,0.4);
+      animation: sosPulse 2s ease-in-out infinite;
+    }
+    @keyframes sosPulse { 0%,100%{box-shadow:0 0 20px rgba(239,68,68,0.3)} 50%{box-shadow:0 0 50px rgba(239,68,68,0.6)} }
+
+    /* Quiz */
+    .quiz-option {
+      padding: 10px 14px; border-radius: 10px; cursor: pointer;
+      background: rgba(30,41,59,0.5); border: 1px solid rgba(51,65,85,0.5);
+      transition: all 0.2s;
+    }
+    .quiz-option:hover { border-color: rgba(59,130,246,0.5); background: rgba(59,130,246,0.1); }
+    .quiz-option.correct { border-color: #10b981; background: rgba(16,185,129,0.15); }
+    .quiz-option.wrong { border-color: #ef4444; background: rgba(239,68,68,0.15); }
+
+    .progress-bar { height: 6px; border-radius: 3px; background: #1e293b; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #3b82f6, #60a5fa); transition: width 0.5s; }
+
+    /* Typing animation */
+    @keyframes typing { from{width:0} to{width:100%} }
+    .typing-text { overflow:hidden; white-space:nowrap; animation: typing 1.5s steps(30) forwards; }
+
+    /* Architecture diagram */
+    .arch-layer {
+      border: 1px solid rgba(51,65,85,0.5); border-radius: 12px;
+      padding: 16px; background: rgba(30,41,59,0.3);
+      transition: all 0.3s;
+    }
+    .arch-layer:hover { border-color: rgba(59,130,246,0.3); background: rgba(30,41,59,0.5); }
+
+    @keyframes slideUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes heartbeat { 0%{transform:scale(1)} 50%{transform:scale(1.3)} 100%{transform:scale(1)} }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <div class="nav-bar">
+    <span id="page-label" class="text-xs text-dark-400 mr-4 hidden sm:block">封面</span>
+    <div class="nav-dot active" onclick="goPage(0)"></div>
+    <div class="nav-dot" onclick="goPage(1)"></div>
+    <div class="nav-dot" onclick="goPage(2)"></div>
+    <div class="nav-dot" onclick="goPage(3)"></div>
+    <div class="nav-dot" onclick="goPage(4)"></div>
+    <div class="nav-dot" onclick="goPage(5)"></div>
+    <div class="nav-dot" onclick="goPage(6)"></div>
+    <div class="nav-dot" onclick="goPage(7)"></div>
+    <div class="nav-dot" onclick="goPage(8)"></div>
+    <div class="nav-dot" onclick="goPage(9)"></div>
+    <div class="nav-dot" onclick="goPage(10)"></div>
+    <div class="nav-dot" onclick="goPage(11)"></div>
+  </div>
+
+  <!-- ===== P0: 封面 ===== -->
+  <div class="page active flex-col items-center justify-center" id="p0">
+    <div class="max-w-3xl mx-auto text-center">
+      <div class="inline-block px-4 py-1.5 rounded-full text-xs font-bold mb-4 animate__animated animate__fadeInDown" style="background:linear-gradient(135deg,rgba(59,130,246,0.2),rgba(16,185,129,0.2));border:1px solid rgba(59,130,246,0.3);">
+        百度健康 Hackathon 2026 · Agentic AI
+      </div>
+      <h1 class="text-5xl font-black leading-tight mb-4 animate__animated animate__fadeInUp">
+        银发健康管家<br><span class="gradient-text">Agentic AI</span>
+      </h1>
+      <p class="text-dark-300 text-lg mb-3 max-w-xl mx-auto">基于多智能体协作的主动式家庭健康管理系统</p>
+      <p class="text-dark-500 text-sm mb-8 max-w-lg mx-auto">让 AI Agent 成为银发群体的 24 小时私人健康管家<br>从「被动应答」进化为「主动关怀」</p>
+
+      <div class="flex justify-center gap-10 mb-8">
+        <div class="text-center">
+          <p class="text-2xl font-black text-primary-400">Multi-Agent</p>
+          <p class="text-dark-400 text-xs mt-1">多智能体协作架构</p>
+        </div>
+        <div class="text-center">
+          <p class="text-2xl font-black text-success-400">Proactive</p>
+          <p class="text-dark-400 text-xs mt-1">主动感知 → 主动干预</p>
+        </div>
+        <div class="text-center">
+          <p class="text-2xl font-black text-accent-400">Closed-Loop</p>
+          <p class="text-dark-400 text-xs mt-1">目标驱动 · 全天闭环</p>
+        </div>
+      </div>
+      <button onclick="goPage(1)" class="bg-primary-600 hover:bg-primary-500 px-8 py-3 rounded-xl font-bold transition-all hover:scale-105 text-lg">
+        开始演示 →
+      </button>
+      <p class="text-dark-500 text-xs mt-4">按右方向键或点击下方导航翻页</p>
+    </div>
+  </div>
+
+  <!-- ===== P1: 痛点与机会 ===== -->
+  <div class="page flex-col" id="p1">
+    <div class="max-w-5xl mx-auto w-full">
+      <div class="text-center mb-10">
+        <p class="text-primary-400 text-sm font-bold tracking-wider mb-3">WHY — 为什么做这件事</p>
+        <h2 class="text-4xl font-black mb-3">银发健康管理的<span class="gradient-text-fire">三大断裂</span></h2>
+        <p class="text-dark-400">2.8 亿老年人，日均健康管理 ≈ 0</p>
+      </div>
+
+      <div class="grid grid-cols-3 gap-6 mb-10">
+        <div class="glass-card p-6">
+          <span class="text-3xl mb-3 block">📱</span>
+          <h4 class="font-bold text-danger-300 mb-2">触达断裂</h4>
+          <p class="text-dark-400 text-sm">手机 App 对银发群体打开率 ＜5%，推送通知被忽略，健康提醒形同虚设</p>
+          <div class="mt-4 p-3 rounded-lg" style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.15)">
+            <p class="text-xs text-danger-300">现状：子女下载 → 老人不会用 → 卸载</p>
+          </div>
+        </div>
+        <div class="glass-card p-6">
+          <span class="text-3xl mb-3 block">🤖</span>
+          <h4 class="font-bold text-accent-300 mb-2">交互断裂</h4>
+          <p class="text-dark-400 text-sm">传统 AI 助手只能"你问我答"，无法主动发起关怀，更不会根据健康状态调整策略</p>
+          <div class="mt-4 p-3 rounded-lg" style="background:rgba(245,158,11,0.05);border:1px solid rgba(245,158,11,0.15)">
+            <p class="text-xs text-accent-300">现状：问天气可以 → 主动提醒吃药不行</p>
+          </div>
+        </div>
+        <div class="glass-card p-6">
+          <span class="text-3xl mb-3 block">🔗</span>
+          <h4 class="font-bold text-primary-300 mb-2">闭环断裂</h4>
+          <p class="text-dark-400 text-sm">碎片化服务散落各处：挂号一个 App、买药一个 App、测血压靠纸笔记录，数据不互通</p>
+          <div class="mt-4 p-3 rounded-lg" style="background:rgba(59,130,246,0.05);border:1px solid rgba(59,130,246,0.15)">
+            <p class="text-xs text-primary-300">现状：测了血压 → 没人看 → 没有干预</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-card p-5 text-center" style="border-color:rgba(16,185,129,0.3)">
+        <p class="text-success-400 font-bold mb-2">我们的解法：Agentic AI Health Manager</p>
+        <p class="text-dark-300 text-sm">用 <b class="text-white">Multi-Agent 架构</b> + <b class="text-white">小度智能屏</b> + <b class="text-white">百度健康医疗能力</b>，构建一个<b class="text-success-300">主动式、全天候、闭环</b>的银发健康管家</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== P2: Agent 架构 ===== -->
+  <div class="page flex-col" id="p2">
+    <div class="max-w-5xl mx-auto w-full">
+      <div class="text-center mb-8">
+        <p class="text-primary-400 text-sm font-bold tracking-wider mb-3">HOW — 技术架构</p>
+        <h2 class="text-4xl font-black mb-3">Multi-Agent <span class="gradient-text">协作架构</span></h2>
+        <p class="text-dark-400">一个 Orchestrator + 七个专业 Agent + 统一记忆层</p>
+      </div>
+
+      <!-- Architecture Diagram -->
+      <div class="space-y-4">
+        <!-- Orchestrator Layer -->
+        <div class="arch-layer text-center" style="border-color:rgba(59,130,246,0.4);background:rgba(59,130,246,0.05)">
+          <p class="text-primary-400 font-bold text-sm mb-2">🧠 Health Orchestrator Agent（调度中枢）</p>
+          <p class="text-dark-400 text-xs">感知用户状态 → 判断意图/时机 → 调度专业 Agent → 闭环反馈</p>
+          <div class="flex justify-center gap-3 mt-3">
+            <span class="text-xs px-2 py-1 rounded-full bg-primary-500/20 text-primary-300">时间感知</span>
+            <span class="text-xs px-2 py-1 rounded-full bg-primary-500/20 text-primary-300">健康画像</span>
+            <span class="text-xs px-2 py-1 rounded-full bg-primary-500/20 text-primary-300">目标引擎</span>
+            <span class="text-xs px-2 py-1 rounded-full bg-primary-500/20 text-primary-300">紧急判断</span>
+          </div>
+        </div>
+
+        <div class="text-center text-dark-500 text-lg">↓ 调度 ↓</div>
+
+        <!-- Specialist Agents -->
+        <div class="grid grid-cols-3 gap-4">
+          <div class="arch-layer" id="arch-morning" style="border-color:rgba(59,130,246,0.2)">
+            <p class="text-primary-300 font-bold text-sm">🌅 晨起养生 Agent</p>
+            <p class="text-dark-500 text-xs mt-1">天气 API + 节气知识图谱 + 五行养生 Prompt</p>
+            <div class="flex flex-wrap gap-1 mt-2">
+              <span class="text-xs px-1.5 py-0.5 rounded bg-dark-700 text-dark-400">Tool: 天气API</span>
+              <span class="text-xs px-1.5 py-0.5 rounded bg-dark-700 text-dark-400">Tool: 节气库</span>
+            </div>
+          </div>
+          <div class="arch-layer" id="arch-med" style="border-color:rgba(245,158,11,0.2)">
+            <p class="text-accent-300 font-bold text-sm">💊 用药管理 Agent</p>
+            <p class="text-dark-500 text-xs mt-1">处方数据 + 服药时间窗 + 子女同步通道</p>
+            <div class="flex flex-wrap gap-1 mt-2">
+              <span class="text-xs px-1.5 py-0.5 rounded bg-dark-700 text-dark-400">Tool: 处方DB</span>
+              <span class="text-xs px-1.5 py-0.5 rounded bg-dark-700 text-dark-400">Tool: 推送</span>
+            </div>
+          </div>
+          <div class="arch-layer" id="arch-consult" style="border-color:rgba(16,185,129,0.2)">
+            <p class="text-success-300 font-bold text-sm">🏥 AI 问诊 Agent</p>
+            <p class="text-dark-500 text-xs mt-1">多轮对话 + 症状知识图谱 + 医生匹配</p>
+            <div class="flex flex-wrap gap-1 mt-2">
+              <span class="text-xs px-1.5 py-0.5 rounded bg-dark-700 text-dark-400">Tool: 辅诊API</span>
+              <span class="text-xs px-1.5 py-0.5 rounded bg-dark-700 text-dark-400">Tool: 医典</span>
+            </div>
+          </div>
+          <div class="arch-layer" id="arch-quiz" style="border-color:rgba(139,92,246,0.2)">
+            <p class="text-purple-300 font-bold text-sm">🧠 健脑互动 Agent</p>
+            <p class="text-dark-500 text-xs mt-1">辟谣知识库 + 难度自适应 + 积分激励</p>
+            <div class="flex flex-wrap gap-1 mt-2">
+              <span class="text-xs px-1.5 py-0.5 rounded bg-dark-700 text-dark-400">Tool: 辟谣库</span>
+              <span class="text-xs px-1.5 py-0.5 rounded bg-dark-700 text-dark-400">Skill: 出题</span>
+            </div>
+          </div>
+          <div class="arch-layer" id="arch-diet" style="border-color:rgba(249,115,22,0.2)">
+            <p class="font-bold text-sm" style="color:#fb923c">🍽️ 饮食识别 Agent</p>
+            <p class="text-dark-500 text-xs mt-1">饮食偏好记忆 + 营养/GI数据库 + 慢病饮食规则 + 备餐前干预</p>
+            <div class="flex flex-wrap gap-1 mt-2">
+              <span class="text-xs px-1.5 py-0.5 rounded bg-dark-700 text-dark-400">Tool: 营养库</span>
+              <span class="text-xs px-1.5 py-0.5 rounded bg-dark-700 text-dark-400">Memory: 饮食偏好</span>
+            </div>
+          </div>
+          <div class="arch-layer" id="arch-sos" style="border-color:rgba(239,68,68,0.2)">
+            <p class="text-danger-300 font-bold text-sm">🆘 紧急守护 Agent</p>
+            <p class="text-dark-500 text-xs mt-1">异常检测 + 定位 + 多通道联络 + 社区联动</p>
+            <div class="flex flex-wrap gap-1 mt-2">
+              <span class="text-xs px-1.5 py-0.5 rounded bg-dark-700 text-dark-400">Tool: GPS</span>
+              <span class="text-xs px-1.5 py-0.5 rounded bg-dark-700 text-dark-400">Tool: 通话</span>
+            </div>
+          </div>
+          <div class="arch-layer" id="arch-review" style="border-color:rgba(168,85,247,0.2)">
+            <p class="text-purple-400 font-bold text-sm">🌙 复盘总结 Agent</p>
+            <p class="text-dark-500 text-xs mt-1">全天数据汇总 + 评分模型 + 次日目标生成</p>
+            <div class="flex flex-wrap gap-1 mt-2">
+              <span class="text-xs px-1.5 py-0.5 rounded bg-dark-700 text-dark-400">Tool: 数据聚合</span>
+              <span class="text-xs px-1.5 py-0.5 rounded bg-dark-700 text-dark-400">Skill: 报告</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-center text-dark-500 text-lg">↓ 读写 ↓</div>
+
+        <!-- Memory Layer -->
+        <div class="arch-layer text-center" style="border-color:rgba(16,185,129,0.4);background:rgba(16,185,129,0.05)">
+          <p class="text-success-400 font-bold text-sm mb-2">💾 统一记忆层（User Health Memory）</p>
+          <div class="flex justify-center gap-4 text-xs text-dark-400">
+            <span>健康画像</span><span>·</span>
+            <span>用药记录</span><span>·</span>
+            <span>血压趋势</span><span>·</span>
+            <span>目标完成率</span><span>·</span>
+            <span>家人关系</span><span>·</span>
+            <span>偏好习惯</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== P3: Agent 调度流 ===== -->
+  <div class="page flex-col" id="p3" style="overflow-y:auto;-webkit-overflow-scrolling:touch;">
+    <div class="max-w-5xl mx-auto w-full" style="margin-top:0;margin-bottom:0;">
+      <div class="text-center mb-5">
+        <p class="text-primary-400 text-sm font-bold tracking-wider mb-2">WORKFLOW</p>
+        <h2 class="text-3xl font-black mb-2">Agent <span class="gradient-text">调度实例</span></h2>
+        <p class="text-dark-400 text-sm">以「张爷爷的一天」展示 Orchestrator 如何调度各 Agent</p>
+      </div>
+
+      <div class="glass-card p-4">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="text-lg">🎯</span>
+          <p class="font-bold text-sm">Orchestrator 今日调度计划（基于健康画像自动生成）</p>
+          <span class="ml-auto text-xs text-dark-500">张爷爷 · 72岁 · 高血压 · 膝关节退行性变</span>
+        </div>
+
+        <div class="space-y-2" id="orchestrator-timeline">
+          <div class="flex items-center gap-4 p-3 rounded-lg transition-all cursor-pointer hover:bg-dark-800/50" onclick="goPage(4)" id="orch-1">
+            <span class="text-primary-400 font-mono text-sm font-bold w-14">07:30</span>
+            <div class="w-2 h-2 rounded-full bg-primary-500"></div>
+            <div class="flex-1">
+              <p class="text-sm font-bold">调度 → <span class="text-primary-300">晨起养生 Agent</span></p>
+              <p class="text-dark-500 text-xs">触发条件：到达设定起床时间 | 输入：天气数据、节气、用户画像 | 输出：个性化晨间问候+养生建议+今日目标</p>
+            </div>
+            <span class="text-dark-500 text-xs">›</span>
+          </div>
+          <div class="flex items-center gap-4 p-3 rounded-lg transition-all cursor-pointer hover:bg-dark-800/50" onclick="goPage(5)" id="orch-2">
+            <span class="text-accent-400 font-mono text-sm font-bold w-14">08:30</span>
+            <div class="w-2 h-2 rounded-full bg-accent-500"></div>
+            <div class="flex-1">
+              <p class="text-sm font-bold">调度 → <span class="text-accent-300">用药管理 Agent</span></p>
+              <p class="text-dark-500 text-xs">触发条件：饭后30分钟（服药窗口）| 输入：处方信息、打卡历史 | 输出：语音提醒+打卡确认+血压引导+子女同步</p>
+            </div>
+            <span class="text-dark-500 text-xs">›</span>
+          </div>
+          <div class="flex items-center gap-4 p-3 rounded-lg transition-all cursor-pointer hover:bg-dark-800/50" onclick="goPage(6)" id="orch-3">
+            <span class="text-success-400 font-mono text-sm font-bold w-14">10:00</span>
+            <div class="w-2 h-2 rounded-full bg-success-500"></div>
+            <div class="flex-1">
+              <p class="text-sm font-bold">调度 → <span class="text-success-300">AI 问诊 Agent</span></p>
+              <p class="text-dark-500 text-xs">触发条件：用户主动询问身体不适 | 输入：症状描述、既往史、用药记录 | 输出：辅诊建议+运动处方+医生匹配</p>
+            </div>
+            <span class="text-dark-500 text-xs">›</span>
+          </div>
+          <div class="flex items-center gap-4 p-3 rounded-lg transition-all cursor-pointer hover:bg-dark-800/50" onclick="goPage(7)" id="orch-4">
+            <span class="text-purple-400 font-mono text-sm font-bold w-14">15:00</span>
+            <div class="w-2 h-2 rounded-full" style="background:#8b5cf6"></div>
+            <div class="flex-1">
+              <p class="text-sm font-bold">调度 → <span class="text-purple-300">健脑互动 Agent</span></p>
+              <p class="text-dark-500 text-xs">触发条件：检测到久坐1小时 | 输入：知识水平、历史答题、辟谣库 | 输出：个性化题目+科普+积分激励</p>
+            </div>
+            <span class="text-dark-500 text-xs">›</span>
+          </div>
+          <div class="flex items-center gap-4 p-3 rounded-lg transition-all cursor-pointer hover:bg-dark-800/50" onclick="goPage(8)" id="orch-5">
+            <span class="font-mono text-sm font-bold w-14" style="color:#fb923c">17:00</span>
+            <div class="w-2 h-2 rounded-full" style="background:#f59e0b"></div>
+            <div class="flex-1">
+              <p class="text-sm font-bold">调度 → <span style="color:#fb923c">饮食识别 Agent</span></p>
+              <p class="text-dark-500 text-xs">触发条件：接近晚餐备餐时间 + Memory 中饮食偏好 | 输入：常吃菜单+营养库+GI数据库+慢病画像 | 输出：备餐建议+食材替换方案</p>
+            </div>
+            <span class="text-dark-500 text-xs">›</span>
+          </div>
+          <div class="flex items-center gap-4 p-3 rounded-lg transition-all" id="orch-6" style="background:rgba(239,68,68,0.05)">
+            <span class="text-danger-400 font-mono text-sm font-bold w-14">24H</span>
+            <div class="w-2 h-2 rounded-full bg-danger-500 animate-pulse"></div>
+            <div class="flex-1">
+              <p class="text-sm font-bold">常驻 → <span class="text-danger-300">紧急守护 Agent</span></p>
+              <p class="text-dark-500 text-xs">触发条件：跌倒检测/异常静默/语音求助 | 输入：传感器数据、位置 | 输出：自动定位+呼叫家属+社区联动</p>
+            </div>
+            <span class="text-danger-400 text-xs font-bold">始终在线</span>
+          </div>
+          <div class="flex items-center gap-4 p-3 rounded-lg transition-all cursor-pointer hover:bg-dark-800/50" onclick="goPage(10)" id="orch-7">
+            <span class="text-purple-400 font-mono text-sm font-bold w-14">21:00</span>
+            <div class="w-2 h-2 rounded-full" style="background:#a78bfa"></div>
+            <div class="flex-1">
+              <p class="text-sm font-bold">调度 → <span class="text-purple-400">复盘总结 Agent</span></p>
+              <p class="text-dark-500 text-xs">触发条件：晚间自动 | 输入：全天行为数据、目标完成情况 | 输出：健康评分+对比报告+次日目标+家人推送</p>
+            </div>
+            <span class="text-dark-500 text-xs">›</span>
+          </div>
+        </div>
+
+        <div class="mt-3 pt-3 border-t border-dark-700 text-center">
+          <p class="text-dark-400 text-xs">点击任意场景查看 Agent 交互演示 ↑</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== P4: Demo - 晨起养生 Agent ===== -->
+  <div class="page flex-col" id="p4">
+    <div class="max-w-5xl mx-auto w-full">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <p class="text-primary-400 text-sm font-bold">Demo 1 · 晨起养生 Agent</p>
+          <h2 class="text-3xl font-black mt-1">主动唤醒 + 个性化养生</h2>
+        </div>
+        <button onclick="goPage(3)" class="text-dark-400 hover:text-white text-sm">← 调度流</button>
+      </div>
+
+      <div class="flex gap-6">
+        <div class="flex-shrink-0">
+          <div class="device-frame" id="morning-device">
+            <div class="device-screen p-5 flex flex-col" style="background: linear-gradient(180deg, #0f172a, #1e293b); overflow-y: auto;">
+              <div id="morning-state-0" class="flex-1 flex flex-col justify-center items-center cursor-pointer" onclick="startMorning()">
+                <div class="flex gap-1 mb-4">
+                  <div class="wave-bar" style="animation-delay:0s;height:12px"></div>
+                  <div class="wave-bar" style="animation-delay:0.2s;height:20px"></div>
+                  <div class="wave-bar" style="animation-delay:0.4s;height:16px"></div>
+                  <div class="wave-bar" style="animation-delay:0.6s;height:24px"></div>
+                  <div class="wave-bar" style="animation-delay:0.8s;height:12px"></div>
+                </div>
+                <p class="text-primary-300 text-sm font-medium">点击模拟 Agent 主动唤醒</p>
+              </div>
+              <div id="morning-state-1" class="flex-1 flex-col gap-3 overflow-y-auto" style="display:none">
+                <div class="voice-bubble voice-bubble-ai text-sm" id="m-b1" style="display:none">
+                  <span class="text-success-300">🤖 Agent：</span> 早上好张爷爷！小满时节气温升高，我给您放一段轻柔的音乐，顺便看看今天的天气和注意事项～
+                </div>
+                <div id="m-b2" style="display:none" class="mt-2">
+                  <p class="text-xs text-dark-400 mb-2">🎵 正在播放：轻柔钢琴曲 - 晨间治愈</p>
+                  <p class="text-xs text-dark-400 mb-2">🎵 正在播放：轻柔钢琴曲 - 晨间治愈</p>
+                  <div class="flex gap-1 items-end h-8">
+                    <div class="wave-bar" style="animation-delay:0s;background:#10b981"></div>
+                    <div class="wave-bar" style="animation-delay:0.15s;background:#10b981"></div>
+                    <div class="wave-bar" style="animation-delay:0.3s;background:#10b981"></div>
+                    <div class="wave-bar" style="animation-delay:0.45s;background:#10b981"></div>
+                    <div class="wave-bar" style="animation-delay:0.6s;background:#10b981"></div>
+                  </div>
+                </div>
+                <div id="m-b3" style="display:none" class="mt-3 glass-card p-3">
+                  <p class="text-xs font-bold text-indigo-300 mb-2">😴 昨夜睡眠 · 智能手环数据</p>
+                  <div class="flex items-center gap-4 mb-2">
+                    <div class="text-center">
+                      <p class="text-lg font-bold text-white">6h42m</p>
+                      <p class="text-xs text-dark-400">总时长</p>
+                    </div>
+                    <div class="flex-1">
+                      <div class="flex gap-0.5 h-5 rounded overflow-hidden">
+                        <div style="width:18%;background:#6366f1" title="深睡 1h12m"></div>
+                        <div style="width:52%;background:#818cf8" title="浅睡 3h29m"></div>
+                        <div style="width:8%;background:#fbbf24" title="REM 32m"></div>
+                        <div style="width:22%;background:#475569" title="清醒 1h29m"></div>
+                      </div>
+                      <div class="flex justify-between text-xs text-dark-500 mt-1">
+                        <span>深睡 1h12m</span><span>浅睡 3h29m</span><span>REM 32m</span><span>清醒 1h29m</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="border-t border-dark-700 pt-2">
+                    <p class="text-xs font-bold text-rose-300 mb-1.5">❤️ 静息心率趋势（近7天）</p>
+                    <div class="flex items-end gap-1 h-10">
+                      <div class="flex flex-col items-center flex-1">
+                        <div class="w-full rounded-t" style="height:28px;background:rgba(244,63,94,0.4)"></div>
+                        <span class="text-xs text-dark-500 mt-0.5">72</span>
+                      </div>
+                      <div class="flex flex-col items-center flex-1">
+                        <div class="w-full rounded-t" style="height:30px;background:rgba(244,63,94,0.4)"></div>
+                        <span class="text-xs text-dark-500 mt-0.5">74</span>
+                      </div>
+                      <div class="flex flex-col items-center flex-1">
+                        <div class="w-full rounded-t" style="height:26px;background:rgba(244,63,94,0.4)"></div>
+                        <span class="text-xs text-dark-500 mt-0.5">70</span>
+                      </div>
+                      <div class="flex flex-col items-center flex-1">
+                        <div class="w-full rounded-t" style="height:32px;background:rgba(244,63,94,0.4)"></div>
+                        <span class="text-xs text-dark-500 mt-0.5">76</span>
+                      </div>
+                      <div class="flex flex-col items-center flex-1">
+                        <div class="w-full rounded-t" style="height:28px;background:rgba(244,63,94,0.4)"></div>
+                        <span class="text-xs text-dark-500 mt-0.5">72</span>
+                      </div>
+                      <div class="flex flex-col items-center flex-1">
+                        <div class="w-full rounded-t" style="height:26px;background:rgba(244,63,94,0.4)"></div>
+                        <span class="text-xs text-dark-500 mt-0.5">70</span>
+                      </div>
+                      <div class="flex flex-col items-center flex-1">
+                        <div class="w-full rounded-t" style="height:30px;background:rgba(244,63,94,0.6)"></div>
+                        <span class="text-xs text-white font-bold mt-0.5">74</span>
+                      </div>
+                    </div>
+                    <div class="flex justify-between text-xs text-dark-600 mt-0.5">
+                      <span>周一</span><span>周二</span><span>周三</span><span>周四</span><span>周五</span><span>周六</span><span>今日</span>
+                    </div>
+                  </div>
+                  <p class="text-xs text-accent-300 mt-2">⚠️ 深睡不足（＜1.5h），建议晚间减少手机使用，22:00 前入睡</p>
+                </div>
+                <div class="voice-bubble voice-bubble-ai text-xs" id="m-b4" style="display:none">
+                  <span class="text-success-300">🤖 Agent 综合解读：</span> 张爷爷，综合分析您的数据——昨夜深睡只有1小时12分钟，<b class="text-white">低于健康标准1.5h</b>；静息心率近两天偏高（74bpm），结合您的高血压史需要关注。今天北京28°C多云，湿度偏高。<br><br>基于以上数据，我的建议是：<b class="text-primary-300">上午少外出，午休30分钟补觉，加测午间血压，避开高温时段保护膝关节。</b>
+                </div>
+                <div id="m-b5" style="display:none" class="mt-3 glass-card p-3">
+                  <p class="text-xs font-bold text-primary-300 mb-2">🌤️ 今日天气 · 北京</p>
+                  <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2">
+                      <span class="text-2xl">⛅</span>
+                      <div>
+                        <p class="text-lg font-bold text-white">28°C</p>
+                        <p class="text-xs text-dark-400">多云转晴 · 湿度 65%</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="border-t border-dark-700 pt-2 space-y-1">
+                    <p class="text-xs text-accent-300 font-bold">⚠️ 综合睡眠 + 天气 + 画像的个性化提醒</p>
+                    <p class="text-xs text-dark-300">• 昨夜深睡仅1h12m，今日精力可能不足，建议上午减少外出，午休30分钟补觉</p>
+                    <p class="text-xs text-dark-300">• 静息心率连续两天偏高（74bpm），结合高血压史，请加测午间血压</p>
+                    <p class="text-xs text-dark-300">• 气温28°C + 湿度高，膝关节不宜午间行走</p>
+                  </div>
+                  <div class="border-t border-dark-700 pt-2 mt-2">
+                    <p class="text-xs text-purple-300 font-bold">☯ 五行养生 · 小满</p>
+                    <div class="flex items-center gap-2 mt-1">
+                      <span class="w-5 h-5 rounded-full flex items-center justify-center text-xs" style="background:rgba(239,68,68,0.2);color:#f87171">火</span>
+                      <span class="text-xs text-dark-300">当令：心 → 养心安神、清热降火</span>
+                    </div>
+                    <p class="text-xs text-dark-400 mt-1">宜食：红枣、番茄、莲子 | 忌：辛辣燥热</p>
+                  </div>
+                </div>
+                <div id="m-b6" style="display:none" class="mt-3 glass-card p-3">
+                  <p class="text-xs font-bold text-accent-300 mb-2">🎯 Agent 生成今日健康目标</p>
+                  <div class="space-y-1.5">
+                    <div class="flex items-center gap-2 text-xs">
+                      <span class="w-4 h-4 rounded border border-dark-700"></span>
+                      <span class="text-dark-300">💊 按时服药（苯磺酸氨氯地平 5mg）</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                      <span class="w-4 h-4 rounded border border-dark-700"></span>
+                      <span class="text-dark-300">🩸 测量血压（早+午）</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                      <span class="w-4 h-4 rounded border border-dark-700"></span>
+                      <span class="text-dark-300">🧘 八段锦跟练 15 分钟</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                      <span class="w-4 h-4 rounded border border-dark-700"></span>
+                      <span class="text-dark-300">🧠 健脑答题 3 道</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                      <span class="w-4 h-4 rounded border border-dark-700"></span>
+                      <span class="text-dark-300">🚶 步行 3000 步</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                      <span class="w-4 h-4 rounded border border-dark-700"></span>
+                      <span class="text-dark-300">🥗 晚餐少盐（＜5g）</span>
+                    </div>
+                  </div>
+                  <p class="text-xs text-dark-500 mt-2 italic">* 目标基于：昨夜睡眠质量 + 心率趋势 + 天气 + 画像 + 上周完成率自动生成</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-1 flex flex-col gap-4">
+          <div class="glass-card p-5">
+            <h4 class="font-bold mb-3">Agent 工作流</h4>
+            <button onclick="startMorning()" class="w-full bg-primary-600 hover:bg-primary-500 py-3 rounded-xl font-bold transition-all mb-3">
+              🎙️ 触发 Agent
+            </button>
+            <div class="space-y-2 text-sm text-dark-400" id="morning-steps">
+              <div class="flex items-center gap-2" id="ms-1"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">1</span>Orchestrator 检测到达起床时间</div>
+              <div class="flex items-center gap-2" id="ms-2"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">2</span>播放唤醒音乐 + 问候</div>
+              <div class="flex items-center gap-2" id="ms-3"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">3</span>读取手环数据 + 天气 API → 综合解读</div>
+              <div class="flex items-center gap-2" id="ms-4"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">4</span>结合画像 + 节气 → 个性化提醒</div>
+              <div class="flex items-center gap-2" id="ms-5"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">5</span>生成今日健康目标写入 Memory</div>
+            </div>
+          </div>
+          <div class="glass-card p-4">
+            <p class="text-xs font-bold text-primary-300 mb-2">Agentic 特性</p>
+            <div class="text-dark-400 text-xs space-y-1">
+              <p>🔵 <b class="text-white">主动触发</b>：不需用户操作，时间到自动唤醒</p>
+              <p>🔵 <b class="text-white">Tool Use</b>：天气API × 节气库 × 手环睡眠/心率API</p>
+              <p>🔵 <b class="text-white">Memory</b>：读取健康画像 + 睡眠历史趋势</p>
+              <p>🔵 <b class="text-white">Planning</b>：基于睡眠质量 + 天气 + 画像规划全天目标</p>
+            </div>
+          </div>
+          <button onclick="goPage(5)" class="text-sm text-dark-400 hover:text-primary-400 transition-all self-end">下一个 Agent →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== P5: Demo - 用药管理 Agent ===== -->
+  <div class="page flex-col" id="p5">
+    <div class="max-w-5xl mx-auto w-full">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <p class="text-accent-400 text-sm font-bold">Demo 2 · 用药管理 Agent</p>
+          <h2 class="text-3xl font-black mt-1">智能服药提醒 + 血压闭环</h2>
+        </div>
+        <button onclick="goPage(3)" class="text-dark-400 hover:text-white text-sm">← 调度流</button>
+      </div>
+
+      <div class="flex gap-6">
+        <div class="flex-shrink-0">
+          <div class="device-frame" id="med-device">
+            <div class="device-screen p-5 flex flex-col gap-3" style="background: linear-gradient(180deg, #0f172a, #1a1a2e); overflow-y: auto;">
+              <div id="med-state-0" class="flex-1 flex flex-col justify-center items-center cursor-pointer" onclick="startMed()">
+                <span class="text-accent-400 text-4xl mb-2">💊</span>
+                <p class="text-accent-300 font-bold">点击模拟服药提醒</p>
+              </div>
+              <div id="med-state-1" class="flex-1 flex-col gap-2" style="display:none">
+                <div class="voice-bubble voice-bubble-ai text-xs" id="med-b1" style="display:none">
+                  <span class="text-success-300">🤖 Agent：</span> 张爷爷，该吃降压药了！苯磺酸氨氯地平 5mg，饭后半小时服用～
+                </div>
+                <div class="voice-bubble text-xs" id="med-b2" style="display:none">
+                  <span class="text-primary-300">🗣 张爷爷：</span> 好的，吃了
+                </div>
+                <div id="med-b3" style="display:none" class="glass-card p-3 text-xs">
+                  <p class="text-success-400 font-bold mb-1">✅ 打卡成功！连续第 23 天</p>
+                  <div class="flex gap-1 mt-2">
+                    <span class="w-4 h-4 rounded bg-success-500 text-xs flex items-center justify-center">✓</span>
+                    <span class="w-4 h-4 rounded bg-success-500 text-xs flex items-center justify-center">✓</span>
+                    <span class="w-4 h-4 rounded bg-success-500 text-xs flex items-center justify-center">✓</span>
+                    <span class="w-4 h-4 rounded bg-success-500 text-xs flex items-center justify-center">✓</span>
+                    <span class="w-4 h-4 rounded bg-success-500 text-xs flex items-center justify-center">✓</span>
+                    <span class="w-4 h-4 rounded bg-primary-500 text-xs flex items-center justify-center">★</span>
+                    <span class="w-4 h-4 rounded bg-dark-700"></span>
+                  </div>
+                  <p class="text-dark-400 mt-2">📱 已同步至儿子小张的手机</p>
+                </div>
+                <div class="voice-bubble voice-bubble-ai text-xs" id="med-b4" style="display:none">
+                  <span class="text-success-300">🤖 Agent：</span> 顺便测个血压吧？我来一步步引导您～
+                </div>
+                <div id="med-b5" style="display:none" class="glass-card p-3 text-xs">
+                  <p class="text-primary-300 font-bold mb-2">📋 血压测量引导</p>
+                  <div class="space-y-1.5">
+                    <div class="flex items-start gap-2">
+                      <span class="text-success-300 font-bold">1️⃣</span>
+                      <span class="text-dark-300">坐姿端正，安静休息 <b class="text-white">5分钟</b></span>
+                    </div>
+                    <div class="flex items-start gap-2">
+                      <span class="text-success-300 font-bold">2️⃣</span>
+                      <span class="text-dark-300">将袖带绑在左上臂，距肘窝 <b class="text-white">2~3cm</b></span>
+                    </div>
+                    <div class="flex items-start gap-2">
+                      <span class="text-success-300 font-bold">3️⃣</span>
+                      <span class="text-dark-300">手臂平放桌上，掌心朝上，与<b class="text-white">心脏同高</b></span>
+                    </div>
+                    <div class="flex items-start gap-2">
+                      <span class="text-success-300 font-bold">4️⃣</span>
+                      <span class="text-dark-300">按下测量键，测量中<b class="text-white">不要说话和移动</b></span>
+                    </div>
+                  </div>
+                  <p class="text-dark-500 mt-2 italic text-xs">— 参考《百度健康医典·高血压测量规范》</p>
+                </div>
+                <div id="med-b6" style="display:none" class="glass-card p-3 text-xs">
+                  <p class="text-primary-300 font-bold mb-2">📊 血压趋势（近7天）</p>
+                  <div class="flex items-end gap-2 h-12 mt-2">
+                    <div class="flex-1 rounded-t" style="height:70%;background:linear-gradient(to top,#3b82f6,#60a5fa)"></div>
+                    <div class="flex-1 rounded-t" style="height:65%;background:linear-gradient(to top,#3b82f6,#60a5fa)"></div>
+                    <div class="flex-1 rounded-t" style="height:80%;background:linear-gradient(to top,#f59e0b,#fbbf24)"></div>
+                    <div class="flex-1 rounded-t" style="height:60%;background:linear-gradient(to top,#10b981,#34d399)"></div>
+                    <div class="flex-1 rounded-t" style="height:55%;background:linear-gradient(to top,#10b981,#34d399)"></div>
+                    <div class="flex-1 rounded-t" style="height:58%;background:linear-gradient(to top,#10b981,#34d399)"></div>
+                    <div class="flex-1 rounded-t animate-pulse" style="height:52%;background:linear-gradient(to top,#10b981,#6ee7b7)"></div>
+                  </div>
+                  <div class="flex justify-between text-dark-500 mt-1" style="font-size:10px"><span>周一</span><span>周二</span><span>周三</span><span>周四</span><span>周五</span><span>周六</span><span>今天</span></div>
+                  <p class="text-success-300 mt-2">✓ 今日 128/82 mmHg · 控制良好，趋势稳定下降</p>
+                  <p class="text-dark-400 mt-1">较上周下降 5mmHg，继续保持用药+低盐饮食</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-1 flex flex-col gap-4">
+          <div class="glass-card p-5">
+            <h4 class="font-bold mb-3">Agent 工作流</h4>
+            <button onclick="startMed()" class="w-full bg-accent-500 hover:bg-yellow-500 text-gray-900 py-3 rounded-xl font-bold transition-all mb-3">
+              ⏰ 触发 Agent
+            </button>
+            <div class="space-y-2 text-sm text-dark-400" id="med-steps">
+              <div class="flex items-center gap-2" id="meds-1"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">1</span>读取处方 Memory → 生成提醒话术</div>
+              <div class="flex items-center gap-2" id="meds-2"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">2</span>语音确认 → 写入打卡记录</div>
+              <div class="flex items-center gap-2" id="meds-3"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">3</span>Tool: 推送子女端同步</div>
+              <div class="flex items-center gap-2" id="meds-4"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">4</span>引导血压测量 + 趋势分析写入 Memory</div>
+            </div>
+          </div>
+          <div class="glass-card p-4">
+            <p class="text-xs font-bold text-accent-300 mb-2">Agentic 特性</p>
+            <div class="text-dark-400 text-xs space-y-1">
+              <p>🟡 <b class="text-white">主动触发</b>：饭后30分钟自动提醒，不依赖用户记忆</p>
+              <p>🟡 <b class="text-white">Multi-Agent</b>：服药后自动串联血压检测</p>
+              <p>🟡 <b class="text-white">Memory 写入</b>：打卡+血压数据持久化，供复盘 Agent 使用</p>
+              <p>🟡 <b class="text-white">Tool Use</b>：推送 API 同步子女端</p>
+            </div>
+          </div>
+          <button onclick="goPage(6)" class="text-sm text-dark-400 hover:text-primary-400 transition-all self-end">下一个 Agent →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== P6: Demo - AI 问诊 Agent ===== -->
+  <div class="page flex-col" id="p6">
+    <div class="max-w-5xl mx-auto w-full">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <p class="text-success-400 text-sm font-bold">Demo 3 · AI 问诊 Agent</p>
+          <h2 class="text-3xl font-black mt-1">多轮对话 + 运动处方</h2>
+        </div>
+        <button onclick="goPage(3)" class="text-dark-400 hover:text-white text-sm">← 调度流</button>
+      </div>
+
+      <div class="flex gap-6">
+        <div class="flex-shrink-0">
+          <div class="device-frame" id="consult-device">
+            <div class="device-screen p-5 flex flex-col gap-2" style="background: linear-gradient(180deg, #0f172a, #1a1a2e); overflow-y: auto;">
+              <div id="consult-state-0" class="flex-1 flex flex-col justify-center items-center cursor-pointer" onclick="startConsult()">
+                <span class="text-success-400 text-4xl mb-2">🏥</span>
+                <p class="text-success-300 font-bold">点击模拟问诊对话</p>
+              </div>
+              <div id="consult-state-1" class="flex-1 flex-col gap-2 overflow-y-auto" style="display:none">
+                <div class="voice-bubble text-xs" id="c-b1" style="display:none">
+                  <span class="text-primary-300">🗣</span> 小度，我最近膝盖有点疼，上下楼梯的时候
+                </div>
+                <div class="voice-bubble voice-bubble-ai text-xs" id="c-b2" style="display:none">
+                  <span class="text-success-300">🤖</span> 了解。请问是哪个膝盖？疼痛是刺痛还是酸胀？有没有肿？
+                </div>
+                <div class="voice-bubble text-xs" id="c-b3" style="display:none">
+                  <span class="text-primary-300">🗣</span> 右边膝盖，酸胀，没有肿
+                </div>
+                <div class="voice-bubble voice-bubble-ai text-xs" id="c-b4" style="display:none">
+                  <span class="text-success-300">🤖</span> 结合您的年龄和 Memory 中的既往诊断，初步判断为<span class="text-white font-bold">膝关节退行性变加重</span>。建议：
+                </div>
+                <div id="c-b5" style="display:none" class="glass-card p-3 text-xs">
+                  <p class="font-bold text-success-300 mb-2">🏥 Agent 辅诊建议</p>
+                  <p class="text-dark-300">1. 避免长时间站立和爬楼</p>
+                  <p class="text-dark-300">2. 推荐八段锦"摇头摆尾去心火"式（低负荷）</p>
+                  <p class="text-dark-300">3. 如持续1周未好转 → 自动预约骨科问诊</p>
+                  <div class="mt-2 flex gap-2">
+                    <span class="bg-primary-500/20 text-primary-300 text-xs px-2 py-1 rounded-full cursor-pointer" onclick="showVideo()">▶ 跟练八段锦</span>
+                    <span class="bg-success-500/20 text-success-300 text-xs px-2 py-1 rounded-full">预约骨科医生</span>
+                  </div>
+                  <p class="text-dark-500 mt-2 italic">* 引用来源：百度健康医典 · 已写入 Memory 供复盘使用</p>
+                </div>
+                <div id="c-b6" style="display:none" class="glass-card p-3 text-xs mt-1" >
+                  <div class="flex items-center gap-2 mb-2">
+                    <span class="w-6 h-6 rounded-full bg-success-500 flex items-center justify-center text-white text-xs font-bold">✓</span>
+                    <p class="font-bold text-success-300">真人医生已审核确认</p>
+                  </div>
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center text-xs font-bold">李</div>
+                    <div>
+                      <p class="text-dark-200 font-bold">李志刚 · 北京协和医院骨科 · 主任医师</p>
+                      <p class="text-dark-400 mt-0.5">AI 建议准确，膝关节退行性变符合症状描述。补充：可配合热敷缓解，每次15分钟。</p>
+                    </div>
+                  </div>
+                  <p class="text-dark-500 mt-2 italic">「AI + 真人」双保障 · 36万+执业医生在线背书 · 分钟级响应</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-1 flex flex-col gap-4">
+          <div class="glass-card p-5">
+            <h4 class="font-bold mb-3">Agent 工作流</h4>
+            <button onclick="startConsult()" class="w-full bg-success-500 hover:bg-green-400 text-gray-900 py-3 rounded-xl font-bold transition-all mb-3">
+              💬 触发 Agent
+            </button>
+            <div class="space-y-2 text-sm text-dark-400">
+              <div class="flex items-center gap-2" id="cs-1"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">1</span>用户语音输入 → NLU 意图识别</div>
+              <div class="flex items-center gap-2" id="cs-2"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">2</span>多轮追问 → 收集关键症状</div>
+              <div class="flex items-center gap-2" id="cs-3"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">3</span>读取 Memory 既往史 + 调用辅诊 API</div>
+              <div class="flex items-center gap-2" id="cs-4"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">4</span>输出建议 + 运动处方 + 预约入口</div>
+              <div class="flex items-center gap-2" id="cs-5"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">5</span>真人医生审核背书（分钟级）</div>
+            </div>
+          </div>
+          <div class="glass-card p-4">
+            <p class="text-xs font-bold text-success-300 mb-2">Agentic 特性</p>
+            <div class="text-dark-400 text-xs space-y-1">
+              <p>🟢 <b class="text-white">Multi-turn</b>：多轮对话主动追问，非单轮问答</p>
+              <p>🟢 <b class="text-white">Memory 读取</b>：结合既往诊断历史辅助判断</p>
+              <p>🟢 <b class="text-white">Tool Use</b>：辅诊 API + 医典知识库 + 医生匹配</p>
+              <p>🟢 <b class="text-white">AI+真人</b>：36万+医生实时审核，行业独家双保障</p>
+              <p>🟢 <b class="text-white">Action</b>：自动开运动处方 / 预约线上问诊</p>
+            </div>
+          </div>
+          <button onclick="goPage(7)" class="text-sm text-dark-400 hover:text-primary-400 transition-all self-end">下一个 Agent →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== P7: Demo - 健脑互动 Agent ===== -->
+  <div class="page flex-col" id="p7">
+    <div class="max-w-5xl mx-auto w-full">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <p class="text-purple-400 text-sm font-bold">Demo 4 · 健脑互动 Agent</p>
+          <h2 class="text-3xl font-black mt-1">辟谣答题 + 积分激励</h2>
+        </div>
+        <button onclick="goPage(3)" class="text-dark-400 hover:text-white text-sm">← 调度流</button>
+      </div>
+
+      <div class="flex gap-6">
+        <div class="flex-shrink-0">
+          <div class="device-frame" id="quiz-device">
+            <div class="device-screen p-4 flex flex-col" style="background: linear-gradient(180deg, #0f172a, #1a1a2e);">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="text-xs text-dark-400" id="quiz-progress-text">第 1/3 题</span>
+                <div class="progress-bar flex-1"><div class="progress-fill" id="quiz-progress-bar" style="width:33%"></div></div>
+                <span class="text-xs text-accent-400" id="quiz-score">0分</span>
+              </div>
+              <div id="quiz-question" class="text-sm font-bold mb-3"></div>
+              <div id="quiz-options" class="space-y-2"></div>
+              <div id="quiz-feedback" class="mt-2 text-xs glass-card p-3" style="display:none"></div>
+              <div id="quiz-result" class="flex-1 flex-col items-center justify-center text-center overflow-y-auto" style="display:none">
+                <div class="text-2xl mb-1">🎉</div>
+                <p class="font-bold text-sm">答题完成！</p>
+                <p class="text-accent-400 font-bold text-lg" id="quiz-final-score"></p>
+                <div class="w-full mt-2 p-2 rounded-xl text-left" style="background:linear-gradient(135deg,rgba(139,92,246,0.1),rgba(99,102,241,0.05));border:1px solid rgba(139,92,246,0.2)">
+                  <p class="text-xs font-bold text-purple-300 mb-1.5">🏆 社区排行榜</p>
+                  <div class="space-y-1">
+                    <div class="flex items-center justify-between text-xs px-2 py-1 rounded" style="background:rgba(245,158,11,0.1)">
+                      <div class="flex items-center gap-2"><span>🥇</span><span class="text-accent-300 font-bold">王奶奶（3单元）</span></div>
+                      <span class="text-accent-400 font-bold">2860分</span>
+                    </div>
+                    <div class="flex items-center justify-between text-xs px-2 py-1 rounded" style="background:rgba(59,130,246,0.1)">
+                      <div class="flex items-center gap-2"><span>🥈</span><span class="text-primary-300 font-bold">张爷爷（您）⬆️</span></div>
+                      <span class="text-primary-400 font-bold">2730分</span>
+                    </div>
+                    <div class="flex items-center justify-between text-xs px-2 py-1 rounded" style="background:rgba(255,255,255,0.02)">
+                      <div class="flex items-center gap-2"><span>🥉</span><span class="text-dark-300">李大爷（5单元）</span></div>
+                      <span class="text-dark-400">2680分</span>
+                    </div>
+                  </div>
+                  <p class="text-xs text-purple-400 mt-1.5 text-center">距超越王奶奶还差 <b class="text-white">130分</b>，加油！💪</p>
+                </div>
+                <div class="w-full mt-2 p-2 rounded-xl text-left" style="background:linear-gradient(135deg,rgba(245,158,11,0.1),rgba(239,68,68,0.05));border:1px solid rgba(245,158,11,0.2)">
+                  <p class="text-xs font-bold text-accent-300 mb-1">🎁 积分可兑换实物奖品</p>
+                  <div class="w-full grid grid-cols-3 gap-1 mt-1">
+                    <div class="text-center p-1 rounded" style="background:rgba(16,185,129,0.1)"><div class="text-lg">🍚</div><p class="text-xs text-success-300">5kg大米</p></div>
+                    <div class="text-center p-1 rounded" style="background:rgba(245,158,11,0.1)"><div class="text-lg">🫒</div><p class="text-xs text-accent-300">花生油</p></div>
+                    <div class="text-center p-1 rounded" style="background:rgba(255,255,255,0.03)"><div class="text-lg">🌾</div><p class="text-xs text-dark-300">面粉10斤</p></div>
+                  </div>
+                </div>
+                <p class="text-xs text-dark-500 mt-2 italic">* Agent 根据答对率动态调整下次题目难度</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-1 flex flex-col gap-4">
+          <div class="glass-card p-5">
+            <h4 class="font-bold mb-3">Agent 工作流</h4>
+            <button onclick="startQuiz()" class="w-full py-3 rounded-xl font-bold transition-all mb-3" style="background:linear-gradient(135deg,#8b5cf6,#6366f1);color:white">
+              🧠 触发 Agent
+            </button>
+            <div class="space-y-2 text-sm text-dark-400">
+              <div class="flex items-center gap-2"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">1</span>检测久坐 → 主动发起答题互动</div>
+              <div class="flex items-center gap-2"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">2</span>读取 Memory 答题记录 → 调整难度</div>
+              <div class="flex items-center gap-2"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">3</span>调用辟谣知识库生成题目</div>
+              <div class="flex items-center gap-2"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">4</span>积分写入 Memory → 兑换通道</div>
+            </div>
+          </div>
+          <div class="glass-card p-4">
+            <p class="text-xs font-bold text-purple-300 mb-2">Agentic 特性</p>
+            <div class="text-dark-400 text-xs space-y-1">
+              <p>🟣 <b class="text-white">主动触发</b>：久坐检测，不等用户开口</p>
+              <p>🟣 <b class="text-white">自适应</b>：根据历史答题数据调整难度</p>
+              <p>🟣 <b class="text-white">Skill</b>：从辟谣库动态生成题目（非固定题库）</p>
+              <p>🟣 <b class="text-white">社交激励</b>：社区邻居排行榜 PK → 老人争强好胜心驱动活跃</p>
+              <p>🟣 <b class="text-white">激励闭环</b>：积分 → 排名 + 实物奖品 → 持续活跃</p>
+            </div>
+          </div>
+          <button onclick="goPage(8)" class="text-sm text-dark-400 hover:text-primary-400 transition-all self-end">下一个 Agent →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== P8: Demo - 饮食识别 Agent ===== -->
+  <div class="page flex-col" id="p8">
+    <div class="max-w-5xl mx-auto w-full">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <p class="text-orange-400 text-sm font-bold">Demo 5 · 饮食识别 Agent</p>
+          <h2 class="text-3xl font-black mt-1">备餐前主动干预 + 慢病饮食管控</h2>
+        </div>
+        <button onclick="goPage(3)" class="text-dark-400 hover:text-white text-sm">← 调度流</button>
+      </div>
+
+      <div class="flex gap-6">
+        <div class="flex-shrink-0">
+          <div class="device-frame" id="diet-device">
+            <div class="device-screen p-5 flex flex-col" style="background: linear-gradient(180deg, #0f172a, #1e293b); overflow-y: auto;">
+              <div id="diet-state-0" class="flex-1 flex flex-col justify-center items-center cursor-pointer" onclick="startDiet()">
+                <span class="text-4xl mb-2">🍳</span>
+                <p class="text-orange-300 font-bold">点击模拟备餐提醒</p>
+                <p class="text-dark-500 text-xs mt-1">17:00 Agent 主动在备餐前介入，提前调整食材</p>
+              </div>
+              <div id="diet-state-1" class="flex-1 flex-col gap-2 overflow-y-auto" style="display:none">
+                <div class="voice-bubble voice-bubble-ai text-xs" id="d-b1" style="display:none">
+                  <span class="text-success-300">🤖 Agent：</span> 张爷爷，快到做晚饭的时间了～我看到您最近常吃白粥配咸鸭蛋，今晚打算还是这样吗？
+                </div>
+                <div id="d-b2" style="display:none" class="glass-card p-3 text-xs">
+                  <p class="font-bold text-orange-300 mb-2">⚠️ 饮食风险分析</p>
+                  <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <span>🥣</span><span class="text-dark-200">白粥（一碗 约250g）</span>
+                      </div>
+                      <span class="text-danger-300 font-bold text-xs px-2 py-0.5 rounded-full" style="background:rgba(239,68,68,0.15)">⚠ 高GI</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <span>🥚</span><span class="text-dark-200">咸鸭蛋（一个）</span>
+                      </div>
+                      <span class="text-danger-300 font-bold text-xs px-2 py-0.5 rounded-full" style="background:rgba(239,68,68,0.15)">⚠ 高盐</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2">
+                        <span>🍞</span><span class="text-dark-200">馒头（一个 约100g）</span>
+                      </div>
+                      <span class="text-accent-300 font-bold text-xs px-2 py-0.5 rounded-full" style="background:rgba(245,158,11,0.15)">中GI</span>
+                    </div>
+                  </div>
+                  <div class="mt-3 pt-2 border-t border-dark-700">
+                    <div class="flex items-center justify-between text-xs">
+                      <span class="text-dark-400">预估盐分</span>
+                      <span class="text-danger-300 font-bold">约 6.5g <span class="text-dark-500 font-normal">（目标＜5g）</span></span>
+                    </div>
+                    <div class="flex items-center justify-between text-xs mt-1">
+                      <span class="text-dark-400">预估升糖负荷</span>
+                      <span class="text-danger-300 font-bold">偏高 <span class="text-dark-500 font-normal">（糖前期需注意）</span></span>
+                    </div>
+                  </div>
+                </div>
+                <div class="voice-bubble voice-bubble-ai text-xs" id="d-b3" style="display:none">
+                  <span class="text-success-300">🤖</span> ⚠️ 张爷爷，提醒您：<b class="text-white">白粥虽然不甜，但升糖指数（GI=69）比白糖还快！</b>对于糖前期人群，空腹喝白粥会导致血糖快速飙升。趁还没开始做，咱们换个食材吧～
+                </div>
+                <div id="d-b4" style="display:none" class="glass-card p-3 text-xs">
+                  <p class="font-bold text-success-300 mb-2">✅ Agent 今晚备餐建议</p>
+                  <div class="space-y-1.5">
+                    <div class="flex items-center gap-2">
+                      <span class="text-dark-500">🥣 白粥</span>
+                      <span class="text-dark-500">→</span>
+                      <span class="text-success-300 font-bold">🥬 杂粮粥（燕麦+荞麦）</span>
+                      <span class="text-success-400 text-xs">GI降至55</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-dark-500">🥚 咸鸭蛋</span>
+                      <span class="text-dark-500">→</span>
+                      <span class="text-success-300 font-bold">🥚 水煮蛋</span>
+                      <span class="text-success-400 text-xs">盐分-3g</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-dark-500">🍞 馒头</span>
+                      <span class="text-dark-500">→</span>
+                      <span class="text-success-300 font-bold">🌾 全麦馒头</span>
+                      <span class="text-success-400 text-xs">GI降至50</span>
+                    </div>
+                  </div>
+                  <div class="mt-2 pt-2 border-t border-dark-700 flex items-center justify-between text-xs">
+                    <span class="text-dark-400">替换后盐分</span>
+                    <span class="text-success-300 font-bold">约 2g ✓</span>
+                  </div>
+                  <div class="flex items-center justify-between text-xs mt-1">
+                    <span class="text-dark-400">替换后升糖负荷</span>
+                    <span class="text-success-300 font-bold">正常范围 ✓</span>
+                  </div>
+                </div>
+                <div class="voice-bubble voice-bubble-ai text-xs" id="d-b5" style="display:none">
+                  <span class="text-success-300">🤖</span> 家里有燕麦和鸡蛋吗？如果有的话直接换上就行！我把今晚的备餐方案记下来了，做完饭后帮您核实～
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-1 flex flex-col gap-4">
+          <div class="glass-card p-5">
+            <h4 class="font-bold mb-3">Agent 工作流</h4>
+            <button onclick="startDiet()" class="w-full py-3 rounded-xl font-bold transition-all mb-3" style="background:linear-gradient(135deg,#f59e0b,#ef4444);color:white">
+              🍳 触发备餐提醒
+            </button>
+            <div class="space-y-2 text-sm text-dark-400" id="diet-steps">
+              <div class="flex items-center gap-2" id="ds-1"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">1</span>17:00 备餐前主动触发，读取 Memory 饮食偏好</div>
+              <div class="flex items-center gap-2" id="ds-2"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">2</span>营养成分分析 + 匹配慢病画像（高血压+糖前期）</div>
+              <div class="flex items-center gap-2" id="ds-3"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">3</span>做饭前风险预警 + 认知纠偏（白粥≠安全）</div>
+              <div class="flex items-center gap-2" id="ds-4"><span class="w-5 h-5 rounded-full bg-dark-700 flex items-center justify-center text-xs">4</span>输出备餐替换方案 + 写入 Memory 供复盘</div>
+            </div>
+          </div>
+          <div class="glass-card p-4">
+            <p class="text-xs font-bold mb-2" style="color:#fb923c">Agentic 特性</p>
+            <div class="text-dark-400 text-xs space-y-1">
+              <p>🟠 <b class="text-white">主动感知</b>：备餐前主动介入，而非饭做好了才提醒</p>
+              <p>🟠 <b class="text-white">Memory 驱动</b>：记住用户饮食偏好，精准命中常吃食材</p>
+              <p>🟠 <b class="text-white">个性化</b>：结合高血压（限盐）+ 糖前期（限GI）画像</p>
+              <p>🟠 <b class="text-white">认知纠偏</b>：打破"不甜=不升糖"等常见误区</p>
+              <p>🟠 <b class="text-white">闭环</b>：建议→记录→饭后核实→次日优化</p>
+            </div>
+          </div>
+          <div class="glass-card p-4" style="border-color:rgba(239,68,68,0.2);background:rgba(239,68,68,0.03)">
+            <p class="text-xs font-bold text-danger-300 mb-1">💡 解决的核心痛点</p>
+            <p class="text-dark-400 text-xs">大量慢病潜在期患者（高血压前期、糖前期）因为不了解食物的隐性风险（白粥、馒头、果汁等"看似健康"的高 GI 食物），错过了通过饮食管控逆转疾病的黄金窗口。<b class="text-white">关键是在做饭前介入，才能真正改变行为。</b></p>
+          </div>
+          <button onclick="goPage(9)" class="text-sm text-dark-400 hover:text-primary-400 transition-all self-end">下一个 Agent →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== P9: Demo - 紧急守护 + 复盘 ===== -->
+  <div class="page flex-col" id="p9">
+    <div class="max-w-5xl mx-auto w-full">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <p class="text-danger-400 text-sm font-bold">Demo 6 · 紧急守护 Agent</p>
+          <h2 class="text-3xl font-black mt-1">全天候紧急守护</h2>
+        </div>
+        <button onclick="goPage(3)" class="text-dark-400 hover:text-white text-sm">← 调度流</button>
+      </div>
+
+      <div class="flex gap-6">
+        <!-- SOS Demo -->
+        <div class="flex-shrink-0">
+          <div class="device-frame" id="sos-device">
+            <div class="device-screen p-5 flex flex-col items-center justify-center" style="background: linear-gradient(180deg, #0f172a, #1a0a0a);">
+              <div id="sos-state-0">
+                <div class="sos-btn" onclick="triggerSOS()">
+                  <span class="text-white text-3xl font-black">SOS</span>
+                </div>
+                <p class="text-danger-300 text-xs mt-4 text-center">点击模拟紧急求助</p>
+              </div>
+              <div id="sos-state-1" class="w-full space-y-2" style="display:none">
+                <div class="text-center mb-2">
+                  <span class="text-danger-400 text-2xl animate-pulse">🚨</span>
+                  <p class="text-danger-300 font-bold text-sm">紧急求助已触发</p>
+                </div>
+                <div id="sos-step-1" class="flex items-center gap-2 text-xs glass-card p-2" style="display:none">
+                  <span class="text-success-400">✅</span><span>定位成功：北京市海淀区XX小区3号楼</span>
+                </div>
+                <div id="sos-step-2" class="flex items-center gap-2 text-xs glass-card p-2" style="display:none">
+                  <span class="text-primary-400 animate-pulse">📞</span><span>正在呼叫：儿子小张 138****6789</span>
+                </div>
+                <div id="sos-step-3" class="flex items-center gap-2 text-xs glass-card p-2" style="display:none">
+                  <span class="text-success-400">✅</span><span>通话已接通 · 位置已共享</span>
+                </div>
+                <div id="sos-step-4" class="flex items-center gap-2 text-xs glass-card p-2" style="display:none">
+                  <span class="text-accent-400">👨‍👩‍👧</span><span>社区物业已通知 · 预计3分钟到达</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flex-1 flex flex-col gap-3">
+          <div class="glass-card p-4">
+            <h4 class="font-bold mb-3">交互流程</h4>
+            <button onclick="triggerSOS()" class="w-full bg-danger-500 hover:bg-red-400 text-white py-3 rounded-xl font-bold transition-all mb-3 text-base">
+              🚨 模拟紧急求助
+            </button>
+            <div class="space-y-2">
+              <div class="flex items-center gap-3"><span class="w-6 h-6 rounded-full bg-dark-700 flex items-center justify-center text-xs text-dark-300 flex-shrink-0">1</span><span class="text-sm">触发方式：长按SOS / 语音 / 跌倒检测</span></div>
+              <div class="flex items-center gap-3"><span class="w-6 h-6 rounded-full bg-dark-700 flex items-center justify-center text-xs text-dark-300 flex-shrink-0">2</span><span class="text-sm">自动获取地理定位</span></div>
+              <div class="flex items-center gap-3"><span class="w-6 h-6 rounded-full bg-dark-700 flex items-center justify-center text-xs text-dark-300 flex-shrink-0">3</span><span class="text-sm">自动拨打紧急联系人</span></div>
+              <div class="flex items-center gap-3"><span class="w-6 h-6 rounded-full bg-dark-700 flex items-center justify-center text-xs text-dark-300 flex-shrink-0">4</span><span class="text-sm">通知社区/物业 + 120联动</span></div>
+            </div>
+          </div>
+          <div class="glass-card p-4">
+            <p class="text-xs font-bold text-danger-300 mb-2">Agentic 特性</p>
+            <div class="text-dark-400 text-xs space-y-1">
+              <p>🔴 <b class="text-white">常驻感知</b>：7×24h 后台监听，无需用户触发</p>
+              <p>🔴 <b class="text-white">Multi-Signal</b>：跌倒传感器 + 异常静默 + 语音关键词融合判断</p>
+              <p>🔴 <b class="text-white">Tool Chain</b>：GPS定位 → 通话API → 短信推送 → 社区平台</p>
+              <p>🔴 <b class="text-white">自主编排</b>：Agent 自主决策执行顺序，无需预设流程</p>
+              <p>🔴 <b class="text-white">Memory</b>：记录紧急联系人、住址、病史，零延迟响应</p>
+            </div>
+          </div>
+          <button onclick="goPage(10)" class="text-sm text-dark-400 hover:text-primary-400 transition-all self-end">晚间复盘 →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== P10: 复盘 Agent ===== -->
+  <div class="page flex-col" id="p10">
+    <div class="max-w-5xl mx-auto w-full">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <p class="text-purple-400 text-sm font-bold">Demo 7 · 复盘总结 Agent</p>
+          <h2 class="text-3xl font-black mt-1">闭环复盘 · 次日优化</h2>
+        </div>
+        <button onclick="goPage(3)" class="text-dark-400 hover:text-white text-sm">← 调度流</button>
+      </div>
+
+      <div class="flex gap-6">
+        <!-- Review Demo -->
+        <div class="flex-shrink-0">
+          <div class="device-frame" id="review-device">
+            <div class="device-screen p-4 flex flex-col" style="background: linear-gradient(180deg, #0f172a, #1a1a2e); overflow-y: auto;">
+              <div id="rv-state-0" class="flex-1 flex flex-col justify-center items-center cursor-pointer" onclick="startReview()">
+                <span class="text-3xl mb-2">🌙</span>
+                <p class="text-purple-300 font-bold text-sm">点击模拟晚间复盘</p>
+                <p class="text-dark-500 text-xs mt-1">21:00 Agent 自动汇总今日健康数据</p>
+              </div>
+              <div id="rv-state-1" class="flex-1 flex-col gap-2 overflow-y-auto" style="display:none">
+                <div class="voice-bubble voice-bubble-ai text-xs" id="rv-b1" style="display:none">
+                  <span class="text-success-300">🤖 Agent：</span> 张爷爷，今天辛苦啦！我帮您总结一下今天的健康情况～
+                </div>
+                <div id="rv-b2" style="display:none" class="glass-card p-3 text-xs">
+                  <p class="text-purple-300 font-bold mb-2">📊 今日健康目标完成情况</p>
+                  <div class="space-y-1.5">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2"><span class="text-success-400">✅</span><span class="text-dark-300">💊 按时服药</span></div>
+                      <span class="text-success-300 text-xs">已完成</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2"><span class="text-success-400">✅</span><span class="text-dark-300">🩸 测量血压（早+午）</span></div>
+                      <span class="text-success-300 text-xs">128/82</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2"><span class="text-success-400">✅</span><span class="text-dark-300">🧘 八段锦跟练 15 分钟</span></div>
+                      <span class="text-success-300 text-xs">已完成</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2"><span class="text-success-400">✅</span><span class="text-dark-300">🧠 健脑答题 3 道</span></div>
+                      <span class="text-success-300 text-xs">全对</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2"><span class="text-dark-600">○</span><span class="text-dark-500">🚶 步行 3000 步</span></div>
+                      <span class="text-accent-300 text-xs">1800/3000</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2"><span class="text-success-400">✅</span><span class="text-dark-300">🥗 晚餐少盐（＜5g）</span></div>
+                      <span class="text-success-300 text-xs">约2g</span>
+                    </div>
+                  </div>
+                  <div class="mt-2 pt-2 border-t border-dark-700 flex items-center justify-between">
+                    <span class="text-2xl font-black text-success-300">45/60</span>
+                    <div class="text-right">
+                      <p class="text-xs text-dark-300">完成率 <b class="text-white">75%</b></p>
+                      <p class="text-xs text-success-400">超过 78% 同龄用户</p>
+                    </div>
+                  </div>
+                </div>
+                <div id="rv-b3" style="display:none" class="glass-card p-3 text-xs" style="border-color:rgba(59,130,246,0.2)">
+                  <p class="text-primary-300 font-bold mb-1">📱 已同步至家人端</p>
+                  <div class="flex items-start gap-2 mt-2">
+                    <div class="w-6 h-6 rounded-full bg-pink-600 flex items-center justify-center text-xs font-bold flex-shrink-0">丽</div>
+                    <div>
+                      <p class="text-dark-300"><b>女儿小丽</b> 留言：</p>
+                      <p class="text-dark-400 mt-0.5 italic">"爸，今天表现不错！步数明天补上，我在 Keep 给你发了个挑战～ 💪"</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="voice-bubble voice-bubble-ai text-xs" id="rv-b4" style="display:none">
+                  <span class="text-success-300">🤖 Agent：</span> 明天目标已更新：步行目标调整为 <b class="text-white">2500步</b>（考虑今天膝关节情况适当降低），其他目标保持。晚安张爷爷，好好休息！🌙
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flex-1 flex flex-col gap-3">
+          <div class="glass-card p-4">
+            <h4 class="font-bold mb-2 text-purple-400">🌙 复盘总结 Agent（21:00）</h4>
+            <button onclick="startReview()" class="w-full py-2 rounded-xl font-bold transition-all mb-2" style="background:linear-gradient(135deg,#8b5cf6,#6366f1);color:white">
+              🌙 触发复盘
+            </button>
+            <div class="text-dark-400 text-xs space-y-1" id="review-steps">
+              <div class="flex items-center gap-2" id="rvs-1"><span class="w-4 h-4 rounded-full bg-dark-700 flex items-center justify-center" style="font-size:10px">1</span>汇总全天 Agent 行为数据</div>
+              <div class="flex items-center gap-2" id="rvs-2"><span class="w-4 h-4 rounded-full bg-dark-700 flex items-center justify-center" style="font-size:10px">2</span>生成健康评分 + 对比同龄人</div>
+              <div class="flex items-center gap-2" id="rvs-3"><span class="w-4 h-4 rounded-full bg-dark-700 flex items-center justify-center" style="font-size:10px">3</span>推送家人端 + 子女互动</div>
+              <div class="flex items-center gap-2" id="rvs-4"><span class="w-4 h-4 rounded-full bg-dark-700 flex items-center justify-center" style="font-size:10px">4</span>生成次日目标写入 Memory</div>
+            </div>
+          </div>
+          <div class="glass-card p-4">
+            <p class="text-xs font-bold text-purple-300 mb-2">Agentic 特性</p>
+            <div class="text-dark-400 text-xs space-y-1">
+              <p>🟣 <b class="text-white">自动汇总</b>：跨 Agent 数据自动聚合，无需手动整理</p>
+              <p>🟣 <b class="text-white">Memory 读写</b>：读取全天行为记录，写入次日优化目标</p>
+              <p>🟣 <b class="text-white">Reasoning</b>：根据完成情况智能调整目标难度</p>
+              <p>🟣 <b class="text-white">Multi-Agent</b>：汇集晨起/用药/运动/饮食等全部 Agent 数据</p>
+              <p>🟣 <b class="text-white">社交推送</b>：自动同步家人端，促进亲情互动闭环</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== P11: 总结 ===== -->
+  <div class="page flex-col items-center" id="p11">
+    <div class="max-w-4xl mx-auto w-full text-center">
+      <p class="text-primary-400 text-sm font-bold tracking-wider mb-4">SUMMARY</p>
+      <h2 class="text-4xl font-black mb-8">为什么是 <span class="gradient-text">Agentic AI</span></h2>
+
+      <div class="grid grid-cols-3 gap-6 mb-10">
+        <div class="glass-card p-6 text-left">
+          <p class="text-2xl mb-3">🤖 → 👴</p>
+          <h4 class="font-bold text-primary-300 mb-2">从被动到主动</h4>
+          <p class="text-dark-400 text-sm">传统 AI：用户问 → 机器答<br><b class="text-white">我们的 Agent：感知 → 判断 → 主动干预</b></p>
+          <p class="text-dark-500 text-xs mt-3">银发群体不会主动求助，Agent 必须先迈出第一步</p>
+        </div>
+        <div class="glass-card p-6 text-left">
+          <p class="text-2xl mb-3">🔗</p>
+          <h4 class="font-bold text-success-300 mb-2">从碎片到闭环</h4>
+          <p class="text-dark-400 text-sm">传统方案：各功能独立，数据不通<br><b class="text-white">我们的方案：7个 Agent 共享 Memory，形成全天闭环</b></p>
+          <p class="text-dark-500 text-xs mt-3">晨起目标 → 日间执行 → 晚间复盘 → 次日优化</p>
+        </div>
+        <div class="glass-card p-6 text-left">
+          <p class="text-2xl mb-3">📱 → 📺</p>
+          <h4 class="font-bold text-accent-300 mb-2">从手机到家庭终端</h4>
+          <p class="text-dark-400 text-sm">手机 App 打开率 ＜5%<br><b class="text-white">小度智能屏：语音交互零门槛，全屋覆盖</b></p>
+          <p class="text-dark-500 text-xs mt-3">Agent 能力 × 硬件场景 = 真正触达银发群体</p>
+        </div>
+      </div>
+
+      <div class="glass-card p-6 mb-8" style="border-color:rgba(59,130,246,0.3)">
+        <p class="font-bold mb-4">技术栈总结</p>
+        <div class="flex justify-center gap-8 text-sm">
+          <div class="text-center">
+            <p class="text-primary-400 font-bold text-lg">Orchestrator</p>
+            <p class="text-dark-400 text-xs">调度中枢</p>
+          </div>
+          <div class="text-center">
+            <p class="text-success-400 font-bold text-lg">7 Agents</p>
+            <p class="text-dark-400 text-xs">专业智能体</p>
+          </div>
+          <div class="text-center">
+            <p class="text-accent-400 font-bold text-lg">8+ Tools</p>
+            <p class="text-dark-400 text-xs">天气/医典/推送...</p>
+          </div>
+          <div class="text-center">
+            <p class="text-purple-400 font-bold text-lg">Memory</p>
+            <p class="text-dark-400 text-xs">健康画像持久化</p>
+          </div>
+          <div class="text-center">
+            <p class="text-danger-400 font-bold text-lg">Prompt/Skill</p>
+            <p class="text-dark-400 text-xs">五行养生/出题/报告</p>
+          </div>
+        </div>
+      </div>
+
+      <p class="text-dark-400 text-sm mb-6">让 AI Agent 成为每一位银发用户的私人健康管家</p>
+      <p class="text-dark-500 text-xs">百度健康 Hackathon 2026 · Agentic AI · Just Do It</p>
+    </div>
+  </div>
+
+  <!-- Video Modal -->
+  <div id="video-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; z-index:9999; background:rgba(0,0,0,0.85); align-items:center; justify-content:center;" onclick="closeVideo(event)">
+    <div style="width:720px; max-width:90vw; background:#0f172a; border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,0.1);">
+      <div style="padding:16px 20px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.06);">
+        <div>
+          <p style="font-weight:bold;">🧘 八段锦跟练 · 第五式</p>
+          <p style="color:#94a3b8; font-size:12px;">Agent 根据膝关节状况推荐的低负荷运动</p>
+        </div>
+        <span style="cursor:pointer; color:#94a3b8; font-size:28px;" onclick="closeVideo(event)">✕</span>
+      </div>
+      <div id="video-container" style="width:100%; aspect-ratio:16/9;"></div>
+    </div>
+  </div>
+
+  <script>
+    let currentPage = 0;
+    const pageLabels = ['封面','痛点与机会','Agent 架构','调度实例','晨起 Agent','用药 Agent','问诊 Agent','健脑 Agent','饮食 Agent','紧急守护 Agent','复盘 Agent','总结'];
+
+    function goPage(idx) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active','page-enter'));
+      const target = document.getElementById('p'+idx);
+      if(!target) return;
+      target.classList.add('active','page-enter');
+      currentPage = idx;
+      document.querySelectorAll('.nav-dot').forEach((d,i) => d.classList.toggle('active', i===idx));
+      document.getElementById('page-label').textContent = pageLabels[idx] || '';
+      if(idx === 7) resetQuiz();
+    }
+
+    document.addEventListener('keydown', e => {
+      if(e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); if(currentPage < 11) goPage(currentPage+1); }
+      if(e.key === 'ArrowLeft') { if(currentPage > 0) goPage(currentPage-1); }
+    });
+
+    // 左右滑动切页（触摸 + 鼠标拖拽）
+    let swipeStartX = 0, swipeStartY = 0;
+    document.addEventListener('touchstart', e => { swipeStartX = e.touches[0].clientX; swipeStartY = e.touches[0].clientY; }, { passive: true });
+    document.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - swipeStartX;
+      const dy = e.changedTouches[0].clientY - swipeStartY;
+      if (Math.abs(dx) < 50 || Math.abs(dy) > Math.abs(dx)) return;
+      if (dx < 0 && currentPage < 11) goPage(currentPage + 1);
+      if (dx > 0 && currentPage > 0) goPage(currentPage - 1);
+    }, { passive: true });
+    document.addEventListener('mousedown', e => { swipeStartX = e.clientX; swipeStartY = e.clientY; });
+    document.addEventListener('mouseup', e => {
+      const dx = e.clientX - swipeStartX;
+      const dy = e.clientY - swipeStartY;
+      if (Math.abs(dx) < 80 || Math.abs(dy) > Math.abs(dx)) return;
+      if (dx < 0 && currentPage < 11) goPage(currentPage + 1);
+      if (dx > 0 && currentPage > 0) goPage(currentPage - 1);
+    });
+
+    // Morning Agent
+    function startMorning() {
+      document.getElementById('morning-state-0').style.display = 'none';
+      document.getElementById('morning-state-1').style.display = 'flex';
+      const bubbles = ['m-b1','m-b2','m-b3','m-b4','m-b5','m-b6'];
+      const steps = ['ms-1','ms-2','ms-3','ms-3','ms-4','ms-5'];
+      bubbles.forEach((id,i) => {
+        setTimeout(() => {
+          document.getElementById(id).style.display = 'block';
+          document.getElementById(id).style.animation = 'bubbleIn 0.4s ease-out';
+          if(steps[i]) {
+            document.getElementById(steps[i]).querySelector('span').style.background = '#3b82f6';
+            document.getElementById(steps[i]).style.color = '#e2e8f0';
+          }
+          document.getElementById('morning-state-1').scrollTop = document.getElementById('morning-state-1').scrollHeight;
+        }, i * 2500);
+      });
+    }
+
+    // Med Agent
+    function startMed() {
+      document.getElementById('med-state-0').style.display = 'none';
+      document.getElementById('med-state-1').style.display = 'flex';
+      const items = ['med-b1','med-b2','med-b3','med-b4','med-b5','med-b6'];
+      const steps = ['meds-1','meds-2','meds-3','meds-4','meds-4','meds-4'];
+      items.forEach((id,i) => {
+        setTimeout(() => {
+          document.getElementById(id).style.display = 'block';
+          document.getElementById(id).style.animation = 'bubbleIn 0.4s ease-out';
+          if(steps[i]) {
+            document.getElementById(steps[i]).querySelector('span').style.background = '#f59e0b';
+            document.getElementById(steps[i]).style.color = '#e2e8f0';
+          }
+          document.getElementById('med-state-1').parentElement.scrollTop = document.getElementById('med-state-1').parentElement.scrollHeight;
+        }, i * 1200);
+      });
+    }
+
+    // Consult Agent
+    function startConsult() {
+      document.getElementById('consult-state-0').style.display = 'none';
+      document.getElementById('consult-state-1').style.display = 'flex';
+      const items = ['c-b1','c-b2','c-b3','c-b4','c-b5','c-b6'];
+      const steps = ['cs-1','cs-2','cs-3','cs-4','cs-5'];
+      items.forEach((id,i) => {
+        setTimeout(() => {
+          document.getElementById(id).style.display = 'block';
+          document.getElementById(id).style.animation = 'bubbleIn 0.4s ease-out';
+          if(i < steps.length) {
+            document.getElementById(steps[i]).querySelector('span').style.background = '#10b981';
+            document.getElementById(steps[i]).style.color = '#e2e8f0';
+          }
+          document.getElementById('consult-state-1').scrollTop = document.getElementById('consult-state-1').scrollHeight;
+        }, i * 1200);
+      });
+    }
+
+    // Video
+    function showVideo() {
+      const modal = document.getElementById('video-modal');
+      document.getElementById('video-container').innerHTML = '<iframe src="https://player.bilibili.com/player.html?bvid=BV1VsDpYXEqD&autoplay=1&t=195&high_quality=1" width="100%" height="100%" frameborder="0" allowfullscreen allow="autoplay" style="display:block;"></iframe>';
+      modal.style.display = 'flex';
+    }
+    function closeVideo(e) {
+      if(e.target === document.getElementById('video-modal') || e.target.textContent === '✕') {
+        document.getElementById('video-modal').style.display = 'none';
+        document.getElementById('video-container').innerHTML = '';
+      }
+    }
+
+    // Quiz Agent
+    const quizData = [
+      { q: '长期吃芹菜可以完全替代降压药吗？', img: '🥬', opts: ['可以，芹菜天然降压','不可以，必须遵医嘱'], optImgs: ['🌿','💊'], correct: 1, exp: '❌ 辟谣：芹菜素有轻微辅助作用，但绝不能替代降压药。擅自停药可能导致血压骤升，引发脑卒中。' },
+      { q: '老年人每天必须喝 8 杯水才健康？', img: '💧', opts: ['是的，必须8杯','不一定，因人而异'], optImgs: ['🥤','⚖️'], correct: 1, exp: '✅ 科普：老年人肾功能减退，盲目大量饮水可能加重心肾负担。应根据体重、活动量灵活调整。' },
+      { q: '饭后立即散步有助于消化？', img: '🚶', opts: ['对，饭后百步走','不对，应休息30分钟'], optImgs: ['🏃','🛋️'], correct: 1, exp: '❌ 辟谣：饭后立即运动会导致血液从消化系统分流，反而影响消化。建议休息20-30分钟再活动。' }
+    ];
+    let quizIdx = 0, quizScore = 0;
+
+    function startQuiz() { quizIdx = 0; quizScore = 0; document.getElementById('quiz-result').style.display = 'none'; showQuestion(); }
+    function resetQuiz() { startQuiz(); }
+
+    function showQuestion() {
+      if(quizIdx >= quizData.length) { showQuizResult(); return; }
+      const q = quizData[quizIdx];
+      document.getElementById('quiz-progress-text').textContent = `第 ${quizIdx+1}/${quizData.length} 题`;
+      document.getElementById('quiz-progress-bar').style.width = ((quizIdx+1)/quizData.length*100)+'%';
+      document.getElementById('quiz-score').textContent = quizScore + '分';
+      document.getElementById('quiz-question').innerHTML = `<div class="text-center mb-2"><span style="font-size:48px">${q.img}</span></div><p class="text-sm font-bold text-center">${q.q}</p>`;
+      document.getElementById('quiz-feedback').style.display = 'none';
+      const optDiv = document.getElementById('quiz-options');
+      optDiv.innerHTML = '';
+      q.opts.forEach((opt, i) => {
+        const btn = document.createElement('div');
+        btn.className = 'quiz-option text-xs';
+        btn.innerHTML = `<span style="font-size:20px;margin-right:6px">${q.optImgs[i]}</span>${(i===0?'A. ':'B. ')}${opt}`;
+        btn.onclick = () => answerQuiz(i);
+        optDiv.appendChild(btn);
+      });
+    }
+
+    function answerQuiz(idx) {
+      const q = quizData[quizIdx];
+      document.querySelectorAll('#quiz-options .quiz-option').forEach((o,i) => {
+        o.onclick = null;
+        if(i === q.correct) o.classList.add('correct');
+        if(i === idx && i !== q.correct) o.classList.add('wrong');
+      });
+      if(idx === q.correct) quizScore += 100;
+      document.getElementById('quiz-score').textContent = quizScore + '分';
+      const fb = document.getElementById('quiz-feedback');
+      fb.style.display = 'block';
+      fb.innerHTML = `<p class="${idx===q.correct?'text-success-300':'text-danger-300'} font-bold mb-1">${idx===q.correct?'✅ 回答正确！':'❌ 回答错误'}</p><p class="text-dark-300">${q.exp}</p>`;
+      setTimeout(() => { quizIdx++; showQuestion(); }, 3000);
+    }
+
+    function showQuizResult() {
+      document.getElementById('quiz-question').textContent = '';
+      document.getElementById('quiz-options').innerHTML = '';
+      document.getElementById('quiz-feedback').style.display = 'none';
+      document.getElementById('quiz-result').style.display = 'flex';
+      document.getElementById('quiz-final-score').textContent = quizScore + ' 分';
+    }
+
+    // Diet Agent
+    function startDiet() {
+      document.getElementById('diet-state-0').style.display = 'none';
+      document.getElementById('diet-state-1').style.display = 'flex';
+      const bubbles = ['d-b1','d-b2','d-b3','d-b4','d-b5'];
+      const steps = ['ds-1','ds-2','ds-3','ds-4'];
+      bubbles.forEach((id,i) => {
+        setTimeout(() => {
+          document.getElementById(id).style.display = 'block';
+          document.getElementById(id).style.animation = 'bubbleIn 0.4s ease-out';
+          if(i < steps.length) {
+            document.getElementById(steps[i]).querySelector('span').style.background = '#f59e0b';
+            document.getElementById(steps[i]).style.color = '#e2e8f0';
+          }
+          document.getElementById('diet-state-1').scrollTop = document.getElementById('diet-state-1').scrollHeight;
+        }, i * 2000);
+      });
+    }
+
+    // SOS Agent
+    let sosTriggered = false;
+    function triggerSOS() {
+      if(sosTriggered) return;
+      sosTriggered = true;
+      document.getElementById('sos-state-0').style.display = 'none';
+      document.getElementById('sos-state-1').style.display = 'block';
+      ['sos-step-1','sos-step-2','sos-step-3','sos-step-4'].forEach((id,i) => {
+        setTimeout(() => {
+          document.getElementById(id).style.display = 'flex';
+          document.getElementById(id).style.animation = 'slideUp 0.4s ease-out';
+        }, i * 1500);
+      });
+      setTimeout(() => {
+        sosTriggered = false;
+        document.getElementById('sos-state-0').style.display = 'block';
+        document.getElementById('sos-state-1').style.display = 'none';
+        ['sos-step-1','sos-step-2','sos-step-3','sos-step-4'].forEach(id => document.getElementById(id).style.display = 'none');
+      }, 8000);
+    }
+
+    // Review Agent
+    function startReview() {
+      document.getElementById('rv-state-0').style.display = 'none';
+      document.getElementById('rv-state-1').style.display = 'flex';
+      const bubbles = ['rv-b1','rv-b2','rv-b3','rv-b4'];
+      const steps = ['rvs-1','rvs-2','rvs-3','rvs-4'];
+      bubbles.forEach((id,i) => {
+        setTimeout(() => {
+          document.getElementById(id).style.display = 'block';
+          document.getElementById(id).style.animation = 'bubbleIn 0.4s ease-out';
+          if(steps[i]) {
+            document.getElementById(steps[i]).querySelector('span').style.background = '#8b5cf6';
+            document.getElementById(steps[i]).style.color = '#e2e8f0';
+          }
+          document.getElementById('rv-state-1').scrollTop = document.getElementById('rv-state-1').scrollHeight;
+        }, i * 2000);
+      });
+    }
+  </script>
+</body>
+</html>
