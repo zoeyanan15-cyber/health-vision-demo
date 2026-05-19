@@ -1,0 +1,1857 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>百度健康 × 小度 — 银发健康新入口</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#080d1a;--bg2:#0d1526;--bg3:#111827;
+  --blue:#3b82f6;--blue2:#60a5fa;--blue3:#1d4ed8;
+  --green:#10b981;--green2:#34d399;
+  --gold:#f59e0b;--gold2:#fbbf24;
+  --red:#ef4444;--purple:#8b5cf6;--pink:#ec4899;--orange:#f97316;
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+  --border:rgba(59,130,246,0.15);
+  --device-w:540px;--device-h:620px;
+}
+body{background:var(--bg);color:var(--text);font-family:'PingFang SC','Microsoft YaHei',sans-serif;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+
+/* ====== Header ====== */
+#header{
+  height:52px;background:linear-gradient(90deg,#050a14 0%,#0a1628 50%,#050a14 100%);
+  border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;
+  flex-shrink:0;position:relative;z-index:10;
+}
+.header-logo{display:flex;align-items:center;gap:10px}
+.logo-badge{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--blue3),var(--purple));display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;box-shadow:0 0 12px rgba(59,130,246,0.4)}
+.header-title{font-size:16px;font-weight:700;background:linear-gradient(90deg,var(--blue2),var(--green2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header-sub{font-size:11px;color:var(--text2);margin-left:8px;padding-left:8px;border-left:1px solid var(--border)}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:14px}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:gPulse 2s infinite}
+@keyframes gPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(1.3)}}
+#model-select{font-size:11px;color:var(--blue2);background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.25);border-radius:12px;padding:3px 18px 3px 10px;cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%2360a5fa'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 6px center}
+#model-select option{background:#0d1526;color:var(--text)}
+#live-clock{font-size:12px;color:var(--text2);font-variant-numeric:tabular-nums}
+
+/* ====== 布局 ====== */
+#body{display:flex;flex:1;min-height:0}
+
+/* ====== 侧栏 ====== */
+#sidebar{width:210px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+#sidebar::-webkit-scrollbar{width:3px}
+#sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* 时间轴 */
+#time-picker{padding:10px 12px 4px}
+.tp-label{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px}
+#time-slider{width:100%;-webkit-appearance:none;height:3px;background:linear-gradient(90deg,var(--blue),var(--purple));border-radius:2px;outline:none;cursor:pointer;margin:6px 0}
+#time-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--blue2);border:2px solid #fff;box-shadow:0 0 6px rgba(59,130,246,0.5);cursor:grab}
+#time-display{text-align:center;font-size:12px;color:var(--blue2);font-weight:700;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:3px 8px;font-variant-numeric:tabular-nums}
+#time-hint{font-size:9px;color:var(--text3);text-align:center;margin-top:3px}
+
+.sb-divider{height:1px;background:var(--border);margin:6px 12px}
+.sb-section{padding:7px 12px 3px;font-size:10px;font-weight:700;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase}
+.scene-item{display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;border-left:3px solid transparent;transition:all .18s;position:relative}
+.scene-item:hover{background:rgba(255,255,255,0.04)}
+.scene-item.active{background:rgba(59,130,246,0.1);border-left-color:var(--sc,var(--blue))}
+.scene-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.scene-info{flex:1;min-width:0}
+.scene-name{font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.scene-time{font-size:9px;color:var(--text3);margin-top:1px}
+.scene-badge{font-size:9px;padding:2px 5px;border-radius:8px;background:rgba(59,130,246,0.15);color:var(--blue2);font-weight:600;flex-shrink:0}
+.scene-badge.live{background:rgba(239,68,68,0.15);color:#f87171;animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+
+#user-card{padding:10px 12px}
+.uc-label{font-size:10px;color:var(--text3);margin-bottom:5px}
+.uc-body{display:flex;align-items:center;gap:8px}
+.uc-av{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#1a73e8,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700}
+.uc-name{font-size:11px;font-weight:600;color:var(--text)}
+.uc-meta{font-size:10px;color:var(--text3)}
+
+/* ====== 主区 ====== */
+#main{flex:1;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;min-width:0}
+#particles{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.particle{position:absolute;border-radius:50%;opacity:.4;animation:pfloat linear infinite}
+@keyframes pfloat{0%{transform:translateY(100vh) scale(0)}100%{transform:translateY(-10vh) scale(1)}}
+#main::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(59,130,246,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none}
+
+/* 设备 */
+#device-wrap{position:relative;z-index:2}
+#device-glow{position:absolute;inset:-20px;border-radius:40px;filter:blur(20px);pointer-events:none;animation:glowP 3s ease-in-out infinite;background:radial-gradient(ellipse at center,rgba(59,130,246,0.15) 0%,transparent 70%)}
+@keyframes glowP{0%,100%{opacity:.6}50%{opacity:1}}
+#device-frame{width:var(--device-w);height:var(--device-h);border-radius:28px;background:#0a0f1e;border:2px solid rgba(59,130,246,0.3);box-shadow:0 0 0 1px rgba(255,255,255,0.04),0 30px 80px rgba(0,0,0,0.6),inset 0 1px 0 rgba(255,255,255,0.06);display:flex;flex-direction:column;overflow:hidden;position:relative;transition:border-color .4s}
+#device-frame::before{content:'';position:absolute;top:10px;left:50%;transform:translateX(-50%);width:6px;height:6px;background:#1a2a40;border-radius:50%;z-index:10}
+#device-frame::after{content:'';position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:60px;height:4px;background:rgba(59,130,246,0.15);border-radius:2px}
+#device-screen{flex:1;display:flex;flex-direction:column;overflow:hidden;padding-bottom:10px}
+
+/* 设备顶栏 */
+#dev-topbar{padding:16px 14px 8px;background:linear-gradient(180deg,#0a0f1e 0%,transparent 100%);flex-shrink:0}
+.dev-scene-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);border-radius:20px;padding:4px 12px;font-size:11px;color:var(--blue2);font-weight:600;margin-bottom:6px}
+.dev-scene-title{font-size:13px;font-weight:700;color:var(--text);line-height:1.4}
+.dev-scene-desc{font-size:10px;color:var(--text2);margin-top:2px}
+
+/* 消息 */
+#messages{flex:1;overflow-y:auto;padding:8px 12px;display:flex;flex-direction:column;gap:8px}
+#messages::-webkit-scrollbar{width:3px}
+#messages::-webkit-scrollbar-thumb{background:rgba(59,130,246,0.2);border-radius:2px}
+.msg-row{display:flex;gap:8px;animation:msgIn .25s ease-out}
+.msg-row.user{flex-direction:row-reverse}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg-avatar{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.avatar-bot{background:linear-gradient(135deg,var(--blue3),var(--purple));color:#fff}
+.avatar-user{background:linear-gradient(135deg,#374151,#4b5563);color:var(--text2)}
+.msg-bubble{max-width:78%;padding:8px 12px;border-radius:16px;font-size:12px;line-height:1.65;word-break:break-word;white-space:pre-wrap}
+.bubble-bot{background:#121e35;border:1px solid rgba(59,130,246,0.15);color:var(--text);border-radius:4px 16px 16px 16px}
+.bubble-user{background:linear-gradient(135deg,var(--blue3),#1e40af);color:#fff;border-radius:16px 16px 4px 16px}
+.bubble-thinking{background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);color:#a78bfa;font-size:11px;border-radius:10px;padding:6px 10px;max-width:90%;font-style:italic}
+.typing-cursor{display:inline-block;width:2px;height:12px;background:var(--blue2);margin-left:2px;animation:tcBlink .8s infinite;vertical-align:middle}
+@keyframes tcBlink{0%,100%{opacity:1}50%{opacity:0}}
+.dots-loader{display:flex;gap:4px;padding:4px 0}
+.dot{width:6px;height:6px;background:var(--blue2);border-radius:50%;animation:dotBounce .8s ease-in-out infinite}
+.dot:nth-child(2){animation-delay:.15s}
+.dot:nth-child(3){animation-delay:.3s}
+@keyframes dotBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+/* ====== 场景专区 ====== */
+#scene-special{flex-shrink:0;padding:0 12px 4px;min-height:0}
+
+/* 健脑答题 */
+#quiz-area{display:none;flex-direction:column;gap:7px;padding:4px 0}
+.quiz-progress{height:4px;background:rgba(255,255,255,0.06);border-radius:2px;margin-bottom:3px}
+.quiz-progress-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--purple),var(--blue));transition:width .4s}
+.quiz-q{font-size:12px;font-weight:600;color:var(--text);line-height:1.5;margin-bottom:5px}
+.quiz-opts{display:flex;flex-direction:column;gap:5px}
+.quiz-opt{padding:7px 11px;border-radius:10px;cursor:pointer;font-size:11px;background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.2);color:var(--text2);transition:all .15s}
+.quiz-opt:hover:not(.locked){background:rgba(139,92,246,0.15);color:var(--text)}
+.quiz-opt.correct{background:rgba(16,185,129,0.15);border-color:var(--green);color:var(--green2)}
+.quiz-opt.wrong{background:rgba(239,68,68,0.12);border-color:var(--red);color:#fca5a5}
+.quiz-opt.locked{cursor:not-allowed}
+.quiz-feedback{font-size:11px;color:var(--text2);background:rgba(139,92,246,0.07);border:1px solid rgba(139,92,246,0.15);border-radius:8px;padding:6px 10px;line-height:1.5;display:none}
+
+/* 直播 */
+#live-area{display:none;flex-direction:column;gap:5px}
+#live-video-wrap{height:148px;background:#000;border-radius:10px;overflow:hidden;position:relative;flex-shrink:0}
+#live-video-wrap iframe{width:100%;height:100%;border:none}
+#live-hdr{position:absolute;top:0;left:0;right:0;padding:6px 10px;background:linear-gradient(180deg,rgba(0,0,0,0.75),transparent);display:flex;align-items:center;gap:6px;z-index:2}
+.live-badge{font-size:9px;background:var(--red);color:#fff;padding:2px 6px;border-radius:4px;font-weight:700;animation:blink 1.5s infinite}
+.live-viewers{font-size:10px;color:#fff;margin-left:auto}
+#danmaku-area{height:54px;overflow:hidden;position:relative}
+.dm-item{position:absolute;right:-200px;font-size:11px;color:rgba(255,255,255,0.85);background:rgba(0,0,0,0.3);border-radius:20px;padding:3px 10px;white-space:nowrap;animation:dmFloat 4s linear forwards}
+@keyframes dmFloat{from{right:-200px;opacity:1}to{right:110%;opacity:.3}}
+#live-bar{display:flex;gap:5px;align-items:center}
+#live-input{flex:1;background:#0d1728;border:1px solid rgba(236,72,153,0.2);border-radius:14px;padding:5px 10px;font-size:11px;color:var(--text);outline:none;font-family:inherit}
+.live-ask-btn{font-size:10px;background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;border:none;border-radius:14px;padding:5px 10px;cursor:pointer;white-space:nowrap}
+.live-heart{width:28px;height:28px;border-radius:50%;background:rgba(236,72,153,0.1);border:1px solid rgba(236,72,153,0.25);cursor:pointer;font-size:14px;color:var(--pink);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.live-heart.liked{background:rgba(236,72,153,0.25);animation:hbeat .4s ease}
+@keyframes hbeat{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
+
+/* SOS */
+#sos-area{display:none;flex-direction:column;align-items:center;gap:8px;padding:4px 0}
+#sos-btn-wrap{display:flex;justify-content:center;padding:8px 0}
+#sos-big-btn{width:106px;height:106px;border-radius:50%;border:none;cursor:pointer;background:radial-gradient(circle at center,#dc2626,#991b1b);color:#fff;font-size:24px;box-shadow:0 0 0 8px rgba(239,68,68,0.2),0 0 0 16px rgba(239,68,68,0.08);animation:sosPulse 1.4s ease-in-out infinite;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:transform .15s}
+#sos-big-btn:hover{transform:scale(1.05)}
+#sos-big-btn:active{transform:scale(.95)}
+.sos-lbl{font-size:10px;font-weight:700;letter-spacing:1px}
+@keyframes sosPulse{0%,100%{box-shadow:0 0 0 8px rgba(239,68,68,0.2),0 0 0 16px rgba(239,68,68,0.08)}50%{box-shadow:0 0 0 14px rgba(239,68,68,0.28),0 0 0 26px rgba(239,68,68,0.06),0 0 28px rgba(239,68,68,0.16)}}
+#sos-steps{display:flex;flex-direction:column;gap:5px;width:100%}
+.sos-step{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text3);padding:5px 10px;border-radius:8px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.04);transition:all .3s}
+.sos-step.on{color:var(--text);background:rgba(239,68,68,0.1);border-color:rgba(239,68,68,0.25)}
+.sos-icon{width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+.sos-step.on .sos-icon{background:rgba(239,68,68,0.25)}
+
+/* 快捷chips */
+#quick-area{padding:4px 12px;flex-shrink:0}
+.quick-chips{display:flex;flex-wrap:wrap;gap:5px}
+.quick-chip{font-size:10px;padding:4px 10px;border-radius:16px;cursor:pointer;background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.18);color:var(--blue2);transition:all .15s;white-space:nowrap}
+.quick-chip:hover{background:rgba(59,130,246,0.16);border-color:rgba(59,130,246,0.35)}
+.quick-chips.disabled .quick-chip{opacity:.4;cursor:not-allowed;pointer-events:none}
+
+/* 输入区 */
+#input-area{padding:6px 12px 4px;border-top:1px solid rgba(59,130,246,0.1);display:flex;gap:7px;align-items:center;flex-shrink:0}
+#chat-input{flex:1;background:#0d1728;border:1px solid rgba(59,130,246,0.2);border-radius:18px;padding:7px 12px;font-size:12px;color:var(--text);outline:none;transition:border-color .2s;font-family:inherit}
+#chat-input:focus{border-color:rgba(59,130,246,0.5)}
+#chat-input::placeholder{color:var(--text3)}
+#voice-btn{width:30px;height:30px;border-radius:50%;background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.25);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--purple);flex-shrink:0;transition:all .2s}
+#voice-btn:hover{background:rgba(139,92,246,0.2)}
+#voice-btn.recording{background:rgba(239,68,68,0.18);border-color:rgba(239,68,68,0.5);color:var(--red);animation:vPulse .8s ease-in-out infinite}
+@keyframes vPulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0.4)}50%{box-shadow:0 0 0 7px rgba(239,68,68,0)}}
+#send-btn{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--blue3),var(--purple));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;color:#fff;flex-shrink:0;transition:transform .15s,box-shadow .15s}
+#send-btn:hover{transform:scale(1.1);box-shadow:0 0 12px rgba(59,130,246,0.4)}
+#send-btn:disabled{opacity:.4;transform:none;cursor:not-allowed}
+
+/* ====== 右侧面板 ====== */
+#right-panel{width:210px;background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;padding:12px;gap:10px;overflow-y:auto}
+#right-panel::-webkit-scrollbar{width:3px}
+.panel-card{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:10px}
+.panel-card-title{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-bottom:7px}
+.health-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.health-row:last-child{border-bottom:none}
+.health-label{font-size:11px;color:var(--text2)}
+.health-val{font-size:11px;font-weight:700}
+.val-good{color:var(--green2)}
+.val-warn{color:var(--gold2)}
+.val-normal{color:var(--blue2)}
+.val-red{color:#f87171}
+.progress-bar{height:5px;background:rgba(255,255,255,0.06);border-radius:3px;margin-top:4px}
+.progress-fill{height:100%;border-radius:3px;transition:width .5s ease}
+.rp-card{background:rgba(30,41,59,0.6);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:10px;animation:rpIn .3s ease-out}
+@keyframes rpIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.rp-card-title{font-size:11px;font-weight:700;color:var(--text2);margin-bottom:7px;line-height:1.3}
+.rp-card-text{font-size:11px;color:var(--text2);line-height:1.6;white-space:pre-line}
+
+/* ====== Agent 状态行 ====== */
+.agent-row{display:flex;align-items:center;gap:8px;font-size:11px;padding:4px 6px;border-radius:8px;transition:background .3s}
+.agent-row.active{background:rgba(59,130,246,0.08)}
+.agent-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;transition:background .3s,box-shadow .3s}
+/* 状态：idle=灰，ready=绿，thinking=金闪烁，done=绿短亮 */
+.agent-dot.idle{background:var(--text3);box-shadow:none}
+.agent-dot.ready{background:var(--green);box-shadow:0 0 5px var(--green)}
+.agent-dot.thinking{background:var(--gold2);box-shadow:0 0 6px var(--gold);animation:agentThink .6s ease-in-out infinite}
+.agent-dot.done{background:var(--green2);box-shadow:0 0 10px var(--green2);animation:agentDone .4s ease-out}
+@keyframes agentThink{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
+@keyframes agentDone{0%{transform:scale(1.6)}100%{transform:scale(1)}}
+.agent-name{color:var(--text2);flex:1}
+.agent-status-text{font-size:9px;color:var(--text3);font-variant-numeric:tabular-nums}
+
+/* SOS 全局 */
+.sos-active #device-frame{border-color:rgba(239,68,68,0.5)!important}
+.sos-active #device-glow{background:radial-gradient(ellipse at center,rgba(239,68,68,0.22) 0%,transparent 70%)!important}
+
+/* 入场动画 */
+.scene-enter{animation:sceneIn .3s ease-out}
+@keyframes sceneIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
+
+/* 视频弹窗 */
+#video-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:100;align-items:center;justify-content:center}
+#video-modal.open{display:flex}
+#vmod-inner{position:relative;width:640px;max-width:90vw;aspect-ratio:16/9;border-radius:12px;overflow:hidden}
+#vmod-inner iframe{width:100%;height:100%;border:none}
+#vmod-close{position:absolute;top:-36px;right:0;background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:18px;width:32px;height:32px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+/* 汉堡菜单按钮（移动端） */
+#menu-btn{display:none;width:34px;height:34px;border-radius:8px;background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);color:var(--blue2);font-size:16px;cursor:pointer;align-items:center;justify-content:center;flex-shrink:0}
+#right-panel-btn{display:none;width:34px;height:34px;border-radius:8px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);color:var(--green2);font-size:16px;cursor:pointer;align-items:center;justify-content:center;flex-shrink:0}
+/* 遮罩 */
+#drawer-mask{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:49}
+#drawer-mask.open{display:block}
+
+/* ====== 移动端响应式 ====== */
+@media (max-width:900px){
+  :root{--device-w:100%;--device-h:auto}
+  #header{padding:0 12px;gap:8px}
+  .header-sub{display:none}
+  #live-clock{display:none}  #menu-btn{display:flex}
+  #right-panel-btn{display:flex}
+
+  /* 手机端 body 可滚动 */
+  body{overflow-x:hidden;overflow-y:auto;height:auto}
+  #body{flex-direction:column;overflow:visible;height:auto}
+  #main{flex:none;overflow:visible;padding:8px}
+
+  /* 手机端 header 精简：隐藏模型选择、AI状态文字、时钟 */
+  #model-select{display:none!important}
+  .ai-status-wrap{display:none!important}
+  #live-clock{display:none!important}
+  /* header-right 间距收紧 */
+  .header-right{gap:8px}
+
+  #sidebar{
+    position:fixed;left:-220px;top:0;bottom:0;z-index:50;
+    transition:left .25s ease;box-shadow:4px 0 20px rgba(0,0,0,0.4);
+    overflow-y:auto;
+  }
+  #sidebar.open{left:0}
+
+  #right-panel{
+    position:fixed;right:-220px;top:0;bottom:0;z-index:50;
+    transition:right .25s ease;box-shadow:-4px 0 20px rgba(0,0,0,0.4);
+    overflow-y:auto;
+  }
+  #right-panel.open{right:0}
+
+  #device-wrap{width:100%;max-width:100%}
+  #device-frame{
+    width:100%;height:auto;min-height:480px;border-radius:18px;
+  }
+  /* 手机端 device-screen 高度自适应，不限制 overflow */
+  #device-screen{min-height:auto;height:auto;overflow:visible;padding-bottom:4px}
+  #messages{min-height:200px;max-height:50vh;overflow-y:auto}
+  .msg-bubble{max-width:85%;font-size:13px}
+  .quick-chip{font-size:11px;padding:5px 12px}
+  #chat-input{font-size:13px}
+  #send-btn,#voice-btn{width:36px;height:36px}
+
+  /* 手机端场景专区高度限制 */
+  #live-video-wrap iframe{height:180px}
+  #live-area{max-height:none}
+
+  /* 底部场景快速切换 tab */
+  #mobile-tab-bar{
+    display:flex;position:fixed;bottom:0;left:0;right:0;z-index:40;
+    background:rgba(13,21,38,0.97);backdrop-filter:blur(10px);
+    border-top:1px solid var(--border);padding:6px 2px 10px;gap:1px;
+  }
+  .m-tab{
+    flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
+    padding:4px 1px;border-radius:8px;cursor:pointer;border:none;background:transparent;
+    color:var(--text3);transition:all .15s;min-width:0;
+  }
+  .m-tab.active{color:var(--blue2);background:rgba(59,130,246,0.1)}
+  .m-tab-icon{font-size:16px}
+  .m-tab-label{font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+
+  body{padding-bottom:72px}
+}
+
+/* ====== 工具按钮 ====== */
+.hd-icon-btn{height:28px;min-width:28px;padding:0 6px;border-radius:7px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.hd-icon-btn:hover,.hd-icon-btn.active{background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.3);color:var(--blue2)}
+
+/* ====== 大字体模式 ====== */
+body.large-font .msg-bubble{font-size:16px!important;line-height:1.7}
+body.large-font .quick-chip{font-size:13px!important;padding:6px 14px!important}
+body.large-font #chat-input{font-size:16px!important}
+body.large-font .dev-scene-title{font-size:15px!important}
+body.large-font .scene-name{font-size:13px!important}
+body.large-font .rp-card{font-size:13px!important}
+
+/* ====== 夜间模式 ====== */
+body.night-mode{
+  --bg:#000;--bg2:#0a0a0a;--bg3:#111;
+  --text:#f0f0f0;--text2:#bbb;--text3:#666;
+  --border:rgba(255,255,255,0.08);
+}
+body.night-mode #header{background:linear-gradient(90deg,#000 0%,#050505 50%,#000 100%)}
+body.night-mode #sidebar{background:#050505}
+body.night-mode #right-panel{background:#050505}
+body.night-mode #device-frame{background:#050505;border-color:rgba(255,255,255,0.08)}
+body.night-mode #device-screen{background:#020202}
+body.night-mode #mobile-tab-bar{background:rgba(0,0,0,0.98)}
+body.night-mode .bubble-bot{background:#0a0a0a!important;border-color:rgba(255,255,255,0.08)!important}
+
+@media (max-width:900px){
+  .hd-icon-btn{height:26px;min-width:26px;font-size:11px}
+}
+
+@media (min-width:901px){
+  #mobile-tab-bar{display:none!important}
+  #menu-btn{display:none!important}
+  #right-panel-btn{display:none!important}
+}
+@keyframes fadeInUp{from{opacity:0;transform:translateX(-50%) translateY(16px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div id="header">
+  <button id="menu-btn" onclick="toggleSidebar()">☰</button>
+  <div class="header-logo">
+    <div class="logo-badge">度</div>
+    <div><div class="header-title">百度健康 × 小度</div></div>
+    <div class="header-sub">银发健康新入口 · AI Demo</div>
+  </div>
+  <div class="header-right">
+    <button class="hd-icon-btn" onclick="toggleNight()" id="night-btn" title="夜间模式">🌙</button>
+    <button class="hd-icon-btn" onclick="toggleFont()" id="font-btn" title="大字体">大字</button>
+    <div class="ai-status-wrap" style="display:flex;align-items:center;gap:6px">
+      <div class="status-dot"></div>
+      <span class="ai-status-text" style="font-size:11px;color:var(--green2)">AI 已就绪</span>
+    </div>
+    <select id="model-select" onchange="switchModel(this.value)">
+      <option value="deepseek-v3.2">deepseek-v3.2</option>
+      <option value="deepseek-v4">deepseek-v4</option>
+      <option value="ernie-speed-128k">ERNIE Speed 128K</option>
+    </select>
+    <button id="right-panel-btn" onclick="toggleRightPanel()">📊</button>
+    <div id="live-clock">--:--:--</div>
+    <button class="hd-icon-btn" onclick="toggleAutoDemo()" id="auto-demo-btn" title="自动演示">▶</button>
+  </div>
+</div>
+<div id="drawer-mask" onclick="closeDrawers()"></div>
+
+<div id="body">
+
+  <!-- 侧栏 -->
+  <div id="sidebar">
+    <div id="time-picker">
+      <div class="tp-label">时间轴</div>
+      <input type="range" id="time-slider" min="0" max="7" step="1" value="0">
+      <div id="time-display">07:30</div>
+      <div id="time-hint">拖动切换场景</div>
+    </div>
+    <div class="sb-divider"></div>
+    <div class="sb-section">场景列表</div>
+    <div class="scene-item active" data-scene="morning" onclick="switchScene('morning',this)">
+      <div class="scene-icon" style="background:rgba(59,130,246,0.15)">🌅</div>
+      <div class="scene-info"><div class="scene-name">晨起养生</div><div class="scene-time">07:30 · 天气关怀</div></div>
+    </div>
+    <div class="scene-item" data-scene="medication" onclick="switchScene('medication',this)">
+      <div class="scene-icon" style="background:rgba(245,158,11,0.12)">💊</div>
+      <div class="scene-info"><div class="scene-name">用药提醒</div><div class="scene-time">08:30 · 血压自测</div></div>
+      <div class="scene-badge">2粒</div>
+    </div>
+    <div class="scene-item" data-scene="consultation" onclick="switchScene('consultation',this)">
+      <div class="scene-icon" style="background:rgba(16,185,129,0.12)">🩺</div>
+      <div class="scene-info"><div class="scene-name">AI 问诊</div><div class="scene-time">10:00 · 八段锦</div></div>
+    </div>
+    <div class="scene-item" data-scene="brain" onclick="switchScene('brain',this)">
+      <div class="scene-icon" style="background:rgba(139,92,246,0.12)">🧠</div>
+      <div class="scene-info"><div class="scene-name">健脑答题</div><div class="scene-time">15:00 · 辟谣科普</div></div>
+    </div>
+    <div class="scene-item" data-scene="live" onclick="switchScene('live',this)">
+      <div class="scene-icon" style="background:rgba(236,72,153,0.12)">📺</div>
+      <div class="scene-info"><div class="scene-name">健康直播</div><div class="scene-time">16:30 · 三甲专家</div></div>
+      <div class="scene-badge live">LIVE</div>
+    </div>
+    <div class="scene-item" data-scene="diet" onclick="switchScene('diet',this)">
+      <div class="scene-icon" style="background:rgba(249,115,22,0.12)">🥗</div>
+      <div class="scene-info"><div class="scene-name">饮食管控</div><div class="scene-time">17:00 · 慢病干预</div></div>
+    </div>
+    <div class="scene-item" data-scene="sos" onclick="switchScene('sos',this)">
+      <div class="scene-icon" style="background:rgba(239,68,68,0.15)">🆘</div>
+      <div class="scene-info"><div class="scene-name">紧急求助</div><div class="scene-time">24H · 亲友联动</div></div>
+    </div>
+    <div class="scene-item" data-scene="evening" onclick="switchScene('evening',this)">
+      <div class="scene-icon" style="background:rgba(167,139,250,0.12)">🌙</div>
+      <div class="scene-info"><div class="scene-name">晚间复盘</div><div class="scene-time">21:00 · 健康总结</div></div>
+    </div>
+    <div class="sb-divider"></div>
+    <div id="user-card">
+      <div class="uc-label">用户</div>
+      <div class="uc-body">
+        <div class="uc-av">张</div>
+        <div><div class="uc-name">张爷爷</div><div class="uc-meta">72岁 · 高血压·膝关节</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 设备 -->
+  <div id="main">
+    <div id="particles"></div>
+    <div id="device-wrap">
+      <div id="device-glow"></div>
+      <div id="device-frame">
+        <div id="device-screen">
+          <div id="dev-topbar">
+            <div class="dev-scene-tag">
+              <span id="scene-icon-sm">🌅</span>
+              <span id="scene-tag-text">场景一</span>
+              <span style="width:4px;height:4px;background:var(--green);border-radius:50%;box-shadow:0 0 4px var(--green)"></span>
+            </div>
+            <div class="dev-scene-title" id="scene-main-title">晨起养生 + 天气关怀</div>
+            <div class="dev-scene-desc" id="scene-sub-desc">07:30 · Multi-Agent 主动感知 · 天气/血压/运动三联动</div>
+          </div>
+
+          <!-- 场景专区 -->
+          <div id="scene-special">
+            <!-- 答题 -->
+            <div id="quiz-area"></div>
+            <!-- 直播 -->
+            <div id="live-area">
+              <div id="live-video-wrap">
+                <div id="live-hdr">
+                  <div style="width:24px;height:24px;border-radius:50%;background:var(--pink);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">李</div>
+                  <div><div style="font-size:10px;color:#fff;font-weight:600">李医生·北京协和骨科</div><div style="font-size:9px;color:rgba(255,255,255,.7)">膝关节保养专题</div></div>
+                  <div class="live-badge">直播中</div>
+                  <div class="live-viewers">👁 3.2万</div>
+                </div>
+                <iframe id="live-iframe" src="" allow="autoplay" allowfullscreen></iframe>
+              </div>
+              <div id="danmaku-area"></div>
+              <div id="live-bar">
+                <input id="live-input" type="text" placeholder="说点什么...">
+                <button class="live-ask-btn" onclick="liveAsk()">🎤 提问</button>
+                <button class="live-heart" id="live-heart" onclick="toggleHeart(this)">♡</button>
+              </div>
+            </div>
+            <!-- SOS -->
+            <div id="sos-area">
+              <div id="sos-btn-wrap">
+                <button id="sos-big-btn" onclick="triggerSOS()">🆘<span class="sos-lbl">一键求助</span></button>
+              </div>
+              <div id="sos-steps">
+                <div class="sos-step" id="ss1"><span class="sos-icon">📍</span><span>定位中... 北京市海淀区</span></div>
+                <div class="sos-step" id="ss2"><span class="sos-icon">📞</span><span>呼叫儿子小张 138****6789</span></div>
+                <div class="sos-step" id="ss3"><span class="sos-icon">✅</span><span>通话已接通 · 位置已共享</span></div>
+                <div class="sos-step" id="ss4"><span class="sos-icon">🏠</span><span>社区物业已通知 · 3分钟到达</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="messages"></div>
+          <div id="quick-area"><div class="quick-chips" id="quick-chips"></div></div>
+          <div id="input-area">
+            <input id="chat-input" type="text" placeholder="和小度说话…" autocomplete="off">
+            <button id="voice-btn" onclick="startVoice()" title="语音输入">🎤</button>
+            <button id="send-btn" onclick="sendMessage()" title="发送">➤</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 右侧面板 -->
+  <div id="right-panel">
+    <div id="rp-scene-cards"></div>
+    <div class="panel-card">
+      <div class="panel-card-title">Agent 状态</div>
+      <div style="display:flex;flex-direction:column;gap:5px" id="agent-status"></div>
+    </div>
+    <div class="panel-card">
+      <div class="panel-card-title">近期消息</div>
+      <div id="rp-history" style="display:flex;flex-direction:column;gap:4px">
+        <div style="font-size:10px;color:var(--text3);padding:2px 0">等待对话中…</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 视频弹窗 -->
+<div id="video-modal" onclick="closeVideoModal(event)">
+  <div id="vmod-inner">
+    <button id="vmod-close" onclick="closeVideoModal()">✕</button>
+    <iframe id="video-iframe" src="" allow="autoplay" allowfullscreen></iframe>
+  </div>
+</div>
+
+<script>
+// ====== 场景配置 ======
+const SCENES = {
+  morning:{
+    icon:'🌅',tag:'场景一',title:'晨起养生 + 天气关怀',desc:'07:30 · Multi-Agent · 睡眠/天气/血压/运动四联动',
+    color:'#3b82f6',glow:'rgba(59,130,246,0.18)',sliderIdx:0,
+    agents:['Health Orchestrator','Weather Agent','Memory Agent'],
+    quick:['今天天气怎么样？','我的血压正常吗？','推荐今天的晨练动作','帮我制定健康计划'],
+    rpCards:[
+      {title:'😴 昨夜睡眠分析',sleepCard:true},
+      {title:'⛅ 今日天气·北京',rows:[['气温','28°C 多云转晴','val-good'],['湿度','65%','val-normal'],['紫外线','较强','val-warn'],['空气质量','良','val-good']]},
+      {title:'🎯 今日目标',rows:[['按时服药','待完成','val-warn'],['步行3000步','进行中','val-normal'],['晨练15min','待完成','val-warn'],['晚餐少盐','待完成','val-warn']]},
+    ]
+  },
+  medication:{
+    icon:'💊',tag:'场景二',title:'用药提醒 + 血压自测',desc:'08:30 · 智能药盒 · 自动开盖 · 漏服家属通知',
+    color:'#f59e0b',glow:'rgba(245,158,11,0.18)',sliderIdx:1,
+    agents:['Medication Agent','Device Agent','Family Agent'],
+    quick:['该吃什么药？','我的血压高了怎么办？','忘吃药了还能补吗？','药盒格位状态'],
+    rpCards:[
+      {title:'💊 今日用药',medCard:true},
+      {title:'📊 近7日血压',bpChart:true},
+      {title:'👨‍👩‍👦 家属同步',text:'📱 儿子小张·已同步\n今日服药 + 血压数据\n✅ 上报成功',color:'#10b981'},
+    ]
+  },
+  consultation:{
+    icon:'🩺',tag:'场景三',title:'AI 问诊 + 八段锦跟练',desc:'10:00 · 真人医生背书 · 多轮对话 · 慢病管理',
+    color:'#10b981',glow:'rgba(16,185,129,0.18)',sliderIdx:2,
+    agents:['Medical Agent','Exercise Agent','Record Agent'],
+    quick:['我膝盖有点疼怎么办？','八段锦第一式怎么做？','高血压注意事项','今天适合做什么运动'],
+    rpCards:[
+      {title:'🏥 AI辅诊建议',rows:[['症状','右膝酸胀','val-warn'],['初判','膝关节退行性变','val-warn'],['处方运动','八段锦第五式','val-good'],['就医','1周无改善复诊','val-normal']]},
+      {title:'🎯 跟练进度',text:'本周已跟练：3次 / 5次\n累计时长：45分钟\n建议每日15分钟',color:'#10b981'},
+      {title:'📹 视频跟练',videoBtn:true},
+    ]
+  },
+  brain:{
+    icon:'🧠',tag:'场景四',title:'健脑答题 + 辟谣科普',desc:'15:00 · 认知训练 · 健康辟谣 · 积分奖励',
+    color:'#8b5cf6',glow:'rgba(139,92,246,0.18)',sliderIdx:3,
+    agents:['Cognitive Agent','Fact-Check Agent','Game Agent'],
+    quick:['再来一道题','骨头汤能补钙吗？','维生素C越多越好？','今天已得多少积分'],
+    rpCards:[
+      {title:'🏆 本月排行榜',rows:[['🥇 王奶奶','1280分','val-good'],['🥈 李爷爷','1150分','val-normal'],['⭐ 张爷爷','780分','val-warn']]},
+      {title:'🎁 积分兑换',pointsProgress:true},
+    ]
+  },
+  live:{
+    icon:'📺',tag:'场景五',title:'三甲专家健康直播',desc:'16:30 · 北京协和骨科 · 李主任 · 实时问答',
+    color:'#ec4899',glow:'rgba(236,72,153,0.18)',sliderIdx:4,
+    agents:['Live Agent','QA Agent','Booking Agent'],
+    quick:['今天直播讲什么？','血压忽高忽低怎么办？','帮我预约挂号','直播精华总结'],
+    rpCards:[
+      {title:'📺 直播信息',rows:[['主讲','李医生·协和骨科','val-normal'],['主题','膝关节保养专题','val-normal'],['观看','3.2万人','val-good'],['状态','直播中🔴','val-red']]},
+      {title:'🎯 互动记录',text:'已提问：1条 ✅\n医生已回复\n直播精华结束后\n自动保存',color:'#ec4899'},
+    ]
+  },
+  diet:{
+    icon:'🥗',tag:'场景六',title:'备餐前主动干预 + 饮食管控',desc:'17:00 · Memory饮食偏好 · 慢病食谱 · 升糖指数',
+    color:'#f97316',glow:'rgba(249,115,22,0.18)',sliderIdx:5,
+    agents:['Diet Agent','Memory Agent','Health Agent'],
+    quick:['今晚想吃红烧肉','推荐低盐食谱','血糖高能吃什么水果？','今天饮食评分'],
+    rpCards:[
+      {title:'🍽️ 今日备餐替换',rows:[['白粥→杂粮粥','GI 69→45','val-good'],['咸菜→凉拌木耳','盐 8g→2g','val-good'],['清蒸鱼','优质蛋白✓','val-good']]},
+      {title:'📊 今日营养',text:'热量：1680kcal / 1800目标\n盐分：4.2g / 5g限制 ✅\n血糖指数：整体偏低 ✅',color:'#f97316'},
+    ]
+  },
+  sos:{
+    icon:'🆘',tag:'场景七',title:'紧急求助 + 亲友联动',desc:'跌倒检测 · 一键SOS · 位置共享 · 自动呼叫',
+    color:'#ef4444',glow:'rgba(239,68,68,0.25)',isSOS:true,sliderIdx:6,
+    agents:['SOS Agent','Location Agent','Family Agent'],
+    quick:['帮我联系儿子小张','附近有医院吗？','我在哪里？','怎么做心肺复苏？'],
+    rpCards:[
+      {title:'📞 紧急联系人',rows:[['儿子小张','138****6789','val-good'],['社区物业','010-****6789','val-normal'],['120急救','120','val-warn']]},
+      {title:'📍 实时位置',text:'北京市海淀区\nXX小区3号楼\n位置已同步给家属 ✅',color:'#ef4444'},
+    ]
+  },
+  evening:{
+    icon:'🌙',tag:'场景八',title:'晚间复盘 · 今日健康总结',desc:'21:00 · 全天数据汇总 · 健康日报 · 明日计划',
+    color:'#a78bfa',glow:'rgba(167,139,250,0.18)',sliderIdx:7,
+    agents:['Report Agent','Memory Agent','Family Agent'],
+    quick:['今天健康总结','血压控制得好吗？','明天要注意什么？','把报告发给我儿子'],
+    rpCards:[
+      {title:'🎯 今日健康得分',eveningScore:true},
+      {title:'👨‍👩‍👦 家人同步',text:'女儿小丽 已收到\n今日健康报告\n\n留言：爸，今天不错！\n步数明天补上～',color:'#a78bfa'},
+    ]
+  },
+};
+
+const SLIDER_TIMES=['07:30','08:30','10:00','15:00','16:30','17:00','全天','21:00'];
+const SLIDER_SCENES=['morning','medication','consultation','brain','live','diet','sos','evening'];
+
+// 动态重建时间轴（schedule 加载后调用）
+function _rebuildSliderFromSchedule(){
+  if(!scheduleConfig||!scheduleConfig.schedule) return;
+  const items=scheduleConfig.schedule.filter(function(i){ return i.enabled!==false; });
+  if(items.length===0) return;
+  // 按时间排序
+  const sorted=items.slice().sort(function(a,b){ return (a.time||'').localeCompare(b.time||''); });
+  const times=sorted.map(function(i){ return i.time||'--:--'; });
+  const scenes=sorted.map(function(i){ return i.scene; });
+  // 更新全局映射
+  window._dynSliderTimes=times;
+  window._dynSliderScenes=scenes;
+  // 更新滑块范围
+  const slider=document.getElementById('time-slider');
+  slider.max=String(times.length-1);
+  // 渲染时间轴刻度标签
+  _renderSliderTicks(sorted);
+  // 设置当前位置
+  const curIdx=scenes.indexOf(currentScene);
+  slider.value=curIdx>=0?String(curIdx):'0';
+  document.getElementById('time-display').textContent=times[curIdx>=0?curIdx:0];
+}
+
+function _renderSliderTicks(items){
+  let wrap=document.getElementById('slider-ticks');
+  if(!wrap){
+    wrap=document.createElement('div'); wrap.id='slider-ticks';
+    wrap.style.cssText='display:flex;justify-content:space-between;padding:0 2px;margin-top:2px';
+    document.getElementById('time-picker').insertBefore(wrap,document.getElementById('time-hint'));
+  }
+  wrap.innerHTML=items.map(function(item){
+    return `<span title="${item.title}" style="font-size:8px;color:var(--text3);text-align:center;cursor:default">${item.icon||''}</span>`;
+  }).join('');
+}
+
+function _sliderTime(idx){
+  if(window._dynSliderTimes) return window._dynSliderTimes[idx]||'--:--';
+  return SLIDER_TIMES[idx]||'--:--';
+}
+function _sliderScene(idx){
+  if(window._dynSliderScenes) return window._dynSliderScenes[idx]||'morning';
+  return SLIDER_SCENES[idx]||'morning';
+}
+
+let currentScene='morning', messages={}, isLoading=false, currentModel='deepseek-v3.2';
+let danmakuTimer=null, voiceTimer=null, sosResetTimer=null;
+let scheduleConfig=null; // 来自后端的日程配置
+let _scheduleHash='';    // 用于检测变化
+
+// ====== 离线默认日程数据 ======
+const DEFAULT_SCHEDULE = {
+  elder_name: "张爷爷",
+  schedule: [
+    {id:"s1", scene:"morning", time:"07:30", type:"greeting", icon:"🌅", title:"晨间问候+天气关怀", proactive_msg:"张爷爷早上好！今天北京多云转晴，28°C，紫外线较强。\n\n您昨晚睡了7小时15分，深睡1小时12分，比前天略少。建议今天上午出门戴帽子，晨练选在7:30-8:00之间。\n\n今日血压目标：收缩压<135mmHg，记得早餐后测量哦！", quick_replies:["今天天气怎么样？","我的血压正常吗？","推荐今天的晨练动作","帮我制定健康计划"], enabled:true},
+    {id:"s2", scene:"medication", time:"08:30", type:"medication", icon:"💊", title:"用药提醒+血压自测", proactive_msg:"张爷爷，到吃药时间啦！💊\n\n今日用药：\n1️⃣ 苯磺酸氨氯地平 5mg × 1片（降压）\n2️⃣ 阿托伐他汀 20mg × 1片（降脂）\n\n⚠️ 请先测血压再吃药，测完我帮您记录。\n药盒已自动开启第一格。", quick_replies:["该吃什么药？","我的血压高了怎么办？","忘吃药了还能补吗？","药盒格位状态"], enabled:true},
+    {id:"s3", scene:"consultation", time:"10:00", type:"exercise", icon:"🩺", title:"AI问诊+八段锦跟练", proactive_msg:"张爷爷，上午好！现在是运动时间 🧘\n\n根据您的膝关节情况，今天推荐八段锦第五式「摇头摆尾去心火」，强度适中，对膝关节压力小。\n\n要不要跟着视频一起练15分钟？完成后今日健康积分+15分！", quick_replies:["我膝盖有点疼怎么办？","八段锦第一式怎么做？","高血压注意事项","今天适合做什么运动"], enabled:true},
+    {id:"s4", scene:"brain", time:"15:00", type:"brain", icon:"🧠", title:"健脑答题+辟谣科普", proactive_msg:"张爷爷，下午茶时间到！来做几道健康小测验吧 🧠\n\n今日主题：高血压饮食辟谣\n答对可获积分，集满可兑换大米和花生油哦！\n\n准备好了吗？", quick_replies:["再来一道题","骨头汤能补钙吗？","维生素C越多越好？","今天已得多少积分"], enabled:true},
+    {id:"s5", scene:"live", time:"16:30", type:"live", icon:"📺", title:"三甲专家健康直播", proactive_msg:"张爷爷，今天16:30有一场您关注的直播！📺\n\n🏥 北京协和医院骨科·李主任\n📋 主题：膝关节日常保养与康复训练\n👥 已有3.2万人预约\n\n我帮您设了提醒，开播时通知您。有什么想问医生的，我帮您记下来直播时提问。", quick_replies:["今天直播讲什么？","血压忽高忽低怎么办？","帮我预约挂号","直播精华总结"], enabled:true},
+    {id:"s6", scene:"diet", time:"17:00", type:"diet", icon:"🥗", title:"备餐干预+饮食管控", proactive_msg:"张爷爷，快到晚饭时间了！🥗\n\n根据您今天的饮食记录：\n✅ 早餐：杂粮粥+水煮蛋（优秀 92分）\n⚠️ 午餐：白米饭+味噌汤（钠偏高 74分）\n\n🍽️ 晚餐建议：低盐杂粮套餐\n· 杂粮饭代替白米饭（降GI）\n· 清蒸鱼（优质蛋白）\n· 凉拌黄瓜（少盐）\n\n今日总钠摄入已达4.3g/5g限制，晚餐务必少盐！", quick_replies:["今晚想吃红烧肉","推荐低盐食谱","血糖高能吃什么水果？","今天饮食评分"], enabled:true},
+    {id:"s7", scene:"sos", time:"24:00", type:"greeting", icon:"🆘", title:"紧急求助", proactive_msg:"", quick_replies:["帮我联系儿子小张","附近有医院吗？","我在哪里？","怎么做心肺复苏？"], enabled:true},
+    {id:"s8", scene:"evening", time:"21:00", type:"summary", icon:"🌙", title:"晚间复盘+健康总结", proactive_msg:"张爷爷，辛苦一天了！来看看今天的健康成绩单 📋\n\n🎯 今日得分：45/60分（超过78%同龄人）\n✅ 按时服药 +10分\n✅ 测量血压 +10分\n✅ 八段锦15分钟 +15分\n✅ 健脑答题3道 +10分\n⭕ 步行3000步（未完成）\n⭕ 晚餐少盐（待评估）\n\n📊 血压趋势：本周均值130/84，较上周↓5mmHg，控制良好！\n\n明日目标已调整：步数降为2000步，晚餐少盐重点关注。\n\n晚安，张爷爷！明天继续加油 💪", quick_replies:["今天健康总结","血压控制得好吗？","明天要注意什么？","把报告发给我儿子"], enabled:true}
+  ]
+};
+
+// ====== 离线场景摘要（loadSceneBrief 降级使用） ======
+const OFFLINE_BRIEFS = {
+  morning: "📊 今晨健康速报：\n\n😴 昨夜睡眠：7h15m（评分68/100）\n⚠️ 深睡仅1h12m，低于建议1.5h\n❤️ 静息心率：74bpm（连续2天偏高）\n\n🌤️ 今日天气：北京 28°C 多云转晴\n☀️ 紫外线较强，出门注意防晒\n\n🎯 今日待办：\n· 08:30 服药（氨氯地平+阿托伐他汀）\n· 10:00 八段锦跟练\n· 15:00 健脑答题\n· 16:30 骨科直播\n\n张爷爷加油，健康生活每一天！",
+  medication: "💊 用药提醒速报：\n\n今日需服药物：\n1. 苯磺酸氨氯地平 5mg — 降压（早餐后）\n2. 阿托伐他汀 20mg — 降脂（晚餐后）\n\n📊 近7日服药记录：连续23天按时服药 🔥\n\n🩺 今日血压：128/82 mmHg\n📈 较上周均值↓5mmHg，控制良好\n\n⚠️ 注意事项：\n· 氨氯地平不可与葡萄柚同服\n· 阿托伐他汀避免与大量酒精同服\n· 如出现肌肉酸痛请及时告知",
+  evening: "🌙 今日健康日报：\n\n🏆 综合得分：45/60（超过78%同龄用户）\n\n✅ 已完成：\n· 按时服药（2/2）\n· 血压测量（128/82，良好）\n· 八段锦跟练15分钟\n· 健脑答题3道（积分+100）\n\n⭕ 未完成：\n· 步行仅1200步/3000目标\n· 晚餐盐分待评估\n\n📈 本周趋势：血压稳步下降，运动量略不足\n\n💡 明日建议：\n· 步数目标调低至2000步\n· 晚餐重点关注少盐\n· 继续保持服药打卡\n\n报告已同步给家属小张 ✅"
+};
+
+// ====== 预填对话历史（演示用） ======
+const DEMO_CONVERSATIONS = {
+  morning: [
+    {role:'assistant', content:'张爷爷早上好！今天北京多云转晴，28°C，紫外线较强。\n\n您昨晚睡了7小时15分，深睡1小时12分，比前天略少。建议今天上午出门戴帽子，晨练选在7:30-8:00之间。\n\n今日血压目标：收缩压<135mmHg，记得早餐后测量哦！'},
+    {role:'assistant', content:'📊 今晨健康速报：\n\n😴 昨夜睡眠：7h15m（评分68/100）\n⚠️ 深睡仅1h12m，低于建议1.5h\n❤️ 静息心率：74bpm（连续2天偏高）\n\n🌤️ 今日天气：北京 28°C 多云转晴\n☀️ 紫外线较强，出门注意防晒\n\n🎯 今日待办：\n· 08:30 服药（氨氯地平+阿托伐他汀）\n· 10:00 八段锦跟练\n· 15:00 健脑答题\n· 16:30 骨科直播'},
+    {role:'user', content:'今天天气怎么样？'},
+    {role:'assistant', content:'今天北京多云转晴，气温28°C，湿度65%。\n\n☀️ 紫外线较强，出门建议戴帽子防晒\n🌬️ 下午有3级风，晨练选在8点前比较合适\n💧 空气质量：良，适合户外活动\n\n张爷爷，建议今天穿薄长袖，带一把遮阳伞。早上出门散步没问题的！'},
+    {role:'user', content:'我的血压正常吗？'},
+    {role:'assistant', content:'您今早测量 128/82 mmHg，非常好！👍\n\n📈 对比数据：\n· 今日：128/82（正常偏高范围）\n· 上周均值：133/86\n· 本周趋势：稳步下降 ↓5mmHg\n\n✅ 血压控制良好，继续保持目前的用药和清淡饮食方案。\n⏰ 下次测量提醒：明早 08:00\n\n张爷爷，您的坚持很有效果，继续加油！'},
+  ],
+  medication: [
+    {role:'assistant', content:'张爷爷，到吃药时间啦！💊\n\n今日用药：\n1️⃣ 苯磺酸氨氯地平 5mg × 1片（降压）\n2️⃣ 阿托伐他汀 20mg × 1片（降脂）\n\n⚠️ 请先测血压再吃药，测完我帮您记录。\n药盒已自动开启第一格。'},
+    {role:'user', content:'该吃什么药？'},
+    {role:'assistant', content:'张爷爷，今天要吃2种药：\n\n💊 第一格：苯磺酸氨氯地平 5mg\n   → 降压药，白色小片，1片\n   → 早餐后30分钟服用\n   ⚠️ 不能和葡萄柚一起吃\n\n💊 第二格：阿托伐他汀 20mg\n   → 降脂药，椭圆形，1片\n   → 晚餐后服用\n   ⚠️ 避免大量饮酒\n\n药盒第一格已经打开了，您看到了吗？吃完告诉我一声。'},
+    {role:'user', content:'吃完了'},
+    {role:'assistant', content:'已记录！今日用药打卡成功 ✅\n\n🔥 连续第24天按时服药！太棒了！\n\n📊 今日服药记录：\n· 08:35 苯磺酸氨氯地平 5mg ✅\n· 20:00 阿托伐他汀 20mg（晚间提醒）\n\n📱 已同步通知家属小张\n⏰ 下次提醒：今晚 20:00 阿托伐他汀\n\n张爷爷，您的坚持就是最好的药！'},
+  ],
+  consultation: [
+    {role:'assistant', content:'张爷爷，上午好！现在是运动时间 🧘\n\n根据您的膝关节情况，今天推荐八段锦第五式「摇头摆尾去心火」，强度适中，对膝关节压力小。\n\n要不要跟着视频一起练15分钟？完成后今日健康积分+15分！'},
+    {role:'user', content:'我膝盖有点疼怎么办？'},
+    {role:'assistant', content:'张爷爷，膝盖疼痛需要注意 🩺\n\n根据您的病历（膝关节退行性变），给您以下建议：\n\n🔹 即时缓解：\n· 坐下休息，避免负重\n· 热敷膝盖15-20分钟\n· 抬高腿部减轻肿胀\n\n🔹 日常注意：\n· 避免爬楼梯和深蹲\n· 散步控制在30分钟内\n· 穿软底防滑鞋\n\n🔹 推荐运动：\n· ✅ 八段锦（站式，不弯膝）\n· ✅ 坐姿抬腿练习\n· ❌ 避免跑步和登山\n\n如果疼痛持续1周不缓解，建议复诊骨科。需要帮您预约吗？'},
+    {role:'user', content:'八段锦第一式怎么做？'},
+    {role:'assistant', content:'八段锦第一式「两手托天理三焦」动作要领 🧘\n\n📋 步骤：\n1. 双脚与肩同宽，自然站立\n2. 两手从体侧缓缓上举\n3. 十指交叉，掌心向上托起\n4. 抬头看手背，踮脚尖\n5. 保持3秒，缓缓放下\n6. 重复6-8次\n\n⚠️ 适老提醒：\n· 不必踮脚太高，稳住重心\n· 如头晕可省略抬头动作\n· 呼吸配合：上举吸气，下放呼气\n\n🎬 要我播放跟练视频吗？跟着节奏做，15分钟就能完成！'},
+  ],
+  diet: [
+    {role:'assistant', content:'张爷爷，快到晚饭时间了！🥗\n\n根据您今天的饮食记录：\n✅ 早餐：杂粮粥+水煮蛋（优秀 92分）\n⚠️ 午餐：白米饭+味噌汤（钠偏高 74分）\n\n🍽️ 晚餐建议：低盐杂粮套餐\n· 杂粮饭代替白米饭（降GI）\n· 清蒸鱼（优质蛋白）\n· 凉拌黄瓜（少盐）\n\n今日总钠摄入已达4.3g/5g限制，晚餐务必少盐！'},
+    {role:'user', content:'今晚想吃红烧肉'},
+    {role:'assistant', content:'张爷爷，理解您的馋劲儿 😊 但今天不太适合：\n\n❌ 红烧肉问题：\n· 钠含量约3-4g（今日余量仅0.7g）\n· 脂肪含量高，影响阿托伐他汀降脂效果\n· 升糖指数中等偏高\n\n✅ 替代方案（同样美味）：\n· 🐟 清蒸鲈鱼 — 优质蛋白，低钠低脂\n· 🥩 白切鸡腿 — 蘸少量姜葱油，解馋又健康\n· 🍖 卤牛腱肉 — 瘦肉为主，切片配蒜泥\n\n💡 建议：明天中午吃红烧肉（小份），提前减少早午餐盐分。这样既解馋又不超标，好不好？'},
+    {role:'user', content:'那好吧，听你的'},
+    {role:'assistant', content:'好的张爷爷！👍 那今晚给您安排：\n\n🍽️ 推荐晚餐（约500kcal，钠<0.5g）：\n· 杂粮饭半碗（GI≈45）\n· 清蒸鲈鱼（少量蒸鱼豉油）\n· 凉拌木耳黄瓜（不加盐，用醋调味）\n· 紫菜蛋花汤（少盐）\n\n📊 今日营养预估（含晚餐）：\n· 总热量：1500/1800 kcal ✅\n· 总钠：4.8g/5g限制 ✅（刚好）\n· 蛋白质：62g/60g目标 ✅\n\n明天中午的红烧肉我帮您记着啦，到时候提前提醒您少吃早餐主食 😄'},
+  ],
+  evening: [
+    {role:'assistant', content:'张爷爷，辛苦一天了！来看看今天的健康成绩单 📋\n\n🎯 今日得分：45/60分（超过78%同龄人）\n✅ 按时服药 +10分\n✅ 测量血压 +10分\n✅ 八段锦15分钟 +15分\n✅ 健脑答题3道 +10分\n⭕ 步行3000步（未完成）\n⭕ 晚餐少盐（待评估）\n\n📊 血压趋势：本周均值130/84，较上周↓5mmHg，控制良好！\n\n明日目标已调整：步数降为2000步，晚餐少盐重点关注。\n\n晚安，张爷爷！明天继续加油 💪'},
+    {role:'user', content:'今天健康总结'},
+    {role:'assistant', content:'📋 张爷爷今日健康日报（5月19日）\n\n━━━━━━━━━━━━━━━━\n🏆 综合评分：45/60（良好）\n━━━━━━━━━━━━━━━━\n\n💊 用药：2/2 按时服用 ✅\n🩺 血压：128/82 mmHg（↓5）✅\n🧘 运动：八段锦15min + 步行8432步\n🧠 认知：答题3道，正确2道\n🥗 饮食：均分83分（早优/午良/晚优）\n😴 昨夜：7h15m（深睡偏少⚠️）\n\n📈 本周趋势：\n· 血压：连续3天<130 ✅\n· 服药：连续24天打卡 🔥\n· 运动：本周已练3次/5目标\n\n💡 明日重点：补充步数 + 关注深睡'},
+    {role:'user', content:'把报告发给我儿子'},
+    {role:'assistant', content:'好的！已将今日健康报告发送给小张 📱\n\n📤 发送内容：\n· 今日健康得分：45/60\n· 血压/用药/运动数据\n· 饮食评估报告\n· AI 建议与明日计划\n\n✅ 小张已收到（刚刚）\n\n💬 小张留言：「爸，今天表现不错！步数明天我陪你散步补上～周末回去看你。」\n\n张爷爷，儿子很关心您呢！早点休息，晚安 🌙'},
+  ],
+};
+
+// ====== 日程配置加载 ======
+async function loadScheduleConfig(){
+  try{
+    const r=await fetch('/api/schedule');
+    scheduleConfig=await r.json();
+    _scheduleHash=JSON.stringify(scheduleConfig);
+  }catch(e){
+    // 离线降级：使用内嵌默认数据
+    scheduleConfig=DEFAULT_SCHEDULE;
+    _scheduleHash=JSON.stringify(scheduleConfig);
+  }
+}
+
+// 轮询日程变更（每 8 秒，子女端修改后快速生效）
+let _prevAllIds=''; // 所有日程 ID 集合，检测任何新增
+setInterval(async function(){
+  try{
+    const r=await fetch('/api/schedule');
+    const fresh=await r.json();
+    const freshHash=JSON.stringify(fresh);
+    if(freshHash===_scheduleHash) return; // 无变化
+    // 检测所有新增日程（不只是用药）
+    const prevIds=_prevAllIds ? _prevAllIds.split(',') : [];
+    const freshAll=(fresh.schedule||[]).filter(function(i){ return i.enabled!==false; });
+    const newItems=freshAll.filter(function(i){ return prevIds.indexOf(i.id)<0; });
+    _prevAllIds=freshAll.map(function(i){ return i.id; }).join(',');
+    // 同时维护用药 ID（保持 _prevMedIds 兼容）
+    const freshMeds=freshAll.filter(function(i){ return i.type==='medication'; });
+    _prevMedIds=freshMeds.map(function(i){ return i.id; }).join(',');
+    _scheduleHash=freshHash;
+    scheduleConfig=fresh;
+    // 刷新当前场景的快捷 chips
+    const s=SCENES[currentScene];
+    const schedItem=getScheduleItem(currentScene);
+    renderQuickChips(schedItem ? schedItem.quick_replies : s.quick);
+    // 同步重建时间轴
+    _rebuildSliderFromSchedule();
+    // 始终刷新右侧卡片
+    renderSceneCards(SCENES[currentScene]);
+    // 有新增日程：小度作为中间人传达给老人
+    if(newItems.length>0){
+      _deliverNewScheduleMsg(newItems, fresh);
+    } else {
+      _showScheduleToast(fresh);
+    }
+  }catch(e){}
+}, 8000);
+
+// 小度中间人传达新日程：弹窗确认 + 注入对话 + 语音模拟播报
+function _deliverNewScheduleMsg(newItems, fresh){
+  // 1. 构建小度中间人消息文本
+  const elder=( scheduleConfig&&scheduleConfig.elder_name)||'爷爷';
+  const itemLines=newItems.map(function(m){
+    return `${m.icon||'📋'} ${m.title}  ${m.time||''}`;
+  }).join('\n');
+  const chatMsg=`${elder}，您的家人刚刚给您安排了新的提醒 📬\n\n${itemLines}\n\n我已经帮您加入今日日程了，需要了解详情吗？`;
+
+  // 2. 弹窗确认对话框
+  const old=document.getElementById('new-sched-modal'); if(old) old.remove();
+  const modal=document.createElement('div'); modal.id='new-sched-modal';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:2000;display:flex;align-items:center;justify-content:center';
+  const listHtml=newItems.map(function(m){
+    return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06)">
+      <span style="font-size:20px">${m.icon||'📋'}</span>
+      <div style="flex:1">
+        <div style="font-size:13px;color:#e2e8f0;font-weight:500">${m.title}</div>
+        <div style="font-size:11px;color:#94a3b8;margin-top:1px">${m.time||''} · ${m.scene||''}</div>
+      </div>
+    </div>`;
+  }).join('');
+  modal.innerHTML=`
+    <div style="background:#1a2540;border:1.5px solid rgba(99,102,241,0.6);border-radius:18px;padding:22px 22px 16px;width:290px;box-shadow:0 20px 60px rgba(0,0,0,0.5)">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+        <span style="font-size:22px">📬</span>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#a5b4fc">家人给您安排了新提醒</div>
+          <div style="font-size:11px;color:#64748b;margin-top:1px">小度为您转达</div>
+        </div>
+      </div>
+      <div style="margin-bottom:14px">${listHtml}</div>
+      <div style="display:flex;gap:8px">
+        <button id="nsm-voice"  style="flex:1;padding:9px;border:1px solid rgba(99,102,241,0.4);background:rgba(99,102,241,0.12);color:#a5b4fc;border-radius:10px;cursor:pointer;font-size:12px;font-weight:600">🎤 语音播报</button>
+        <button id="nsm-text"   style="flex:1;padding:9px;background:linear-gradient(135deg,#3b82f6,#6366f1);border:none;color:#fff;border-radius:10px;cursor:pointer;font-size:12px;font-weight:600">💬 文字确认</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+
+  function _doInjectAndSwitch(){
+    modal.remove();
+    // 3. 切换到对应场景（用药 → medication，否则保持当前）
+    const hasMed=newItems.some(function(i){ return i.type==='medication'; });
+    const targetScene=hasMed?'medication':newItems[0].scene||currentScene;
+    const targetEl=document.querySelector(`.scene-item[data-scene="${targetScene}"]`);
+    if(targetEl&&targetScene!==currentScene) switchScene(targetScene,targetEl);
+    // 4. 把消息注入对话框（小度主动发言）
+    if(!messages[targetScene]) messages[targetScene]=[];
+    const msgId=appendMsg('assistant','',true);
+    const tw=Object.create(typewriter); tw.init(msgId,20); tw.push(chatMsg);
+    messages[targetScene].push({role:'assistant',content:chatMsg});
+    // 5. 刷新用药卡片
+    scheduleConfig=fresh;
+    renderSceneCards(SCENES[targetScene]);
+  }
+
+  // 语音播报：先注入消息，再触发模拟语音朗读效果
+  document.getElementById('nsm-voice').onclick=function(){
+    _doInjectAndSwitch();
+    // 模拟语音播报：input 框逐字显示通知内容，视觉上像 TTS
+    setTimeout(function(){
+      const inp=document.getElementById('chat-input');
+      const summary=newItems.map(function(m){ return `${m.time||''} ${m.title}`; }).join('，');
+      const ttsText=`已收到家人安排：${summary}`;
+      let i=0;
+      inp.value=''; inp.placeholder='🔊 小度正在播报…';
+      const t=setInterval(function(){
+        inp.value=ttsText.slice(0,++i);
+        if(i>=ttsText.length){
+          clearInterval(t);
+          setTimeout(function(){ inp.value=''; inp.placeholder='和小度说话…'; },1800);
+        }
+      },60);
+    },400);
+  };
+
+  // 文字确认：直接注入消息
+  document.getElementById('nsm-text').onclick=function(){ _doInjectAndSwitch(); };
+
+  // 点击背景关闭（相当于文字确认）
+  modal.addEventListener('click',function(e){ if(e.target===modal) _doInjectAndSwitch(); });
+}
+
+function _showScheduleToast(fresh){
+  let t=document.getElementById('sch-toast');
+  if(!t){
+    t=document.createElement('div'); t.id='sch-toast';
+    t.style.cssText='position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(16,185,129,0.92);color:#fff;font-size:12px;padding:8px 18px;border-radius:20px;z-index:999;pointer-events:none;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.3);transition:opacity .4s';
+    document.body.appendChild(t);
+  }
+  const newTitles=(fresh.schedule||[]).filter(function(item){ return item.enabled!==false; }).map(function(i){ return i.title; });
+  t.textContent='📅 子女端已更新日程（'+newTitles.length+'条生效）';
+  t.style.opacity='1';
+  clearTimeout(t._t);
+  t._t=setTimeout(function(){ t.style.opacity='0'; },3500);
+}
+
+// 按 scene 查找当前日程项（取 enabled 的第一条）
+function getScheduleItem(scene){
+  if(!scheduleConfig||!scheduleConfig.schedule) return null;
+  return scheduleConfig.schedule.find(function(item){
+    return item.scene===scene && item.enabled!==false;
+  })||null;
+}
+
+// 时间滑块
+document.getElementById('time-slider').addEventListener('input',function(){
+  const idx=parseInt(this.value);
+  document.getElementById('time-display').textContent=_sliderTime(idx);
+  const scene=_sliderScene(idx);
+  const el=document.querySelector(`.scene-item[data-scene="${scene}"]`);
+  if(el) switchScene(scene,el);
+});
+
+function switchModel(m){ currentModel=m; }
+setInterval(()=>{document.getElementById('live-clock').textContent=new Date().toLocaleTimeString('zh-CN')},1000);
+
+// ====== 场景切换 ======
+function switchScene(scene,el){
+  if(isLoading){ isLoading=false; document.getElementById('send-btn').disabled=false; }
+  if(danmakuTimer){ clearInterval(danmakuTimer); danmakuTimer=null; }
+  if(sosResetTimer){ clearTimeout(sosResetTimer); sosResetTimer=null; resetSOSSteps(); }
+  document.getElementById('live-iframe').src='';
+
+  document.querySelectorAll('.scene-item').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+  currentScene=scene;
+  const s=SCENES[scene];
+
+  // 同步滑块
+  const _dynScenes=window._dynSliderScenes||SLIDER_SCENES;
+  const _dynTimes=window._dynSliderTimes||SLIDER_TIMES;
+  const _sidx=_dynScenes.indexOf(scene);
+  const sliderIdx=_sidx>=0?_sidx:s.sliderIdx;
+  document.getElementById('time-slider').value=sliderIdx;
+  document.getElementById('time-display').textContent=_dynTimes[sliderIdx]||SLIDER_TIMES[s.sliderIdx];
+
+  // 场景色
+  document.getElementById('device-frame').style.borderColor=s.color+'55';
+  document.getElementById('device-glow').style.background=
+    `radial-gradient(ellipse at center, ${s.glow} 0%, transparent 70%)`;
+  document.getElementById('device-wrap').className=scene==='sos'?'sos-active':'';
+
+  // 顶栏
+  document.getElementById('scene-icon-sm').textContent=s.icon;
+  document.getElementById('scene-tag-text').textContent=s.tag;
+  document.getElementById('scene-main-title').textContent=s.title;
+  document.getElementById('scene-sub-desc').textContent=s.desc;
+
+  // 右侧
+  renderSceneCards(s);
+  renderAgentStatus(s.agents);
+
+  // 显隐各区
+  document.getElementById('quiz-area').style.display='none';
+  document.getElementById('live-area').style.display='none';
+  document.getElementById('sos-area').style.display='none';
+  document.getElementById('messages').style.display='flex';
+  document.getElementById('quick-area').style.display='block';
+  document.getElementById('input-area').style.display='flex';
+
+  if(scene==='brain'){
+    document.getElementById('quiz-area').style.display='flex';
+    initQuiz();
+  } else if(scene==='live'){
+    document.getElementById('live-area').style.display='flex';
+    startLive();
+  } else if(scene==='sos'){
+    document.getElementById('sos-area').style.display='flex';
+    document.getElementById('messages').style.display='none';
+    document.getElementById('quick-area').style.display='none';
+  }
+
+  // 快捷回复：优先用日程 quick_replies，否则降级到场景默认
+  const schedItem=getScheduleItem(scene);
+  const chips=schedItem ? schedItem.quick_replies : s.quick;
+  renderQuickChips(chips);
+
+  if(!messages[scene]){
+    messages[scene]=[];
+    renderMessages();
+    if(scene!=='brain'&&scene!=='live'&&scene!=='sos'){
+      // 优先使用预填对话历史（演示模式）
+      if(DEMO_CONVERSATIONS[scene]){
+        messages[scene] = DEMO_CONVERSATIONS[scene].slice();
+        renderMessages();
+        // 触发 Agent 动画演示
+        agentStartThinking();
+        setTimeout(()=>agentDoneReset(), 1500);
+      } else {
+        // 无预填对话的场景：使用 schedule proactive_msg
+        const schedItem=getScheduleItem(scene);
+        const msg=schedItem&&schedItem.proactive_msg
+          ? schedItem.proactive_msg
+          : (SCENES[scene]&&SCENES[scene].welcome ? SCENES[scene].welcome : null);
+        if(msg){
+          const msgId=appendMsg('assistant','',true);
+          const tw=Object.create(typewriter); tw.init(msgId,18); tw.push(msg);
+          messages[scene].push({role:'assistant',content:msg});
+        }
+      }
+    }
+  } else {
+    renderMessages();
+  }
+
+  document.getElementById('chat-input').value='';
+  document.getElementById('device-screen').classList.add('scene-enter');
+  setTimeout(()=>document.getElementById('device-screen').classList.remove('scene-enter'),300);
+}
+
+// ====== 右侧卡片 ======
+function buildMedCard(){
+  // 从 scheduleConfig 读取所有 type=medication 的日程项，叠加今日日志状态
+  const rows=[];
+  if(scheduleConfig && scheduleConfig.schedule){
+    const medItems=scheduleConfig.schedule.filter(function(i){
+      return i.type==='medication' && i.enabled!==false;
+    }).sort(function(a,b){ return (a.time||'').localeCompare(b.time||''); });
+    medItems.forEach(function(item){
+      const timeLabel=item.time?`${item.time} `:'';
+      rows.push([item.icon?`${item.icon} ${item.title}`:item.title, `${timeLabel}待服`, 'val-warn']);
+    });
+  }
+  // 如果没有日程数据，显示默认
+  if(rows.length===0){
+    rows.push(['苯磺酸氨氯地平','5mg 待服','val-warn']);
+    rows.push(['阿托伐他汀','20mg 待服','val-warn']);
+  }
+  rows.push(['连续打卡','23天🔥','val-good']);
+  return rows.map(([k,v,cls])=>`<div class="health-row"><span class="health-label">${k}</span><span class="health-val ${cls||''}">${v}</span></div>`).join('');
+}
+
+function renderSceneCards(s){
+  const c=document.getElementById('rp-scene-cards');
+  if(!s.rpCards){ c.innerHTML=''; return; }
+  c.innerHTML=s.rpCards.map(card=>{
+    if(card.medCard)   return `<div class="rp-card"><div class="rp-card-title">${card.title}</div>${buildMedCard()}</div>`;
+    if(card.bpChart)   return `<div class="rp-card"><div class="rp-card-title">${card.title}</div>${buildBPChart()}</div>`;
+    if(card.sleepCard) return `<div class="rp-card"><div class="rp-card-title">${card.title}</div>${buildSleepCard()}</div>`;
+    if(card.pointsProgress) return `<div class="rp-card"><div class="rp-card-title">${card.title}</div>${buildPointsProgress()}</div>`;
+    if(card.eveningScore) return `<div class="rp-card"><div class="rp-card-title">${card.title}</div>${buildEveningScore()}</div>`;
+    if(card.videoBtn) return `<div class="rp-card"><div class="rp-card-title">${card.title}</div><button onclick="openVideoModal()" style="width:100%;padding:7px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);border-radius:8px;color:#34d399;font-size:11px;cursor:pointer">▶ 跟练八段锦视频</button></div>`;
+    let body='';
+    if(card.rows) body=card.rows.map(([k,v,cls])=>`<div class="health-row"><span class="health-label">${k}</span><span class="health-val ${cls||''}">${v}</span></div>`).join('');
+    else if(card.text) body=`<div class="rp-card-text" style="color:${card.color||'var(--text2)'}">${card.text}</div>`;
+    return `<div class="rp-card"><div class="rp-card-title">${card.title}</div>${body}</div>`;
+  }).join('');
+}
+
+function buildSleepCard(){
+  // 模拟昨夜睡眠数据（来自手环/小度音箱传感器）
+  const sleep={total:'7h 15m',deep:'1h 12m',light:'4h 23m',rem:'1h 40m',score:68,hr:74,hrStatus:'偏高'};
+  const stages=[
+    {label:'深睡',val:sleep.deep,pct:17,color:'#3b82f6',warn:true},
+    {label:'浅睡',val:sleep.light,pct:60,color:'#60a5fa',warn:false},
+    {label:'REM',val:sleep.rem,pct:23,color:'#8b5cf6',warn:false},
+  ];
+  const bars=stages.map(s=>`
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+      <div style="font-size:9px;color:var(--text3);width:22px;flex-shrink:0">${s.label}</div>
+      <div style="flex:1;height:10px;background:rgba(255,255,255,0.06);border-radius:5px;overflow:hidden">
+        <div style="height:100%;width:${s.pct}%;background:${s.color};border-radius:5px;transition:width .6s"></div>
+      </div>
+      <div style="font-size:9px;color:${s.warn?'#f59e0b':'var(--text2)'};width:36px;text-align:right">${s.val}</div>
+    </div>`).join('');
+  return `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div>
+        <div style="font-size:20px;font-weight:800;color:var(--blue2)">${sleep.total}</div>
+        <div style="font-size:9px;color:var(--text3)">总睡眠时长</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:22px;font-weight:800;color:${sleep.score<75?'#f59e0b':'#10b981'}">${sleep.score}</div>
+        <div style="font-size:9px;color:var(--text3)">睡眠评分</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:16px;font-weight:700;color:${sleep.hrStatus==='偏高'?'#f59e0b':'#10b981'}">${sleep.hr} bpm</div>
+        <div style="font-size:9px;color:${sleep.hrStatus==='偏高'?'#f59e0b':'var(--text3)'}">静息心率 ${sleep.hrStatus}</div>
+      </div>
+    </div>
+    ${bars}
+    <div style="margin-top:6px;padding:5px 8px;background:rgba(245,158,11,0.08);border-radius:7px;border-left:2px solid #f59e0b">
+      <div style="font-size:10px;color:#fbbf24;line-height:1.5">⚠ 深睡仅 1h12m，低于建议 1.5h；静息心率连续两天偏高，结合高血压史需关注</div>
+    </div>`;
+}
+
+function buildBPChart(){
+  const days=['一','二','三','四','五','六','今'],vals=[132,128,135,130,127,133,128];
+  const colors=['#3b82f6','#3b82f6','#f59e0b','#3b82f6','#10b981','#3b82f6','#60a5fa'];
+  const mn=115,mx=140;
+  const bars=days.map((d,i)=>{
+    const h=Math.round((vals[i]-mn)/(mx-mn)*32)+8;
+    return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1">
+      <div style="font-size:9px;color:var(--text2)">${vals[i]}</div>
+      <div style="height:${h}px;background:${colors[i]};border-radius:2px 2px 0 0;width:100%"></div>
+      <div style="font-size:9px;color:var(--text3)">周${d}</div>
+    </div>`;
+  }).join('');
+  return `<div style="display:flex;gap:3px;align-items:flex-end;height:66px;padding:0 2px">${bars}</div>
+    <div style="font-size:10px;color:var(--green2);margin-top:4px;text-align:center">今日：128/82 mmHg · 控制良好 ↓5mmHg</div>`;
+}
+
+function buildPointsProgress(){
+  return `<div style="margin-bottom:6px">
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text2);margin-bottom:4px"><span>积分进度</span><span style="color:var(--gold2)">780 / 1000</span></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:78%;background:linear-gradient(90deg,var(--gold),var(--orange))"></div></div>
+    <div style="font-size:10px;color:var(--text3);margin-top:3px">再得 220分 兑换 5kg大米 🎁</div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px">
+    ${[['5kg大米','1000分','✓'],['花生油','1200分',''],['面粉10斤','1500分','']].map(([n,p,c])=>`
+      <div style="text-align:center;padding:5px 2px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.05)">
+        <div style="font-size:10px;color:var(--text)">${n}</div>
+        <div style="font-size:9px;color:${c?'var(--green2)':'var(--text3)'}">${p}${c?' '+c:''}</div>
+      </div>`).join('')}
+  </div>`;
+}
+
+function buildEveningScore(){
+  const goals=[['按时服药','+10分',true],['测量血压','+10分',true],['八段锦15min','+15分',true],['健脑答题3道','+10分',true],['步行3000步','未完成',false],['晚餐少盐','未记录',false]];
+  const done=goals.filter(g=>g[2]).length;
+  return `<div style="text-align:center;margin-bottom:6px">
+    <div style="font-size:24px;font-weight:900;background:linear-gradient(90deg,var(--gold2),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent">45 / 60</div>
+    <div style="font-size:10px;color:var(--text3)">今日健康积分</div>
+    <div class="progress-bar" style="margin-top:4px"><div class="progress-fill" style="width:75%;background:linear-gradient(90deg,var(--green),var(--green2))"></div></div>
+    <div style="font-size:10px;color:var(--text2);margin-top:3px">超过 78% 同龄用户 🏆</div>
+  </div>
+  ${goals.map(([n,p,ok])=>`<div style="display:flex;justify-content:space-between;font-size:10px;padding:2px 0;color:${ok?'var(--text2)':'var(--text3)'}"><span>${ok?'✅':'⭕'} ${n}</span><span style="color:${ok?'var(--green2)':'var(--text3)'}">${p}</span></div>`).join('')}`;
+}
+
+// ====== Agent 状态管理 ======
+// agentStates: [{name, state:'idle'|'ready'|'thinking'|'done'}]
+let agentStates = [];
+let agentTimers = [];
+
+function renderAgentStatus(agents){
+  agentStates = agents.map(name=>({name, state:'ready'}));
+  _flushAgentUI();
+}
+
+function _flushAgentUI(){
+  document.getElementById('agent-status').innerHTML = agentStates.map((a,i)=>`
+    <div class="agent-row${a.state==='thinking'?' active':''}" id="agent-row-${i}">
+      <div class="agent-dot ${a.state}" id="agent-dot-${i}"></div>
+      <span class="agent-name">${a.name}</span>
+      <span class="agent-status-text" id="agent-txt-${i}">${_agentLabel(a.state)}</span>
+    </div>`).join('');
+}
+
+function _agentLabel(state){
+  return {idle:'待机',ready:'就绪',thinking:'处理中…',done:'完成 ✓'}[state]||'';
+}
+
+function _setAgentState(idx, state){
+  if(!agentStates[idx]) return;
+  agentStates[idx].state = state;
+  const dot = document.getElementById('agent-dot-'+idx);
+  const txt = document.getElementById('agent-txt-'+idx);
+  const row = document.getElementById('agent-row-'+idx);
+  if(!dot) return;
+  dot.className = 'agent-dot '+state;
+  if(txt) txt.textContent = _agentLabel(state);
+  if(row) row.className = 'agent-row'+(state==='thinking'?' active':'');
+}
+
+// 消息发送时：依次激活各 Agent
+function agentStartThinking(){
+  agentTimers.forEach(t=>clearTimeout(t)); agentTimers=[];
+  // 主 Agent 立刻进入 thinking
+  _setAgentState(0,'thinking');
+  // 第二个 Agent 500ms 后
+  if(agentStates.length>1) agentTimers.push(setTimeout(()=>_setAgentState(1,'thinking'),500));
+  // 第三个 Agent 1100ms 后（仅辅助，brief thinking）
+  if(agentStates.length>2) agentTimers.push(setTimeout(()=>_setAgentState(2,'thinking'),1100));
+}
+
+// 响应完成时：全部变 done，1.2s 后回 ready
+function agentDoneReset(){
+  agentTimers.forEach(t=>clearTimeout(t)); agentTimers=[];
+  agentStates.forEach((_,i)=>_setAgentState(i,'done'));
+  agentTimers.push(setTimeout(()=>{
+    agentStates.forEach((_,i)=>_setAgentState(i,'ready'));
+  },1400));
+}
+
+// ====== 健脑答题 ======
+const QUIZ=[
+  {q:'长期吃芹菜可以完全替代降压药吗？',opts:['A. 可以，芹菜天然降压','B. 不能替代，需遵医嘱'],ans:1,
+   tip:'芹菜有一定辅助降压作用，但绝不能替代降压药。擅自停药可能导致血压骤升，非常危险！'},
+  {q:'老年人每天必须喝8杯水才健康？',opts:['A. 是，8杯是标准','B. 因人而异，不必强求'],ans:1,
+   tip:'饮水量因体重、活动量和疾病而异。高血压老人通常1500ml为宜，不必强制8杯。'},
+  {q:'饭后立刻散步有助于消化？',opts:['A. 是，饭后立刻走动好','B. 不对，应休息20-30分钟再活动'],ans:1,
+   tip:'饭后立刻运动会使消化道血液被肌肉抢走，反而影响消化。建议休息20-30分钟再轻度活动。'},
+];
+let qIdx=0, qScore=0;
+function initQuiz(){ qIdx=0; qScore=0; renderQ(); }
+function renderQ(){
+  const qa=document.getElementById('quiz-area');
+  if(qIdx>=QUIZ.length){ renderQResult(); return; }
+  const q=QUIZ[qIdx];
+  const pct=Math.round(qIdx/QUIZ.length*100);
+  qa.innerHTML=`
+    <div style="padding:4px 0 2px">
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:3px"><span>第 ${qIdx+1}/${QUIZ.length} 题</span><span style="color:var(--purple)">积分：${qScore}</span></div>
+      <div class="quiz-progress"><div class="quiz-progress-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="quiz-q">${q.q}</div>
+    <div class="quiz-opts">${q.opts.map((o,i)=>`<div class="quiz-opt" data-i="${i}" onclick="ansQ(${i})">${o}</div>`).join('')}</div>
+    <div class="quiz-feedback" id="qfb"></div>`;
+}
+function ansQ(chosen){
+  const q=QUIZ[qIdx];
+  document.querySelectorAll('.quiz-opt').forEach(o=>o.classList.add('locked'));
+  document.querySelectorAll('.quiz-opt')[q.ans].classList.add('correct');
+  if(chosen!==q.ans) document.querySelectorAll('.quiz-opt')[chosen].classList.add('wrong');
+  else qScore+=100;
+  const fb=document.getElementById('qfb');
+  fb.style.display='block';
+  fb.textContent=(chosen===q.ans?'✅ 回答正确！':'❌ 答错了。')+' '+q.tip;
+  setTimeout(()=>{ qIdx++; renderQ(); },3000);
+}
+function renderQResult(){
+  const qa=document.getElementById('quiz-area');
+  qa.innerHTML=`
+    <div style="text-align:center;padding:4px 0">
+      <div style="font-size:28px;font-weight:900;background:linear-gradient(90deg,var(--gold2),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent">${qScore}</div>
+      <div style="font-size:11px;color:var(--text2);margin-top:2px">本轮积分 · 全部 ${QUIZ.length} 题完成</div>
+    </div>
+    <div style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.15);border-radius:8px;padding:8px;font-size:11px;color:var(--text2);line-height:1.7">
+      <b style="color:var(--purple)">🏆 排行榜更新</b><br>
+      🥇 王奶奶 · 1280分<br>
+      🥈 李爷爷 · 1150分<br>
+      ⭐ 张爷爷 · ${780+qScore}分（第${qScore>=200?'3':'4'}名）
+    </div>
+    <button onclick="initQuiz()" style="width:100%;padding:6px;background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.25);border-radius:8px;color:var(--purple);font-size:11px;cursor:pointer;margin-top:4px">🔄 再来一局</button>`;
+}
+
+// ====== 直播弹幕 ======
+const DM_MSGS=['李医生讲得真好👍','我也是膝盖不好','记住了，谢谢医生','转发给老伴看看','积分+10 🎉','有没有颈椎的建议？','已收藏回放','我也在看！'];
+let dmIdx=0;
+function startLive(){
+  document.getElementById('live-iframe').src='https://player.bilibili.com/player.html?bvid=BV13r4y1o7ik&autoplay=1&danmaku=0';
+  dmIdx=0;
+  danmakuTimer=setInterval(()=>{
+    if(dmIdx>8){ clearInterval(danmakuTimer); danmakuTimer=null; return; }
+    addDM(DM_MSGS[dmIdx%DM_MSGS.length]); dmIdx++;
+  },1500);
+}
+function addDM(text){
+  const area=document.getElementById('danmaku-area');
+  const el=document.createElement('div'); el.className='dm-item'; el.textContent=text;
+  el.style.top=Math.random()*30+'px';
+  area.appendChild(el);
+  setTimeout(()=>el.remove(),4200);
+}
+function liveAsk(){
+  const inp=document.getElementById('live-input');
+  const text=inp.value.trim()||'张爷爷正在语音提问...';
+  addDM('👤 '+text); inp.value='';
+  setTimeout(()=>addDM('🩺 医生已收到，稍后回复～'),2000);
+}
+function toggleHeart(btn){
+  btn.classList.toggle('liked');
+  btn.textContent=btn.classList.contains('liked')?'❤️':'♡';
+}
+
+// ====== SOS ======
+function triggerSOS(){
+  ['ss1','ss2','ss3','ss4'].forEach(id=>document.getElementById(id).classList.remove('on'));
+  document.getElementById('sos-big-btn').style.background='radial-gradient(circle,#b91c1c,#7f1d1d)';
+  [0,1500,3000,4500].forEach((d,i)=>setTimeout(()=>document.getElementById('ss'+(i+1)).classList.add('on'),d));
+  sosResetTimer=setTimeout(()=>{
+    resetSOSSteps();
+    document.getElementById('sos-big-btn').style.background='';
+  },8000);
+}
+function resetSOSSteps(){
+  ['ss1','ss2','ss3','ss4'].forEach(id=>document.getElementById(id).classList.remove('on'));
+}
+
+// ====== 视频弹窗 ======
+function openVideoModal(){
+  document.getElementById('video-iframe').src='https://player.bilibili.com/player.html?bvid=BV1VsDpYXEqD&autoplay=1&t=195';
+  document.getElementById('video-modal').classList.add('open');
+}
+function closeVideoModal(e){
+  if(e&&e.target!==document.getElementById('video-modal')&&e.target!==document.getElementById('vmod-close')) return;
+  document.getElementById('video-iframe').src='';
+  document.getElementById('video-modal').classList.remove('open');
+}
+
+// ====== Chips ======
+function renderQuickChips(chips){
+  document.getElementById('quick-chips').innerHTML=chips.map(c=>`<div class="quick-chip" data-text="${c.replace(/"/g,'&quot;')}">${c}</div>`).join('');
+}
+document.addEventListener('DOMContentLoaded',function(){
+  document.getElementById('quick-chips').addEventListener('click',function(e){
+    const chip=e.target.closest('.quick-chip'); if(!chip) return;
+    const text=chip.getAttribute('data-text'); if(!text) return;
+    document.getElementById('chat-input').value=text;
+    document.getElementById('chat-input').focus();
+    sendMessage();
+  });
+});
+
+// 小度主动服务消息
+// item: { proactive_msg, quick_replies, icon?, time?, title? }
+// instant=true：直接全量显示（启动/日志驱动）；false：打字机（场景切换）
+function showProactiveMsg(item, instant){
+  if(!item || !item.proactive_msg) return;
+  if(!messages[currentScene]) messages[currentScene]=[];
+  messages[currentScene].push({role:'assistant', content:item.proactive_msg});
+  if(instant){
+    appendMsg('assistant', item.proactive_msg);
+  } else {
+    const msgId=appendMsg('assistant','',true);
+    const tw=Object.create(typewriter);
+    tw.init(msgId,30);
+    tw.push(item.proactive_msg);
+  }
+}
+
+// 从后端 /api/brief/{scene} 加载日志驱动的主动消息（无 AI 调用，纯静态，用于降级）
+async function fetchBrief(scene){
+  try{
+    const r=await fetch(`/api/brief/${scene}`);
+    return await r.json();
+  }catch(e){ return null; }
+}
+
+// ====== AI Brief 缓存系统 ======
+// 规则：同一 scene + 日志数据 hash 不变 → 直接显示缓存，不调 AI
+// 数据变化 → 调 /api/ai-brief 流式获取 → 缓存到 sessionStorage
+function _djb2(str){ let h=5381; for(let i=0;i<str.length;i++) h=((h<<5)+h)^str.charCodeAt(i); return (h>>>0).toString(36); }
+
+function _briefLogDate(scene){
+  const d=new Date();
+  if(scene==='morning') d.setDate(d.getDate()-1); // 晨起用昨日日志
+  return d.toISOString().slice(0,10).replace(/-/g,'');
+}
+
+// 主入口：加载场景消息（有缓存即时显示，无缓存/数据变化调 AI）
+async function loadSceneBrief(scene, onText, onDone){
+  // 1. 拉日志计算 hash
+  let logHash='no-data';
+  try{
+    const logDate=_briefLogDate(scene);
+    const ld=await fetch(`/api/logs/${logDate}`);
+    const logJson=await ld.json();
+    logHash=_djb2(JSON.stringify(logJson));
+  }catch(e){}
+
+  const cacheKey=`aib_${scene}_${logHash}`;
+  const cached=sessionStorage.getItem(cacheKey);
+
+  if(cached){
+    // 命中缓存：直接全量输出，无延迟
+    onText(cached);
+    onDone(true);
+    return;
+  }
+
+  // 未命中：流式调 AI
+  let full='';
+  try{
+    const r=await fetch(`/api/ai-brief/${scene}`);
+    const reader=r.body.getReader(); const dec=new TextDecoder();
+    let buf='';
+    while(true){
+      const {done,value}=await reader.read(); if(done) break;
+      buf+=dec.decode(value,{stream:true});
+      const lines=buf.split('\n'); buf=lines.pop()||'';
+      for(const line of lines){
+        if(!line.startsWith('data:')) continue;
+        const raw=line.slice(5).trim();
+        if(raw==='[DONE]'){ break; }
+        try{
+          const d=JSON.parse(raw);
+          if(d.type==='content'&&d.content){ full+=d.content; onText(d.content); }
+        }catch(e){}
+      }
+    }
+    // 缓存完整结果
+    if(full) sessionStorage.setItem(cacheKey, full);
+    onDone(false);
+  }catch(e){
+    // 降级到离线摘要
+    if(OFFLINE_BRIEFS[scene]){
+      onText(OFFLINE_BRIEFS[scene]);
+      onDone(false);
+    } else {
+      const fb=await fetchBrief(scene).catch(()=>null);
+      if(fb&&fb.proactive_msg){ onText(fb.proactive_msg); if(fb.quick_replies) window._pendingChips=fb.quick_replies; }
+      onDone(false);
+    }
+  }
+}
+
+// ====== 欢迎语（最终降级方案） ======
+async function fetchWelcome(scene){
+  try{
+    const r=await fetch(`/api/welcome/${scene}`);
+    const d=await r.json();
+    appendMsg('assistant',d.content);
+  }catch(e){ appendMsg('assistant','您好！我是小度健康助手，有什么可以帮您？'); }
+}
+
+// ====== 发送消息 ======
+async function sendMessage(){
+  const inp=document.getElementById('chat-input');
+  const text=inp.value.trim();
+  if(!text||isLoading) return;
+  inp.value=''; isLoading=true;
+  document.getElementById('send-btn').disabled=true;
+  document.getElementById('quick-chips').classList.add('disabled');
+  agentStartThinking();  // ← Agent 开始工作
+  if(!messages[currentScene]) messages[currentScene]=[];
+  messages[currentScene].push({role:'user',content:text});
+  appendMsg('user',text); updateRpHistory(text,'user');
+  const loaderId=appendLoader('⏳ AI 思考中…');
+  const ctrl=new AbortController();
+  const tid=setTimeout(()=>ctrl.abort(),60000);
+  function resetLoad(){
+    clearTimeout(tid); isLoading=false;
+    document.getElementById('send-btn').disabled=false;
+    document.getElementById('quick-chips').classList.remove('disabled');
+    document.getElementById('chat-input').focus();
+    agentDoneReset();  // ← Agent 完成
+  }
+  try{
+    const resp=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({scene:currentScene,messages:messages[currentScene],model:currentModel}),signal:ctrl.signal});
+    removeLoader(loaderId);
+    const reader=resp.body.getReader(); const decoder=new TextDecoder();
+    let thinkId=null,contId=null,thinkTxt='',contTxt='',done_flag=false;
+    while(true){
+      const {done,value}=await reader.read(); if(done) break;
+      const chunk=decoder.decode(value);
+      for(const line of chunk.split('\n')){
+        if(!line.startsWith('data:')) continue;
+        const raw=line.slice(5).trim();
+        if(raw==='[DONE]'){ done_flag=true; break; }
+        try{
+          const d=JSON.parse(raw);
+          if(d.type==='thinking'){
+            thinkTxt+=d.content;
+            if(!thinkId) thinkId=appendThinking('');
+            updateMsg(thinkId,thinkTxt,true);
+          } else if(d.type==='content'){
+            contTxt+=d.content;
+            if(!contId){ if(thinkId) collapseThinking(thinkId); contId=appendMsg('assistant','',true); TW.reset(contId); }
+            TW.add(d.content);
+          } else if(d.type==='error'){
+            if(!contId) contId=appendMsg('assistant','',true);
+            updateMsg(contId,'⚠️ '+d.content,false);
+          }
+        }catch(e){}
+      }
+      if(done_flag) break;
+    }
+    TW.finish();
+    if(contId&&contTxt) updateMsg(contId,contTxt,false);
+    if(contTxt){ messages[currentScene].push({role:'assistant',content:contTxt}); updateRpHistory(contTxt.slice(0,28)+'…','bot'); }
+  }catch(e){
+    removeLoader(loaderId);
+    appendMsg('assistant',e.name==='AbortError'?'⚠️ 请求超时，请检查后端日志':'⚠️ 网络异常，请检查后端服务');
+  }
+  resetLoad();
+}
+
+// 打字机
+const TW={
+  queue:'',displayed:'',timer:null,msgId:null,speed:20,
+  reset(id){ this.queue='';this.displayed='';this.msgId=id;if(this.timer){clearTimeout(this.timer);this.timer=null;} },
+  add(t){ this.queue+=t; if(!this.timer) this._tick(); },
+  _tick(){
+    if(!this.queue){ this.timer=null; return; }
+    const n=Math.min(4,this.queue.length);
+    this.displayed+=this.queue.slice(0,n); this.queue=this.queue.slice(n);
+    const el=document.getElementById(this.msgId);
+    if(el){ const b=el.querySelector('.msg-bubble'); if(b) b.innerHTML=escHtml(this.displayed)+'<span class="typing-cursor"></span>'; }
+    document.getElementById('messages').scrollTop=999999;
+    this.timer=setTimeout(()=>this._tick(),this.speed);
+  },
+  finish(){
+    if(this.queue){ this.displayed+=this.queue; this.queue=''; }
+    if(this.timer){ clearTimeout(this.timer); this.timer=null; }
+    const el=document.getElementById(this.msgId);
+    if(el){ const b=el.querySelector('.msg-bubble'); if(b) b.innerHTML=escHtml(this.displayed); }
+  },
+};
+
+// 语音模拟
+const VOICE_SAMPLES={
+  morning:['今天天气适合出门运动吗？','血压昨晚有点高，今天要注意什么？'],
+  medication:['我现在该吃什么药了？','我忘吃早上的药了，现在能补吗？'],
+  consultation:['膝盖最近有点酸疼，怎么办？','高血压平时要注意哪些事项？'],
+  brain:['给我出一道益智题','骨头汤真的能补钙吗？'],
+  live:['今天直播讲什么内容？','帮我预约挂李主任的号'],
+  diet:['今晚想吃红烧肉，可以吗？','推荐低盐低糖的晚餐食谱'],
+  sos:['帮我联系儿子小张','附近哪里有医院？'],
+  evening:['帮我总结今天的健康情况','今天血压控制得怎么样？'],
+};
+// ====== 语音识别（优先 Web Speech API，降级模拟）======
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+let recognition = null;
+let micPermitted = false; // 是否已获得麦克风授权
+
+// 检查当前环境是否支持麦克风（需 localhost 或 HTTPS）
+function _isSecureContext(){
+  return location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+}
+
+// ====== 麦克风权限弹窗 ======
+// 点击🎤 → 我们的弹窗（同意/拒绝）→ 同意后申请浏览器权限 → 成功则录音，失败则提示
+// 拒绝 → 什么都不做，麦克风不可用
+function _showMicModal(onAgree, onDeny){
+  const old=document.getElementById('mic-modal-mask'); if(old) old.remove();
+  const mask=document.createElement('div'); mask.id='mic-modal-mask';
+  mask.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:2000;display:flex;align-items:center;justify-content:center';
+  mask.innerHTML=`
+    <div style="background:#1a2540;border:1px solid rgba(255,255,255,0.12);border-radius:16px;padding:28px 28px 20px;width:260px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.5)">
+      <div style="font-size:32px;margin-bottom:10px">🎤</div>
+      <div style="font-size:14px;font-weight:600;color:#e2e8f0;margin-bottom:6px">需要使用您的麦克风</div>
+      <div style="font-size:12px;color:#94a3b8;margin-bottom:20px">用于语音输入识别</div>
+      <div style="display:flex;gap:10px">
+        <button id="mic-deny"  style="flex:1;padding:10px;border:1px solid rgba(255,255,255,0.12);background:transparent;color:#94a3b8;border-radius:10px;cursor:pointer;font-size:13px">拒绝</button>
+        <button id="mic-agree" style="flex:1;padding:10px;background:linear-gradient(135deg,#3b82f6,#6366f1);border:none;color:#fff;border-radius:10px;cursor:pointer;font-size:13px;font-weight:600">同意</button>
+      </div>
+    </div>`;
+  document.body.appendChild(mask);
+  document.getElementById('mic-agree').onclick=function(){ mask.remove(); onAgree&&onAgree(); };
+  document.getElementById('mic-deny').onclick=function(){  mask.remove(); onDeny&&onDeny(); };
+}
+function _closeMicModal(){ const m=document.getElementById('mic-modal-mask'); if(m) m.remove(); }
+
+function _showVoiceTip(msg){
+  let tip=document.getElementById('voice-tip');
+  if(!tip){
+    tip=document.createElement('div'); tip.id='voice-tip';
+    tip.style.cssText='position:fixed;top:60px;left:50%;transform:translateX(-50%);background:#1e293b;border:1px solid rgba(239,68,68,0.4);color:#f87171;font-size:12px;padding:10px 16px;border-radius:12px;z-index:999;max-width:300px;text-align:center;line-height:1.5;box-shadow:0 4px 20px rgba(0,0,0,0.4)';
+    document.body.appendChild(tip);
+  }
+  tip.textContent=msg;
+  tip.style.display='block';
+  clearTimeout(tip._t);
+  tip._t=setTimeout(()=>{ tip.style.display='none'; },4000);
+}
+
+// 语音按钮入口：先弹我们的确认框，同意才申请浏览器权限
+function startVoice(){
+  if(isLoading) return;
+  const btn=document.getElementById('voice-btn'),inp=document.getElementById('chat-input');
+  // 若正在录音/模拟，点击停止
+  if(voiceTimer){ clearInterval(voiceTimer); voiceTimer=null; _stopRecordingSimulate(btn,inp); return; }
+  if(recognition){ recognition.stop(); return; }
+  // 已获得权限，直接录音
+  if(micPermitted){ _startRecognition(btn,inp); return; }
+  // 弹出我们的确认框
+  _showMicModal(
+    function(){ // 用户点同意 → 向浏览器申请麦克风权限
+      if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+        _showVoiceTip('当前环境不支持麦克风，请用 https:// 访问'); return;
+      }
+      navigator.mediaDevices.getUserMedia({audio:true})
+        .then(function(stream){
+          stream.getTracks().forEach(function(t){ t.stop(); });
+          micPermitted=true;
+          _startRecognition(btn,inp);
+        })
+        .catch(function(e){
+          if(e.name==='NotAllowedError'||e.name==='PermissionDeniedError'){
+            _showVoiceTip('麦克风权限被拒绝，请在地址栏的 🔒 中允许麦克风后重试');
+          } else {
+            _showVoiceTip('无法访问麦克风：'+e.message);
+          }
+        });
+    },
+    function(){ /* 用户点拒绝 → 什么都不做，麦克风不可用 */ }
+  );
+}
+
+function _startRecognition(btn, inp){
+  recognition = new SpeechRecognition();
+  recognition.lang = 'zh-CN';
+  recognition.continuous = false;
+  recognition.interimResults = true;
+  recognition.maxAlternatives = 1;
+
+  btn.classList.add('recording'); btn.textContent='⏹'; inp.placeholder='🎤 正在听…'; inp.value='';
+
+  const timeout = setTimeout(()=>{ if(recognition) recognition.stop(); }, 120000);
+
+  recognition.onresult = function(e){
+    let interim='', final='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal) final+=e.results[i][0].transcript;
+      else interim+=e.results[i][0].transcript;
+    }
+    inp.value = final || interim;
+    if(final) inp.placeholder='🎤 识别完成';
+    else inp.placeholder='🎤 正在识别：'+interim.slice(0,10)+'…';
+  };
+  recognition.onerror = function(e){
+    clearTimeout(timeout);
+    btn.classList.remove('recording'); btn.textContent='🎤'; inp.placeholder='和小度说话…';
+    recognition=null;
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'){
+      micPermitted=false;
+      _showVoiceTip('麦克风权限被拒绝，请在地址栏点击🔒允许麦克风后重试');
+      return;
+    }
+    if(e.error==='no-speech'){
+      _showVoiceTip('没有检测到声音，请靠近麦克风再试'); return;
+    }
+    _runSimulate(btn,inp); // 其他错误降级模拟
+  };
+  recognition.onend = function(){
+    clearTimeout(timeout);
+    btn.classList.remove('recording'); btn.textContent='🎤'; inp.placeholder='和小度说话…';
+    recognition=null;
+    if(inp.value.trim()) sendMessage();
+  };
+  recognition.start();
+}
+
+function _runSimulate(btn,inp){
+  btn.classList.add('recording'); btn.textContent='⏹';
+  let elapsed=0; inp.placeholder='🎤 录音中 0s…'; inp.value='';
+  voiceTimer=setInterval(()=>{
+    elapsed++; inp.placeholder='🎤 录音中 '+elapsed+'s…';
+    if(elapsed>=3){ clearInterval(voiceTimer); voiceTimer=null; _stopRecordingSimulate(btn,inp); }
+  },1000);
+}
+
+function _stopRecordingSimulate(btn,inp){
+  btn.classList.remove('recording'); btn.textContent='🎤'; inp.placeholder='和小度说话…';
+  const s=VOICE_SAMPLES[currentScene]||VOICE_SAMPLES.morning;
+  const picked=s[Math.floor(Math.random()*s.length)];
+  let i=0;
+  const t=setInterval(()=>{
+    inp.value=picked.slice(0,++i);
+    if(i>=picked.length){ clearInterval(t); sendMessage(); }
+  },50);
+}
+
+// 消息工具
+let msgCounter=0;
+function appendMsg(role,text,streaming=false){
+  const id='msg-'+(++msgCounter);
+  const msgsDiv=document.getElementById('messages');
+  const row=document.createElement('div');
+  // system-label：居中的场景标签行
+  if(role==='system-label'){
+    row.className='msg-row bot'; row.id=id;
+    row.style.justifyContent='center';
+    const av=document.createElement('div'); av.className='msg-avatar avatar-bot'; av.style.display='none';
+    const bubble=document.createElement('div'); bubble.className='msg-bubble';
+    bubble.style.cssText='background:transparent;border:none;padding:2px 8px';
+    row.appendChild(av); row.appendChild(bubble); msgsDiv.appendChild(row); msgsDiv.scrollTop=msgsDiv.scrollHeight;
+    return id;
+  }
+  row.className='msg-row '+(role==='user'?'user':'bot'); row.id=id;
+  const av=document.createElement('div'); av.className='msg-avatar '+(role==='user'?'avatar-user':'avatar-bot'); av.textContent=role==='user'?'张':'度';
+  const bubble=document.createElement('div'); bubble.className='msg-bubble '+(role==='user'?'bubble-user':'bubble-bot');
+  bubble.innerHTML=escHtml(text)+(streaming?'<span class="typing-cursor"></span>':'');
+  row.appendChild(av); row.appendChild(bubble); msgsDiv.appendChild(row); msgsDiv.scrollTop=msgsDiv.scrollHeight;
+  return id;
+}
+function appendThinking(text){
+  const id='msg-'+(++msgCounter);
+  const msgsDiv=document.getElementById('messages');
+  const div=document.createElement('div'); div.id=id; div.className='bubble-thinking';
+  div.innerHTML='🧠 推理中… <span style="font-size:10px;opacity:.7">'+escHtml(text.slice(0,60))+'</span>';
+  msgsDiv.appendChild(div); msgsDiv.scrollTop=msgsDiv.scrollHeight; return id;
+}
+function collapseThinking(id){ const el=document.getElementById(id); if(el) el.style.display='none'; }
+function appendLoader(hint){
+  const id='loader-'+(++msgCounter);
+  const msgsDiv=document.getElementById('messages');
+  const row=document.createElement('div'); row.className='msg-row bot'; row.id=id;
+  const av=document.createElement('div'); av.className='msg-avatar avatar-bot'; av.textContent='度';
+  const bubble=document.createElement('div'); bubble.className='msg-bubble bubble-bot';
+  bubble.innerHTML='<div class="dots-loader"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>'+(hint?`<div style="font-size:10px;color:var(--text3);margin-top:4px">${hint}</div>`:'');
+  row.appendChild(av); row.appendChild(bubble); msgsDiv.appendChild(row); msgsDiv.scrollTop=msgsDiv.scrollHeight; return id;
+}
+function removeLoader(id){ const el=document.getElementById(id); if(el) el.remove(); }
+function updateMsg(id,text,streaming=false){
+  const el=document.getElementById(id); if(!el) return;
+  const bubble=el.querySelector('.msg-bubble,.bubble-thinking'); if(!bubble) return;
+  if(el.classList.contains('bubble-thinking')) bubble.innerHTML='🧠 推理中… <span style="font-size:10px;opacity:.7">'+escHtml(text.slice(-60))+'</span>';
+  else bubble.innerHTML=escHtml(text)+(streaming?'<span class="typing-cursor"></span>':'');
+  document.getElementById('messages').scrollTop=document.getElementById('messages').scrollHeight;
+}
+function renderMessages(){
+  const msgsDiv=document.getElementById('messages'); msgsDiv.innerHTML=''; msgCounter=0;
+  (messages[currentScene]||[]).forEach(m=>appendMsg(m.role,m.content));
+}
+function updateRpHistory(text,role){
+  const hist=document.getElementById('rp-history');
+  const item=document.createElement('div');
+  item.style.cssText='font-size:10px;color:var(--text2);padding:2px 0;border-bottom:1px solid rgba(255,255,255,0.04);overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
+  item.textContent=(role==='user'?'👤 ':'🤖 ')+text;
+  hist.insertBefore(item,hist.firstChild);
+  if(hist.children.length>5) hist.removeChild(hist.lastChild);
+}
+function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
+
+// 粒子
+(function(){
+  const c=document.getElementById('particles');
+  for(let i=0;i<16;i++){
+    const p=document.createElement('div'); p.className='particle';
+    const s=Math.random()*4+2;
+    const cols=['rgba(59,130,246,0.6)','rgba(16,185,129,0.5)','rgba(139,92,246,0.5)','rgba(245,158,11,0.4)'];
+    p.style.cssText=`width:${s}px;height:${s}px;left:${Math.random()*100}%;background:${cols[Math.floor(Math.random()*cols.length)]};animation-duration:${Math.random()*15+10}s;animation-delay:${Math.random()*10}s`;
+    c.appendChild(p);
+  }
+})();
+
+// Enter & ESC
+document.getElementById('chat-input').addEventListener('keydown',function(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();} });
+document.getElementById('live-input').addEventListener('keydown',function(e){ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();liveAsk();} });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeVideoModal(); });
+
+// ====== localStorage 双窗口联动（子女端→老人端） ======
+window.addEventListener('storage', function(e){
+  if(e.key === 'schedule_sync' && e.newValue){
+    try{
+      const fresh = JSON.parse(e.newValue);
+      const freshHash = JSON.stringify(fresh);
+      if(freshHash === _scheduleHash) return;
+      // 检测新增日程
+      const prevIds = _prevAllIds ? _prevAllIds.split(',') : [];
+      const freshAll = (fresh.schedule||[]).filter(function(i){ return i.enabled!==false; });
+      const newItems = freshAll.filter(function(i){ return prevIds.indexOf(i.id)<0; });
+      _prevAllIds = freshAll.map(function(i){ return i.id; }).join(',');
+      _scheduleHash = freshHash;
+      scheduleConfig = fresh;
+      // 刷新UI
+      _rebuildSliderFromSchedule();
+      renderSceneCards(SCENES[currentScene]);
+      const schedItem = getScheduleItem(currentScene);
+      renderQuickChips(schedItem ? schedItem.quick_replies : SCENES[currentScene].quick);
+      // 有新增 → 小度传达
+      if(newItems.length > 0){
+        _deliverNewScheduleMsg(newItems, fresh);
+      } else {
+        _showScheduleToast(fresh);
+      }
+    }catch(err){}
+  }
+});
+
+// 初始化（非阻塞：立即渲染默认欢迎语，后台加载日程配置后替换）
+(function init(){
+  const s=SCENES.morning;
+  document.getElementById('device-frame').style.borderColor=s.color+'55';
+  document.getElementById('device-glow').style.background=`radial-gradient(ellipse at center, ${s.glow} 0%, transparent 70%)`;
+  renderSceneCards(s); renderAgentStatus(s.agents);
+  document.getElementById('quiz-area').style.display='none';
+  document.getElementById('live-area').style.display='none';
+  document.getElementById('sos-area').style.display='none';
+  renderQuickChips(s.quick);
+
+  // 加载日程配置（离线也有默认数据）
+  loadScheduleConfig().then(function(){
+    _rebuildSliderFromSchedule();
+    renderQuickChips(getScheduleItem('morning')?.quick_replies || s.quick);
+    if(scheduleConfig&&scheduleConfig.schedule){
+      _prevAllIds=scheduleConfig.schedule.filter(function(i){ return i.enabled!==false; }).map(function(i){ return i.id; }).join(',');
+      _prevMedIds=scheduleConfig.schedule.filter(function(i){ return i.type==='medication'&&i.enabled!==false; }).map(function(i){ return i.id; }).join(',');
+    }
+  }).catch(function(){});
+
+  // 直接使用预填对话历史
+  if(DEMO_CONVERSATIONS['morning']){
+    messages['morning'] = DEMO_CONVERSATIONS['morning'].slice();
+    renderMessages();
+    // Agent 动画
+    agentStartThinking();
+    setTimeout(()=>agentDoneReset(), 1500);
+  } else {
+    messages['morning']=[];
+    appendMsg('assistant','您好！我是小度健康助手，有什么可以帮您？');
+    messages['morning'].push({role:'assistant',content:'您好！我是小度健康助手，有什么可以帮您？'});
+  }
+})();
+
+// ====== 自动演示模式 ======
+let autoDemoTimer=null;
+let autoDemoIdx=0;
+const AUTO_DEMO_SCENES=['morning','medication','consultation','brain','live','diet','sos','evening'];
+
+function toggleAutoDemo(){
+  const btn=document.getElementById('auto-demo-btn');
+  if(autoDemoTimer){
+    // 停止
+    clearInterval(autoDemoTimer);
+    autoDemoTimer=null;
+    btn.textContent='▶';
+    btn.classList.remove('active');
+  } else {
+    // 启动
+    btn.textContent='⏸';
+    btn.classList.add('active');
+    autoDemoIdx=AUTO_DEMO_SCENES.indexOf(currentScene);
+    autoDemoTimer=setInterval(function(){
+      autoDemoIdx=(autoDemoIdx+1)%AUTO_DEMO_SCENES.length;
+      const scene=AUTO_DEMO_SCENES[autoDemoIdx];
+      const el=document.querySelector(`.scene-item[data-scene="${scene}"]`);
+      if(el) switchScene(scene,el);
+    },8000);
+  }
+}
+</script>
+<!-- 移动端底部 Tab Bar -->
+<div id="mobile-tab-bar">
+  <button class="m-tab active" data-scene="morning" onclick="mobileTab('morning',this)"><span class="m-tab-icon">🌅</span><span class="m-tab-label">晨起</span></button>
+  <button class="m-tab" data-scene="medication" onclick="mobileTab('medication',this)"><span class="m-tab-icon">💊</span><span class="m-tab-label">用药</span></button>
+  <button class="m-tab" data-scene="consultation" onclick="mobileTab('consultation',this)"><span class="m-tab-icon">🩺</span><span class="m-tab-label">问诊</span></button>
+  <button class="m-tab" data-scene="brain" onclick="mobileTab('brain',this)"><span class="m-tab-icon">🧠</span><span class="m-tab-label">答题</span></button>
+  <button class="m-tab" data-scene="live" onclick="mobileTab('live',this)"><span class="m-tab-icon">📺</span><span class="m-tab-label">直播</span></button>
+  <button class="m-tab" data-scene="diet" onclick="mobileTab('diet',this)"><span class="m-tab-icon">🥗</span><span class="m-tab-label">饮食</span></button>
+  <button class="m-tab" data-scene="sos" onclick="mobileTab('sos',this)"><span class="m-tab-icon">🆘</span><span class="m-tab-label">SOS</span></button>
+  <button class="m-tab" data-scene="evening" onclick="mobileTab('evening',this)"><span class="m-tab-icon">🌙</span><span class="m-tab-label">复盘</span></button>
+</div>
+
+<script>
+// ====== 移动端抽屉 ======
+function toggleSidebar(){
+  const sb=document.getElementById('sidebar');
+  const mask=document.getElementById('drawer-mask');
+  const isOpen=sb.classList.contains('open');
+  sb.classList.toggle('open',!isOpen);
+  mask.classList.toggle('open',!isOpen);
+  if(!isOpen) document.getElementById('right-panel').classList.remove('open');
+}
+function toggleRightPanel(){
+  const rp=document.getElementById('right-panel');
+  const mask=document.getElementById('drawer-mask');
+  const isOpen=rp.classList.contains('open');
+  rp.classList.toggle('open',!isOpen);
+  mask.classList.toggle('open',!isOpen);
+  if(!isOpen) document.getElementById('sidebar').classList.remove('open');
+}
+function closeDrawers(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('right-panel').classList.remove('open');
+  document.getElementById('drawer-mask').classList.remove('open');
+}
+// 移动端底部 tab
+function mobileTab(scene, el){
+  document.querySelectorAll('.m-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  const sideEl = document.querySelector(`.scene-item[data-scene="${scene}"]`);
+  if(sideEl) switchScene(scene, sideEl);
+  closeDrawers();
+}
+// 场景切换时同步底部 tab
+const _origSwitch = switchScene;
+switchScene = function(scene, el){
+  _origSwitch(scene, el);
+  document.querySelectorAll('.m-tab').forEach(t=>{
+    t.classList.toggle('active', t.dataset.scene===scene);
+  });
+};
+
+// 夜间模式
+function toggleNight(){
+  document.body.classList.toggle('night-mode');
+  const btn=document.getElementById('night-btn');
+  const on=document.body.classList.contains('night-mode');
+  btn.textContent=on?'☀️':'🌙';
+  btn.classList.toggle('active',on);
+}
+
+// 大字体切换（适老化）
+function toggleFont(){
+  document.body.classList.toggle('large-font');
+  const btn=document.getElementById('font-btn');
+  btn.classList.toggle('active',document.body.classList.contains('large-font'));
+}
+</script>
+</body>
+</html>

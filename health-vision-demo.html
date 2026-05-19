@@ -1830,6 +1830,32 @@
       if(idx !== 4) { const a = document.getElementById('piano-audio'); if(!a.paused){ let v=a.volume; const fade=setInterval(()=>{v-=0.05;if(v<=0){clearInterval(fade);a.pause();a.currentTime=0;a.volume=0.35;}else{a.volume=v;}},80); } }
       // Trigger page-specific animations
       if(idx === 7) resetQuiz();
+      // TTS 语音播报场景介绍
+      ttsSpeak(idx);
+    }
+
+    // TTS 语音播报
+    const ttsTexts = {
+      0: '',
+      3: '张爷爷的健康一天，让我们来看看他一天的日程安排。',
+      4: '早安，张爷爷！今天多云转晴，适合出门散步。来测个血压吧。',
+      5: '张爷爷，该吃药了。苯磺酸氨氯地平5毫克，降压药，饭后服用。',
+      6: '张爷爷，您今天有个在线问诊预约。',
+      7: '健脑时间到！来做几道认知训练题吧。',
+      8: '紧急求助已触发！正在通知家人和社区。',
+      9: '张爷爷，今天健康得分45分，超过78%同龄人。'
+    };
+    let ttsEnabled = true;
+    function ttsSpeak(idx) {
+      if(!ttsEnabled || !('speechSynthesis' in window)) return;
+      const text = ttsTexts[idx];
+      if(!text) return;
+      speechSynthesis.cancel();
+      setTimeout(() => {
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'zh-CN'; utter.rate = 0.85; utter.pitch = 1.05;
+        speechSynthesis.speak(utter);
+      }, 800);
     }
 
     document.addEventListener('keydown', e => {
@@ -2083,9 +2109,51 @@
         }, i * 1500);
       });
     }
+    // ===== 双屏联动：接收子女端消息 =====
+    window.addEventListener('storage', function(e) {
+      if(e.key !== 'family_to_elderly') return;
+      try {
+        const data = JSON.parse(e.newValue);
+        if(Date.now() - data.timestamp > 5000) return; // 过期忽略
+        showElderlyNotification(data.type, data.message);
+      } catch(err) {}
+    });
+
+    function showElderlyNotification(type, message) {
+      const existing = document.querySelector('.elderly-notif');
+      if(existing) existing.remove();
+
+      const colors = {
+        schedule: {bg:'rgba(59,130,246,0.95)', icon:'📅'},
+        schedule_off: {bg:'rgba(100,116,139,0.95)', icon:'🔕'},
+        ai_query: {bg:'rgba(16,185,129,0.95)', icon:'💚'},
+        call: {bg:'rgba(239,68,68,0.95)', icon:'📞'}
+      };
+      const c = colors[type] || {bg:'rgba(59,130,246,0.95)', icon:'📱'};
+
+      const notif = document.createElement('div');
+      notif.className = 'elderly-notif';
+      notif.style.cssText = 'position:fixed;top:30px;left:50%;transform:translateX(-50%);z-index:99999;background:'+c.bg+';color:#fff;padding:16px 28px;border-radius:16px;font-size:16px;font-weight:600;box-shadow:0 8px 32px rgba(0,0,0,0.4);display:flex;align-items:center;gap:12px;animation:notifSlide 0.4s ease-out;max-width:500px';
+      notif.innerHTML = '<span style="font-size:24px">'+c.icon+'</span><div><p style="font-size:11px;opacity:0.8;margin-bottom:2px">来自家人的消息</p><p>'+message+'</p></div>';
+      document.body.appendChild(notif);
+
+      // 语音播报
+      if('speechSynthesis' in window) {
+        const utter = new SpeechSynthesisUtterance(message);
+        utter.lang = 'zh-CN'; utter.rate = 0.9; utter.pitch = 1;
+        speechSynthesis.speak(utter);
+      }
+
+      setTimeout(() => { notif.style.opacity = '0'; notif.style.transform = 'translateX(-50%) translateY(-20px)'; notif.style.transition = 'all 0.3s'; }, 4000);
+      setTimeout(() => notif.remove(), 4500);
+    }
+
+    // 通知动画
+    const notifStyle = document.createElement('style');
+    notifStyle.textContent = '@keyframes notifSlide{from{opacity:0;transform:translateX(-50%) translateY(-30px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}';
+    document.head.appendChild(notifStyle);
   </script>
   <audio id="piano-audio" src="https://cdn.pixabay.com/audio/2022/05/27/audio_1808fbf07a.mp3" preload="auto"></audio>
-  <!-- Audio Consent Modal -->
   <div id="audio-consent" style="position:fixed; top:0; left:0; right:0; bottom:0; z-index:9999; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
     <div style="background:#1e293b; border-radius:20px; padding:32px 40px; text-align:center; border:1px solid rgba(255,255,255,0.1); max-width:360px;">
       <p style="font-size:32px; margin-bottom:12px;">🎵</p>

@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>百度健康 × 小度App — 子女端·家人关怀中心</title>
+  <link href="https://cdn.bootcdn.net/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.cnpmjs.org/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Noto Sans SC', -apple-system, sans-serif; background: #0a0e1a; color: #e2e8f0; overflow: hidden; height: 100vh; }
+
+    /* === Color System === */
+    .text-primary-400{color:#60a5fa} .text-success-400{color:#34d399} .text-accent-400{color:#fbbf24}
+    .text-danger-400{color:#f87171} .text-dark-300{color:#cbd5e1} .text-dark-400{color:#94a3b8} .text-dark-500{color:#64748b}
+    .gradient-text { background: linear-gradient(135deg, #34d399, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .gradient-text-warn { background: linear-gradient(135deg, #fbbf24, #f97316); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+    /* === Pages === */
+    .page { display: none; min-height: 100vh; padding: 40px 60px 100px; }
+    .page.active { display: flex; }
+    .page-enter { animation: pageEnter 0.6s cubic-bezier(0.2,0.8,0.2,1); }
+    @keyframes pageEnter { from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:translateX(0)} }
+
+    /* === Navigation === */
+    .nav-bar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; padding: 16px 40px;
+      background: linear-gradient(to top, rgba(10,14,26,0.95), rgba(10,14,26,0.7), transparent);
+      display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .nav-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.2); cursor: pointer; transition: all 0.3s; }
+    .nav-dot.active { width: 28px; border-radius: 6px; background: #10b981; }
+    .nav-dot:hover { background: rgba(255,255,255,0.4); }
+
+    /* === Phone Mockup === */
+    .phone-wrap { position: relative; display: flex; align-items: center; justify-content: center; }
+    .phone-frame {
+      width: 320px; height: 640px; border-radius: 40px; border: 4px solid #2a2a4a;
+      background: #0f172a; overflow: hidden; position: relative;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05), inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+    .phone-notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 140px; height: 28px; background: #0f172a; border-radius: 0 0 18px 18px; z-index: 10; border: 2px solid #2a2a4a; border-top: none; }
+    .phone-notch::after { content: ''; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 60px; height: 6px; background: #1e293b; border-radius: 3px; }
+    .phone-screen {
+      width: 100%; height: 100%; overflow-y: auto; padding: 36px 16px 16px;
+      background: linear-gradient(180deg, #0f172a 0%, #1a1a2e 100%);
+    }
+    .phone-screen::-webkit-scrollbar { width: 2px; }
+    .phone-screen::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+    .phone-glow { position: absolute; width: 400px; height: 400px; border-radius: 50%; filter: blur(80px); opacity: 0.15; pointer-events: none; }
+
+    /* === App Components === */
+    .app-header { padding: 8px 0 12px; display: flex; align-items: center; justify-content: space-between; }
+    .app-card { background: rgba(30,41,59,0.7); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 14px; margin-bottom: 10px; }
+    .app-tab-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 52px; background: rgba(15,23,42,0.95); border-top: 1px solid rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: space-around; padding: 0 8px; }
+    .app-tab { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 9px; color: #64748b; }
+    .app-tab.active { color: #10b981; }
+    .app-tab-icon { font-size: 16px; }
+    .app-badge { position: absolute; top: -2px; right: -4px; width: 8px; height: 8px; border-radius: 50%; background: #ef4444; }
+
+    .progress-sm { height: 4px; border-radius: 2px; background: rgba(255,255,255,0.08); overflow: hidden; }
+    .progress-sm-fill { height: 100%; border-radius: 2px; }
+
+    /* === Animations === */
+    @keyframes bubbleIn { from{opacity:0;transform:translateY(8px) scale(0.95)} to{opacity:1;transform:translateY(0) scale(1)} }
+    @keyframes slideUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+
+    /* === Glass Cards (page level) === */
+    .glass-card { background: rgba(30,41,59,0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; }
+  </style>
+</head>
+<body>
+
+<!-- Navigation Bar -->
+<div class="nav-bar">
+  <span id="page-label" class="text-xs text-dark-400 mr-4 hidden sm:block">子女端</span>
+  <div class="nav-dot active" onclick="goPage(0)"></div>
+  <div class="nav-dot" onclick="goPage(1)"></div>
+  <div class="nav-dot" onclick="goPage(2)"></div>
+  <div class="nav-dot" onclick="goPage(3)"></div>
+  <div class="nav-dot" onclick="goPage(4)"></div>
+  <div class="nav-dot" onclick="goPage(5)"></div>
+  <div class="nav-dot" onclick="goPage(6)"></div>
+  <div class="nav-dot" onclick="goPage(7)"></div>
+</div>
+
+<!-- ===== P0: 封面 ===== -->
+<div class="page active flex-col justify-center items-center" id="p0">
+  <div class="max-w-3xl mx-auto text-center">
+    <p class="text-success-400 text-sm font-bold tracking-wider mb-6">百度健康 × 小度App · 子女端</p>
+    <h1 class="text-5xl font-black leading-tight mb-6">
+      远程守护父母健康<br><span class="gradient-text">小度App 让关爱零距离</span>
+    </h1>
+    <p class="text-dark-300 text-lg mb-8 max-w-xl mx-auto">子女通过手机端「小度App」实时掌握父母的健康状况，远程设置日程提醒，AI智能预警异常</p>
+    <div class="flex justify-center gap-4 mb-10">
+      <div class="px-4 py-2 rounded-xl text-xs font-bold" style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.25);color:#34d399">📱 小度App（手机）</div>
+      <div class="px-1 py-2 text-dark-500 text-xs">←→</div>
+      <div class="px-4 py-2 rounded-xl text-xs font-bold" style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.25);color:#60a5fa">🖥️ 小度智能屏（家中）</div>
+    </div>
+    <div class="flex justify-center gap-6 mb-12">
+      <div class="text-center"><p class="text-2xl font-black text-success-400">实时同步</p><p class="text-dark-400 text-xs mt-1">健康数据秒级推送</p></div>
+      <div class="text-center"><p class="text-2xl font-black text-primary-400">AI预警</p><p class="text-dark-400 text-xs mt-1">异常自动通知</p></div>
+      <div class="text-center"><p class="text-2xl font-black text-accent-400">远程管控</p><p class="text-dark-400 text-xs mt-1">日程一键下发</p></div>
+    </div>
+    <button onclick="goPage(1)" class="px-8 py-3 rounded-xl font-bold transition-all hover:scale-105 text-lg" style="background:linear-gradient(135deg,#10b981,#059669)">
+      体验子女端 →
+    </button>
+    <p class="text-dark-500 text-xs mt-4">按方向键翻页</p>
+  </div>
+</div>
+
+<!-- ===== P1: 健康看板 ===== -->
+<div class="page flex-col justify-center items-center" id="p1">
+  <div class="max-w-5xl mx-auto w-full flex gap-10 items-center">
+    <!-- 左侧说明 -->
+    <div class="flex-1">
+      <p class="text-success-400 text-sm font-bold tracking-wider mb-3">HEALTH DASHBOARD</p>
+      <h2 class="text-4xl font-black mb-4">健康<span class="gradient-text">实时看板</span></h2>
+      <p class="text-dark-300 mb-6">打开小度App，第一眼就能看到父母今天的核心健康指标，无需询问。</p>
+      <div class="space-y-3">
+        <div class="flex items-center gap-3"><span class="text-success-400">✓</span><span class="text-dark-300 text-sm">血压/步数/睡眠/服药 一目了然</span></div>
+        <div class="flex items-center gap-3"><span class="text-success-400">✓</span><span class="text-dark-300 text-sm">健康得分 45/60，超过78%同龄人</span></div>
+        <div class="flex items-center gap-3"><span class="text-success-400">✓</span><span class="text-dark-300 text-sm">血压趋势图，本周稳步下降</span></div>
+        <div class="flex items-center gap-3"><span class="text-accent-400">⚠️</span><span class="text-dark-300 text-sm">异常指标高亮提醒（深睡偏少）</span></div>
+      </div>
+    </div>
+    <!-- 右侧手机 -->
+    <div class="phone-wrap">
+      <div class="phone-glow" style="background:#10b981;top:-50px;right:-50px"></div>
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen" style="padding-bottom:60px">
+          <div class="app-header">
+            <div><p style="font-size:15px;font-weight:800">👨‍👩‍👧 张爷爷的健康</p><p style="font-size:9px;color:#64748b">今日 · 5月19日 周一</p></div>
+            <div style="font-size:9px;color:#10b981;background:rgba(16,185,129,0.1);padding:3px 8px;border-radius:8px">在线 🟢</div>
+          </div>
+          <!-- 得分 -->
+          <div class="app-card" style="text-align:center;background:linear-gradient(135deg,rgba(16,185,129,0.1),rgba(59,130,246,0.05))">
+            <p style="font-size:28px;font-weight:900;background:linear-gradient(90deg,#10b981,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent">45 / 60</p>
+            <p style="font-size:9px;color:#64748b">今日健康得分 · 超过78%同龄人</p>
+            <div class="progress-sm" style="margin-top:8px"><div class="progress-sm-fill" style="width:75%;background:linear-gradient(90deg,#10b981,#3b82f6)"></div></div>
+          </div>
+          <!-- 四宫格 -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div class="app-card" style="text-align:center">
+              <p style="font-size:10px;color:#64748b">血压</p>
+              <p style="font-size:18px;font-weight:800;color:#10b981">128/82</p>
+              <p style="font-size:9px;color:#34d399">↓5 正常</p>
+            </div>
+            <div class="app-card" style="text-align:center">
+              <p style="font-size:10px;color:#64748b">步数</p>
+              <p style="font-size:18px;font-weight:800;color:#3b82f6">8,432</p>
+              <div class="progress-sm" style="margin-top:4px"><div class="progress-sm-fill" style="width:84%;background:#3b82f6"></div></div>
+            </div>
+            <div class="app-card" style="text-align:center">
+              <p style="font-size:10px;color:#64748b">睡眠</p>
+              <p style="font-size:18px;font-weight:800;color:#a78bfa">7h15m</p>
+              <p style="font-size:9px;color:#f59e0b">深睡少⚠️</p>
+            </div>
+            <div class="app-card" style="text-align:center">
+              <p style="font-size:10px;color:#64748b">服药</p>
+              <p style="font-size:18px;font-weight:800;color:#f59e0b">1/2</p>
+              <p style="font-size:9px;color:#64748b">待服1种</p>
+            </div>
+          </div>
+          <!-- 7天血压趋势图 -->
+          <div class="app-card">
+            <p style="font-size:10px;color:#94a3b8;margin-bottom:6px">7天血压趋势</p>
+            <svg width="100%" height="60" viewBox="0 0 260 60" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="bpGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#10b981" stop-opacity="0.3"/>
+                  <stop offset="100%" stop-color="#10b981" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <!-- 警戒线 140 -->
+              <line x1="0" y1="10" x2="260" y2="10" stroke="#f87171" stroke-width="0.5" stroke-dasharray="3,3" opacity="0.5"/>
+              <text x="240" y="8" fill="#f87171" font-size="7" opacity="0.7">140</text>
+              <!-- 正常线 130 -->
+              <line x1="0" y1="25" x2="260" y2="25" stroke="#64748b" stroke-width="0.3" stroke-dasharray="2,4" opacity="0.3"/>
+              <!-- 填充区域 -->
+              <path d="M0,20 L43,25 L86,15 L129,22 L172,18 L215,20 L258,12 L258,60 L0,60 Z" fill="url(#bpGrad)"/>
+              <!-- 折线 (收缩压) -->
+              <polyline points="0,20 43,25 86,15 129,22 172,18 215,20 258,12" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <!-- 数据点 -->
+              <circle cx="0" cy="20" r="2.5" fill="#10b981"/><text x="0" y="33" fill="#94a3b8" font-size="7">135</text>
+              <circle cx="43" cy="25" r="2.5" fill="#10b981"/><text x="38" y="38" fill="#94a3b8" font-size="7">137</text>
+              <circle cx="86" cy="15" r="2.5" fill="#f59e0b"/><text x="78" y="12" fill="#f59e0b" font-size="7">142⚠</text>
+              <circle cx="129" cy="22" r="2.5" fill="#10b981"/><text x="124" y="35" fill="#94a3b8" font-size="7">136</text>
+              <circle cx="172" cy="18" r="2.5" fill="#10b981"/><text x="167" y="31" fill="#94a3b8" font-size="7">134</text>
+              <circle cx="215" cy="20" r="2.5" fill="#10b981"/><text x="210" y="33" fill="#94a3b8" font-size="7">135</text>
+              <circle cx="258" cy="12" r="3" fill="#10b981" stroke="#fff" stroke-width="1"/><text x="244" y="9" fill="#10b981" font-size="7" font-weight="bold">128✓</text>
+              <!-- 日期标签 -->
+              <text x="0" y="56" fill="#64748b" font-size="7">周一</text>
+              <text x="43" y="56" fill="#64748b" font-size="7">周二</text>
+              <text x="86" y="56" fill="#64748b" font-size="7">周三</text>
+              <text x="125" y="56" fill="#64748b" font-size="7">周四</text>
+              <text x="168" y="56" fill="#64748b" font-size="7">周五</text>
+              <text x="211" y="56" fill="#64748b" font-size="7">周六</text>
+              <text x="248" y="56" fill="#10b981" font-size="7" font-weight="bold">今</text>
+            </svg>
+          </div>
+          <!-- 底部Tab -->
+          <div class="app-tab-bar">
+            <div class="app-tab active"><span class="app-tab-icon">🏠</span><span>首页</span></div>
+            <div class="app-tab"><span class="app-tab-icon">💊</span><span>用药</span></div>
+            <div class="app-tab"><span class="app-tab-icon">📊</span><span>指标</span></div>
+            <div class="app-tab"><span class="app-tab-icon">🥗</span><span>饮食</span></div>
+            <div class="app-tab" style="position:relative"><span class="app-tab-icon">🔔</span><span>消息</span><div class="app-badge"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== P2: 用药监护 ===== -->
+<div class="page flex-col justify-center items-center" id="p2">
+  <div class="max-w-5xl mx-auto w-full flex gap-10 items-center">
+    <div class="flex-1">
+      <p class="text-accent-400 text-sm font-bold tracking-wider mb-3">MEDICATION</p>
+      <h2 class="text-4xl font-black mb-4">用药<span class="gradient-text-warn">实时监护</span></h2>
+      <p class="text-dark-300 mb-6">实时查看父母服药状态，漏服30分钟自动推送通知。</p>
+      <div class="space-y-3">
+        <div class="flex items-center gap-3"><span class="text-success-400">✓</span><span class="text-dark-300 text-sm">服药时间轴：已服/待服一目了然</span></div>
+        <div class="flex items-center gap-3"><span class="text-success-400">✓</span><span class="text-dark-300 text-sm">连续打卡24天，培养服药习惯</span></div>
+        <div class="flex items-center gap-3"><span class="text-danger-400">🔔</span><span class="text-dark-300 text-sm">漏服自动通知子女 + 小度提醒老人</span></div>
+        <div class="flex items-center gap-3"><span class="text-primary-400">📋</span><span class="text-dark-300 text-sm">药物注意事项、禁忌食物提醒</span></div>
+      </div>
+    </div>
+    <div class="phone-wrap">
+      <div class="phone-glow" style="background:#f59e0b;top:-50px;right:-50px"></div>
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen" style="padding-bottom:60px">
+          <div class="app-header">
+            <p style="font-size:15px;font-weight:800">💊 用药管理</p>
+            <span style="font-size:9px;color:#10b981;background:rgba(16,185,129,0.1);padding:3px 8px;border-radius:8px">连续24天🔥</span>
+          </div>
+          <!-- 药物卡片 -->
+          <div class="app-card" style="border-left:3px solid #10b981">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div><p style="font-size:12px;font-weight:700">苯磺酸氨氯地平 5mg</p><p style="font-size:9px;color:#64748b">降压药 · 早餐后</p></div>
+              <div style="text-align:right"><p style="font-size:11px;color:#10b981;font-weight:700">✅ 已服</p><p style="font-size:9px;color:#64748b">08:35</p></div>
+            </div>
+          </div>
+          <div class="app-card" style="border-left:3px solid #f59e0b">
+            <div style="display:flex;align-items:center;justify-content:space-between">
+              <div><p style="font-size:12px;font-weight:700">阿托伐他汀 20mg</p><p style="font-size:9px;color:#64748b">降脂药 · 晚餐后</p></div>
+              <div style="text-align:right"><p style="font-size:11px;color:#f59e0b;font-weight:700">⏰ 20:00</p><p style="font-size:9px;color:#64748b">待服</p></div>
+            </div>
+          </div>
+          <!-- 打卡 -->
+          <div class="app-card">
+            <p style="font-size:10px;color:#94a3b8;margin-bottom:6px">近7日打卡</p>
+            <div style="display:flex;justify-content:space-between">
+              <div style="text-align:center"><div style="width:24px;height:24px;border-radius:50%;background:#10b981;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff">✓</div><span style="font-size:8px;color:#64748b">一</span></div>
+              <div style="text-align:center"><div style="width:24px;height:24px;border-radius:50%;background:#10b981;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff">✓</div><span style="font-size:8px;color:#64748b">二</span></div>
+              <div style="text-align:center"><div style="width:24px;height:24px;border-radius:50%;background:#10b981;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff">✓</div><span style="font-size:8px;color:#64748b">三</span></div>
+              <div style="text-align:center"><div style="width:24px;height:24px;border-radius:50%;background:#10b981;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff">✓</div><span style="font-size:8px;color:#64748b">四</span></div>
+              <div style="text-align:center"><div style="width:24px;height:24px;border-radius:50%;background:#10b981;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff">✓</div><span style="font-size:8px;color:#64748b">五</span></div>
+              <div style="text-align:center"><div style="width:24px;height:24px;border-radius:50%;background:#10b981;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff">✓</div><span style="font-size:8px;color:#64748b">六</span></div>
+              <div style="text-align:center"><div style="width:24px;height:24px;border-radius:50%;background:#3b82f6;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;box-shadow:0 0 8px rgba(59,130,246,0.5)">今</div><span style="font-size:8px;color:#64748b">今</span></div>
+            </div>
+          </div>
+          <!-- 注意事项 -->
+          <div class="app-card" style="background:rgba(239,68,68,0.04);border-color:rgba(239,68,68,0.1)">
+            <p style="font-size:10px;font-weight:600;color:#f87171;margin-bottom:4px">⚠️ 注意事项</p>
+            <p style="font-size:9px;color:#94a3b8;line-height:1.6">· 氨氯地平不可与葡萄柚同服<br>· 阿托伐他汀避免与大量酒精同服</p>
+          </div>
+          <div class="app-tab-bar">
+            <div class="app-tab"><span class="app-tab-icon">🏠</span><span>首页</span></div>
+            <div class="app-tab active"><span class="app-tab-icon">💊</span><span>用药</span></div>
+            <div class="app-tab"><span class="app-tab-icon">📊</span><span>指标</span></div>
+            <div class="app-tab"><span class="app-tab-icon">🥗</span><span>饮食</span></div>
+            <div class="app-tab"><span class="app-tab-icon">🔔</span><span>消息</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== P3: 饮食管理 ===== -->
+<div class="page flex-col justify-center items-center" id="p3">
+  <div class="max-w-5xl mx-auto w-full flex gap-10 items-center">
+    <div class="flex-1">
+      <p class="text-orange-400 text-sm font-bold tracking-wider mb-3">DIET MONITOR</p>
+      <h2 class="text-4xl font-black mb-4">饮食<span class="gradient-text">智能分析</span></h2>
+      <p class="text-dark-300 mb-6">AI自动评估每餐营养，结合高血压慢病给出饮食建议。</p>
+      <div class="space-y-3">
+        <div class="flex items-center gap-3"><span class="text-success-400">✓</span><span class="text-dark-300 text-sm">三餐自动评分（GI + 钠 + 热量）</span></div>
+        <div class="flex items-center gap-3"><span class="text-accent-400">⚠️</span><span class="text-dark-300 text-sm">钠摄入达86%上限，晚餐预警</span></div>
+        <div class="flex items-center gap-3"><span class="text-success-400">✓</span><span class="text-dark-300 text-sm">AI自动推荐替代食谱</span></div>
+        <div class="flex items-center gap-3"><span class="text-primary-400">📊</span><span class="text-dark-300 text-sm">蛋白质/纤维/热量进度追踪</span></div>
+      </div>
+    </div>
+    <div class="phone-wrap">
+      <div class="phone-glow" style="background:#f97316;top:-50px;right:-50px"></div>
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen" style="padding-bottom:60px">
+          <div class="app-header">
+            <p style="font-size:15px;font-weight:800">🥗 今日饮食</p>
+            <span style="font-size:9px;color:#64748b">总评 83分</span>
+          </div>
+          <div class="app-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <span style="font-size:11px;font-weight:700">🌅 早餐 · 07:45</span>
+              <span style="font-size:9px;color:#10b981;background:rgba(16,185,129,0.1);padding:2px 8px;border-radius:6px;font-weight:600">优 92分</span>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px">
+              <span style="font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(16,185,129,0.1);color:#34d399">杂粮粥</span>
+              <span style="font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(16,185,129,0.1);color:#34d399">水煮蛋</span>
+              <span style="font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(16,185,129,0.1);color:#34d399">凉拌木耳</span>
+            </div>
+          </div>
+          <div class="app-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <span style="font-size:11px;font-weight:700">☀️ 午餐 · 12:10</span>
+              <span style="font-size:9px;color:#f59e0b;background:rgba(245,158,11,0.1);padding:2px 8px;border-radius:6px;font-weight:600">良 74分</span>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px">
+              <span style="font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(16,185,129,0.1);color:#34d399">清蒸鱼</span>
+              <span style="font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(245,158,11,0.1);color:#f59e0b">白米饭⚠️</span>
+              <span style="font-size:9px;padding:2px 6px;border-radius:4px;background:rgba(245,158,11,0.1);color:#f59e0b">味噌汤⚠️</span>
+            </div>
+          </div>
+          <!-- 营养进度 -->
+          <div class="app-card">
+            <p style="font-size:10px;color:#94a3b8;margin-bottom:8px">今日营养</p>
+            <div style="margin-bottom:6px"><div style="display:flex;justify-content:space-between;font-size:9px;color:#64748b;margin-bottom:2px"><span>钠摄入</span><span style="color:#f59e0b">4.3g/5g ⚠️</span></div><div class="progress-sm"><div class="progress-sm-fill" style="width:86%;background:#f59e0b"></div></div></div>
+            <div style="margin-bottom:6px"><div style="display:flex;justify-content:space-between;font-size:9px;color:#64748b;margin-bottom:2px"><span>热量</span><span>1000/1800kcal</span></div><div class="progress-sm"><div class="progress-sm-fill" style="width:55%;background:#f97316"></div></div></div>
+            <div><div style="display:flex;justify-content:space-between;font-size:9px;color:#64748b;margin-bottom:2px"><span>蛋白质</span><span>48/60g</span></div><div class="progress-sm"><div class="progress-sm-fill" style="width:80%;background:#3b82f6"></div></div></div>
+          </div>
+          <div class="app-tab-bar">
+            <div class="app-tab"><span class="app-tab-icon">🏠</span><span>首页</span></div>
+            <div class="app-tab"><span class="app-tab-icon">💊</span><span>用药</span></div>
+            <div class="app-tab"><span class="app-tab-icon">📊</span><span>指标</span></div>
+            <div class="app-tab active"><span class="app-tab-icon">🥗</span><span>饮食</span></div>
+            <div class="app-tab"><span class="app-tab-icon">🔔</span><span>消息</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== P4: 远程日程 ===== -->
+<div class="page flex-col justify-center items-center" id="p4">
+  <div class="max-w-5xl mx-auto w-full flex gap-10 items-center">
+    <div class="flex-1">
+      <p class="text-primary-400 text-sm font-bold tracking-wider mb-3">REMOTE CONTROL</p>
+      <h2 class="text-4xl font-black mb-4">远程<span class="gradient-text">日程管理</span></h2>
+      <p class="text-dark-300 mb-6">子女在App设置日程 → 小度智能屏实时转达给老人</p>
+      <div class="glass-card p-5 mb-4">
+        <p class="text-sm font-bold mb-3">🔗 联动流程</p>
+        <div class="space-y-2 text-sm">
+          <div class="flex items-start gap-3"><span class="text-primary-400 font-bold">①</span><span class="text-dark-300">子女在小度App新增/修改提醒</span></div>
+          <div class="flex items-start gap-3"><span class="text-success-400 font-bold">②</span><span class="text-dark-300">小度智能屏实时收到变更</span></div>
+          <div class="flex items-start gap-3"><span class="text-accent-400 font-bold">③</span><span class="text-dark-300">小度主动语音播报：「家人给您安排了新提醒…」</span></div>
+          <div class="flex items-start gap-3"><span class="text-purple-400 font-bold">④</span><span class="text-dark-300">到时间自动提醒，老人零操作</span></div>
+        </div>
+      </div>
+      <div class="px-4 py-2 rounded-xl text-xs inline-block" style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);color:#34d399">✅ 老人零学习成本 — 小度作为中间人完成传达</div>
+    </div>
+    <div class="phone-wrap">
+      <div class="phone-glow" style="background:#3b82f6;top:-50px;right:-50px"></div>
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen" style="padding-bottom:60px">
+          <div class="app-header">
+            <p style="font-size:15px;font-weight:800">⚙️ 日程设置</p>
+            <span style="font-size:9px;color:#10b981;background:rgba(16,185,129,0.1);padding:3px 8px;border-radius:8px">主动服务 ON</span>
+          </div>
+          <div class="app-card" style="display:flex;align-items:center;gap:10px"><span style="font-size:18px">🌅</span><div style="flex:1"><p style="font-size:11px;font-weight:600">晨间问候</p><p style="font-size:9px;color:#3b82f6">07:30</p></div><div style="width:32px;height:18px;border-radius:9px;background:#3b82f6;position:relative"><div style="position:absolute;top:2px;right:2px;width:14px;height:14px;border-radius:50%;background:#fff"></div></div></div>
+          <div class="app-card" style="display:flex;align-items:center;gap:10px"><span style="font-size:18px">💊</span><div style="flex:1"><p style="font-size:11px;font-weight:600">用药提醒</p><p style="font-size:9px;color:#3b82f6">08:30</p></div><div style="width:32px;height:18px;border-radius:9px;background:#3b82f6;position:relative"><div style="position:absolute;top:2px;right:2px;width:14px;height:14px;border-radius:50%;background:#fff"></div></div></div>
+          <div class="app-card" style="display:flex;align-items:center;gap:10px"><span style="font-size:18px">🧘</span><div style="flex:1"><p style="font-size:11px;font-weight:600">八段锦跟练</p><p style="font-size:9px;color:#3b82f6">10:00</p></div><div style="width:32px;height:18px;border-radius:9px;background:#3b82f6;position:relative"><div style="position:absolute;top:2px;right:2px;width:14px;height:14px;border-radius:50%;background:#fff"></div></div></div>
+          <div class="app-card" style="display:flex;align-items:center;gap:10px"><span style="font-size:18px">🧠</span><div style="flex:1"><p style="font-size:11px;font-weight:600">健脑答题</p><p style="font-size:9px;color:#3b82f6">15:00</p></div><div style="width:32px;height:18px;border-radius:9px;background:#3b82f6;position:relative"><div style="position:absolute;top:2px;right:2px;width:14px;height:14px;border-radius:50%;background:#fff"></div></div></div>
+          <div class="app-card" style="display:flex;align-items:center;gap:10px"><span style="font-size:18px">🌙</span><div style="flex:1"><p style="font-size:11px;font-weight:600">晚间复盘</p><p style="font-size:9px;color:#3b82f6">21:00</p></div><div style="width:32px;height:18px;border-radius:9px;background:#3b82f6;position:relative"><div style="position:absolute;top:2px;right:2px;width:14px;height:14px;border-radius:50%;background:#fff"></div></div></div>
+          <div style="width:100%;padding:10px;border:1px dashed rgba(59,130,246,0.3);border-radius:12px;text-align:center;font-size:11px;color:#60a5fa;margin-top:4px">＋ 新增提醒</div>
+          <div class="app-tab-bar">
+            <div class="app-tab"><span class="app-tab-icon">🏠</span><span>首页</span></div>
+            <div class="app-tab"><span class="app-tab-icon">💊</span><span>用药</span></div>
+            <div class="app-tab"><span class="app-tab-icon">📊</span><span>指标</span></div>
+            <div class="app-tab"><span class="app-tab-icon">🥗</span><span>饮食</span></div>
+            <div class="app-tab active"><span class="app-tab-icon">⚙️</span><span>设置</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== P5: AI问答 ===== -->
+<div class="page flex-col justify-center items-center" id="p5">
+  <div class="max-w-5xl mx-auto w-full flex gap-10 items-center">
+    <div class="flex-1">
+      <p class="text-primary-400 text-sm font-bold tracking-wider mb-3">AI ASSISTANT</p>
+      <h2 class="text-4xl font-black mb-4">AI <span class="gradient-text">健康问答</span></h2>
+      <p class="text-dark-300 mb-6">随时在App中询问父母健康状况，AI基于当日真实数据回答。</p>
+      <div class="glass-card p-5">
+        <p class="text-sm font-bold mb-3">💡 子女常用问题</p>
+        <div class="space-y-2">
+          <p class="text-dark-300 text-sm">· 「爸爸今天吃药了吗？」</p>
+          <p class="text-dark-300 text-sm">· 「血压最近稳定吗？」</p>
+          <p class="text-dark-300 text-sm">· 「帮我提醒他晚上少吃盐」</p>
+          <p class="text-dark-300 text-sm">· 「今天运动够不够？」</p>
+          <p class="text-dark-300 text-sm">· 「把今天的报告发给我」</p>
+        </div>
+      </div>
+    </div>
+    <div class="phone-wrap">
+      <div class="phone-glow" style="background:#6366f1;top:-50px;right:-50px"></div>
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen" style="padding-bottom:60px">
+          <div class="app-header">
+            <p style="font-size:15px;font-weight:800">🤖 AI健康助手</p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="align-self:flex-end;background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);border-radius:14px 14px 4px 14px;padding:10px 12px;max-width:80%">
+              <p style="font-size:11px">爸爸今天吃药了吗？</p>
+            </div>
+            <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.15);border-radius:14px 14px 14px 4px;padding:10px 12px;max-width:85%">
+              <p style="font-size:11px;line-height:1.6">张爷爷08:35已服苯磺酸氨氯地平5mg ✅<br><br>阿托伐他汀安排在20:00，已设提醒。<br>连续服药第24天💪</p>
+            </div>
+            <div style="align-self:flex-end;background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);border-radius:14px 14px 4px 14px;padding:10px 12px;max-width:80%">
+              <p style="font-size:11px">晚上提醒他少吃盐</p>
+            </div>
+            <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.15);border-radius:14px 14px 14px 4px;padding:10px 12px;max-width:85%">
+              <p style="font-size:11px;line-height:1.6">好的！17:00会通过小度提醒：<br>「今天钠已达4.3g，晚餐用醋代替酱油」<br><br>已加入提醒队列 ✅</p>
+            </div>
+          </div>
+          <!-- 输入框 -->
+          <div style="position:absolute;bottom:52px;left:0;right:0;padding:8px 12px;background:rgba(15,23,42,0.95);border-top:1px solid rgba(255,255,255,0.06)">
+            <div style="display:flex;gap:8px;align-items:center">
+              <div style="flex:1;background:rgba(30,41,59,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:8px 14px;font-size:10px;color:#64748b">输入问题...</div>
+              <div style="width:28px;height:28px;border-radius:50%;background:#10b981;display:flex;align-items:center;justify-content:center;font-size:12px">➤</div>
+            </div>
+          </div>
+          <div class="app-tab-bar">
+            <div class="app-tab"><span class="app-tab-icon">🏠</span><span>首页</span></div>
+            <div class="app-tab"><span class="app-tab-icon">💊</span><span>用药</span></div>
+            <div class="app-tab active"><span class="app-tab-icon">🤖</span><span>问答</span></div>
+            <div class="app-tab"><span class="app-tab-icon">🥗</span><span>饮食</span></div>
+            <div class="app-tab"><span class="app-tab-icon">🔔</span><span>消息</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== P6: 异常预警 ===== -->
+<div class="page flex-col justify-center items-center" id="p6">
+  <div class="max-w-5xl mx-auto w-full flex gap-10 items-center">
+    <div class="flex-1">
+      <p class="text-danger-400 text-sm font-bold tracking-wider mb-3">ALERT SYSTEM</p>
+      <h2 class="text-4xl font-black mb-4">智能<span class="gradient-text-warn">异常预警</span></h2>
+      <p class="text-dark-300 mb-6">AI 24小时监测，血压异常/漏服药物/SOS求助，秒级通知子女。</p>
+      <div class="space-y-3">
+        <div class="flex items-center gap-3"><span class="text-danger-400">🚨</span><span class="text-dark-300 text-sm">SOS一键求助 → 立即推送 + 自动定位</span></div>
+        <div class="flex items-center gap-3"><span class="text-accent-400">⚠️</span><span class="text-dark-300 text-sm">血压>140/90 → 黄色预警通知</span></div>
+        <div class="flex items-center gap-3"><span class="text-accent-400">💊</span><span class="text-dark-300 text-sm">漏服药物30min → 家属+小度双重提醒</span></div>
+        <div class="flex items-center gap-3"><span class="text-primary-400">⚙️</span><span class="text-dark-300 text-sm">预警规则可自定义配置</span></div>
+      </div>
+    </div>
+    <div class="phone-wrap">
+      <div class="phone-glow" style="background:#ef4444;top:-50px;right:-50px"></div>
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen" style="padding-bottom:60px">
+          <div class="app-header">
+            <p style="font-size:15px;font-weight:800">🔔 消息通知</p>
+            <span style="font-size:9px;color:#f87171;background:rgba(239,68,68,0.1);padding:3px 8px;border-radius:8px">3条新通知</span>
+          </div>
+          <div class="app-card" style="border-color:rgba(239,68,68,0.2)">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+              <div style="width:28px;height:28px;border-radius:50%;background:rgba(239,68,68,0.15);display:flex;align-items:center;justify-content:center;font-size:12px">🚨</div>
+              <div><p style="font-size:11px;font-weight:700;color:#f87171">SOS 求助触发</p><p style="font-size:9px;color:#64748b">2分钟前</p></div>
+            </div>
+            <p style="font-size:10px;color:#94a3b8;line-height:1.5">张爷爷按下紧急按钮。位置：海淀区XX小区。正在呼叫您的电话。</p>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <button style="font-size:9px;padding:5px 12px;border-radius:8px;background:#ef4444;color:#fff;border:none;font-weight:600">立即回拨</button>
+              <button style="font-size:9px;padding:5px 12px;border-radius:8px;background:transparent;color:#94a3b8;border:1px solid rgba(255,255,255,0.1)">查看位置</button>
+            </div>
+          </div>
+          <div class="app-card" style="border-color:rgba(245,158,11,0.15)">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+              <span style="font-size:12px">⚠️</span>
+              <p style="font-size:11px;font-weight:600;color:#f59e0b">血压偏高</p>
+              <span style="font-size:9px;color:#64748b;margin-left:auto">今早 07:50</span>
+            </div>
+            <p style="font-size:10px;color:#94a3b8">今早142/91mmHg，高于日常均值</p>
+          </div>
+          <div class="app-card" style="border-color:rgba(245,158,11,0.1)">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+              <span style="font-size:12px">💊</span>
+              <p style="font-size:11px;font-weight:600;color:#f59e0b">漏服提醒</p>
+              <span style="font-size:9px;color:#64748b;margin-left:auto">昨日 21:30</span>
+            </div>
+            <p style="font-size:10px;color:#94a3b8">阿托伐他汀未服，已通过小度提醒</p>
+          </div>
+          <div class="app-tab-bar">
+            <div class="app-tab"><span class="app-tab-icon">🏠</span><span>首页</span></div>
+            <div class="app-tab"><span class="app-tab-icon">💊</span><span>用药</span></div>
+            <div class="app-tab"><span class="app-tab-icon">📊</span><span>指标</span></div>
+            <div class="app-tab"><span class="app-tab-icon">🥗</span><span>饮食</span></div>
+            <div class="app-tab active" style="position:relative"><span class="app-tab-icon">🔔</span><span>消息</span><div class="app-badge"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== P7: 今日总结 ===== -->
+<div class="page flex-col justify-center items-center" id="p7">
+  <div class="max-w-5xl mx-auto w-full flex gap-10 items-center">
+    <div class="flex-1">
+      <p class="text-purple-400 text-sm font-bold tracking-wider mb-3">DAILY REPORT</p>
+      <h2 class="text-4xl font-black mb-4">今日<span class="gradient-text">健康日报</span></h2>
+      <p class="text-dark-300 mb-6">每晚21:00自动生成健康报告，推送给所有家属成员。</p>
+      <div class="glass-card p-5 mb-4">
+        <p class="text-sm font-bold mb-3">📤 报告已推送</p>
+        <div class="space-y-2 text-sm">
+          <div class="flex items-center justify-between text-dark-300"><span>儿子 小张</span><span class="text-success-400">已送达 ✅</span></div>
+          <div class="flex items-center justify-between text-dark-300"><span>女儿 小丽</span><span class="text-success-400">已送达 ✅</span></div>
+          <div class="flex items-center justify-between text-dark-300"><span>社区医生</span><span class="text-success-400">已送达 ✅</span></div>
+        </div>
+      </div>
+      <div class="glass-card p-5">
+        <p class="text-sm font-bold mb-2">💬 家人留言板</p>
+        <p class="text-dark-300 text-sm">小张：「爸，今天不错！步数明天我陪你散步补上～」</p>
+        <p class="text-dark-400 text-sm mt-2">小丽：「爸爸加油！连续24天服药太棒了🎉」</p>
+      </div>
+    </div>
+    <div class="phone-wrap">
+      <div class="phone-glow" style="background:#8b5cf6;top:-50px;right:-50px"></div>
+      <div class="phone-frame">
+        <div class="phone-notch"></div>
+        <div class="phone-screen" style="padding-bottom:60px">
+          <div class="app-header">
+            <p style="font-size:15px;font-weight:800">📋 今日总结</p>
+            <span style="font-size:9px;color:#64748b">5月19日</span>
+          </div>
+          <div class="app-card" style="text-align:center;background:linear-gradient(135deg,rgba(139,92,246,0.1),rgba(59,130,246,0.05))">
+            <p style="font-size:28px;font-weight:900;background:linear-gradient(90deg,#a78bfa,#60a5fa);-webkit-background-clip:text;-webkit-text-fill-color:transparent">45 / 60</p>
+            <p style="font-size:9px;color:#64748b">超过78%同龄人 · 连续达标7天🔥</p>
+          </div>
+          <div class="app-card" style="padding:10px 14px">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span style="font-size:10px">✅</span><span style="font-size:10px">按时服药 +10分</span></div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span style="font-size:10px">✅</span><span style="font-size:10px">血压测量 +10分</span></div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span style="font-size:10px">✅</span><span style="font-size:10px">八段锦15min +15分</span></div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span style="font-size:10px">✅</span><span style="font-size:10px">健脑答题 +10分</span></div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;opacity:0.5"><span style="font-size:10px">⭕</span><span style="font-size:10px">步行3000步 未完成</span></div>
+            <div style="display:flex;align-items:center;gap:6px;opacity:0.5"><span style="font-size:10px">⭕</span><span style="font-size:10px">晚餐少盐 未记录</span></div>
+          </div>
+          <div class="app-card" style="background:rgba(139,92,246,0.05);border-color:rgba(139,92,246,0.15)">
+            <p style="font-size:10px;font-weight:600;color:#a78bfa;margin-bottom:4px">🤖 AI建议</p>
+            <p style="font-size:9px;color:#94a3b8;line-height:1.6">血压稳定，用药按时。明日重点：补充步数+关注深睡。目标已自动下调。</p>
+          </div>
+          <div class="app-tab-bar">
+            <div class="app-tab"><span class="app-tab-icon">🏠</span><span>首页</span></div>
+            <div class="app-tab"><span class="app-tab-icon">💊</span><span>用药</span></div>
+            <div class="app-tab active"><span class="app-tab-icon">📋</span><span>总结</span></div>
+            <div class="app-tab"><span class="app-tab-icon">🥗</span><span>饮食</span></div>
+            <div class="app-tab"><span class="app-tab-icon">🔔</span><span>消息</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentPage = 0;
+  const totalPages = 8;
+  const pageLabels = ['子女端·封面','健康看板','用药监护','饮食分析','远程日程','AI问答','异常预警','今日总结'];
+
+  function goPage(n) {
+    if(n < 0 || n >= totalPages) return;
+    document.querySelectorAll('.page').forEach(p => { p.classList.remove('active','page-enter'); });
+    const pages = document.querySelectorAll('.page');
+    pages[n].classList.add('active','page-enter');
+    document.querySelectorAll('.nav-dot').forEach((d,i) => d.classList.toggle('active', i===n));
+    document.getElementById('page-label').textContent = pageLabels[n];
+    currentPage = n;
+  }
+
+  document.addEventListener('keydown', e => {
+    if(e.key === 'ArrowRight' || e.key === 'ArrowDown') goPage(currentPage + 1);
+    if(e.key === 'ArrowLeft' || e.key === 'ArrowUp') goPage(currentPage - 1);
+  });
+
+  // 滚轮翻页
+  let wheelLock = false;
+  document.addEventListener('wheel', e => {
+    if(wheelLock) return;
+    wheelLock = true;
+    if(e.deltaY > 30) goPage(currentPage + 1);
+    else if(e.deltaY < -30) goPage(currentPage - 1);
+    setTimeout(() => { wheelLock = false; }, 600);
+  }, {passive: true});
+
+  // 触摸翻页
+  let touchStartX = 0, touchStartY = 0;
+  document.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY; });
+  document.addEventListener('touchend', e => {
+    const dx = touchStartX - e.changedTouches[0].clientX;
+    const dy = touchStartY - e.changedTouches[0].clientY;
+    if(Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 50) { dy > 0 ? goPage(currentPage+1) : goPage(currentPage-1); }
+    else if(Math.abs(dx) > 50) { dx > 0 ? goPage(currentPage+1) : goPage(currentPage-1); }
+  });
+
+  // ===== 功能交互 =====
+
+  // P1: 四宫格卡片点击展开详情
+  document.querySelectorAll('#p1 .app-card').forEach(card => {
+    if(card.querySelector('[style*="grid"]')) return; // 跳过grid容器
+    card.style.cursor = 'pointer';
+    card.style.transition = 'all 0.3s';
+    card.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const expanded = this.dataset.expanded === '1';
+      if(expanded) {
+        this.style.transform = '';
+        this.style.boxShadow = '';
+        const detail = this.querySelector('.detail-expand');
+        if(detail) detail.remove();
+        this.dataset.expanded = '0';
+      } else {
+        this.style.transform = 'scale(1.03)';
+        this.style.boxShadow = '0 4px 20px rgba(16,185,129,0.2)';
+        this.dataset.expanded = '1';
+      }
+    });
+  });
+
+  // P2: 药物卡片点击展开
+  document.querySelectorAll('#p2 .app-card[style*="border-left"]').forEach(card => {
+    card.style.cursor = 'pointer';
+    card.style.transition = 'all 0.3s';
+    const origHTML = card.innerHTML;
+    card.addEventListener('click', function(e) {
+      e.stopPropagation();
+      if(this.dataset.expanded === '1') {
+        this.innerHTML = origHTML;
+        this.dataset.expanded = '0';
+        this.style.transform = '';
+      } else {
+        const isGreen = this.style.borderLeftColor.includes('16, 185, 129') || this.style.borderLeft.includes('10b981');
+        const extra = isGreen
+          ? '<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);font-size:9px;color:#94a3b8;line-height:1.6">· 需空腹或餐后均可<br>· 禁忌：葡萄柚<br>· 副作用：脚踝水肿(轻微)</div>'
+          : '<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);font-size:9px;color:#94a3b8;line-height:1.6">· 晚餐后30分钟服用<br>· 避免大量饮酒<br>· 定期复查肝功能</div>';
+        this.innerHTML = origHTML + extra;
+        this.dataset.expanded = '1';
+        this.style.transform = 'scale(1.02)';
+      }
+    });
+  });
+
+  // P4: 日程开关可点击切换
+  document.querySelectorAll('#p4 .app-card').forEach(card => {
+    const toggle = card.querySelector('[style*="border-radius:9px"]');
+    if(!toggle) return;
+    toggle.style.cursor = 'pointer';
+    toggle.style.transition = 'all 0.3s';
+    toggle.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const isOn = this.style.background.includes('3b82f6') || this.style.background === '#3b82f6';
+      if(isOn) {
+        this.style.background = '#374151';
+        this.querySelector('div').style.right = 'auto';
+        this.querySelector('div').style.left = '2px';
+      } else {
+        this.style.background = '#3b82f6';
+        this.querySelector('div').style.left = 'auto';
+        this.querySelector('div').style.right = '2px';
+      }
+    });
+  });
+
+  // P5: AI问答 - 模拟发送消息
+  (function() {
+    const p5 = document.getElementById('p5');
+    const inputBox = p5.querySelector('[style*="输入问题"]');
+    const sendBtn = p5.querySelector('[style*="border-radius:50%"][style*="10b981"]');
+    const chatContainer = p5.querySelector('[style*="flex-direction:column"]');
+    if(!inputBox || !sendBtn || !chatContainer) return;
+
+    const demoQA = [
+      {q: '血压最近怎么样？', a: '本周血压均值132/85，较上周下降3mmHg，整体趋势向好。今日128/82为本周最优。建议继续保持当前用药方案，周三复查时可与医生讨论是否减量。'},
+      {q: '今天运动够吗？', a: '今日步数8432步，完成84%目标。八段锦已完成15分钟。建议傍晚再散步20分钟补充步数，避免饭后立即运动。'},
+      {q: '帮我约周三复查', a: '已为您预约周三上午海淀社区医院心内科复查。已同步到智能屏日程，届时会提前2小时提醒张爷爷准备医保卡和近期血压记录。'},
+      {q: '今天吃了什么？', a: '早餐(07:45)：杂粮粥+水煮蛋+凉拌木耳，评分92分。午餐(12:10)：清蒸鱼+白米饭+味噌汤，评分74分(钠偏高)。今日累计钠摄入4.3g，接近上限。'},
+      {q: '睡得好吗？', a: '昨晚总睡眠7小时15分钟，入睡时间22:30。深睡仅1.5小时，低于建议的2小时。建议：晚间少看电视、睡前做深呼吸，必要时咨询医生。'},
+      {q: '需要注意什么？', a: '今日重点关注：①晚餐控盐(已达86%上限) ②20:00记得服阿托伐他汀 ③深睡质量偏低建议早睡。整体状态良好，无需过度担心。'}
+    ];
+    let qaIndex = 0;
+
+    // 智能匹配：根据用户输入匹配最相关的回答
+    function matchAnswer(input) {
+      const keywords = [
+        {keys: ['血压', '高压', '低压', '压'], idx: 0},
+        {keys: ['运动', '步数', '走', '锻炼', '散步'], idx: 1},
+        {keys: ['约', '预约', '复查', '医院', '医生'], idx: 2},
+        {keys: ['吃', '饮食', '早餐', '午餐', '晚餐', '饭'], idx: 3},
+        {keys: ['睡', '失眠', '深睡', '休息'], idx: 4},
+        {keys: ['注意', '建议', '提醒', '今天怎么样'], idx: 5}
+      ];
+      for(const rule of keywords) {
+        if(rule.keys.some(k => input.includes(k))) return demoQA[rule.idx];
+      }
+      return demoQA[qaIndex++ % demoQA.length];
+    }
+
+    // 让输入框可编辑
+    inputBox.setAttribute('contenteditable', 'true');
+    inputBox.style.outline = 'none';
+    inputBox.style.cursor = 'text';
+    inputBox.addEventListener('focus', function() {
+      if(this.textContent === '输入问题...') this.textContent = '';
+      this.style.color = '#e2e8f0';
+    });
+    inputBox.addEventListener('blur', function() {
+      if(!this.textContent.trim()) { this.textContent = '输入问题...'; this.style.color = '#64748b'; }
+    });
+
+    function sendMessage() {
+      const text = inputBox.textContent.trim();
+      const question = (text && text !== '输入问题...') ? text : demoQA[qaIndex++ % demoQA.length].q;
+      const qa = matchAnswer(question);
+
+      // 用户消息
+      const userMsg = document.createElement('div');
+      userMsg.style.cssText = 'align-self:flex-end;background:rgba(59,130,246,0.15);border:1px solid rgba(59,130,246,0.3);border-radius:14px 14px 4px 14px;padding:10px 12px;max-width:80%;animation:bubbleIn 0.3s ease';
+      userMsg.innerHTML = '<p style="font-size:11px">' + question + '</p>';
+      chatContainer.appendChild(userMsg);
+
+      // AI回复（延迟打字效果）
+      setTimeout(() => {
+        const aiMsg = document.createElement('div');
+        aiMsg.style.cssText = 'background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.15);border-radius:14px 14px 14px 4px;padding:10px 12px;max-width:85%;animation:bubbleIn 0.3s ease';
+        const answerText = qa.a;
+        aiMsg.innerHTML = '<p style="font-size:11px;line-height:1.6"></p>';
+        chatContainer.appendChild(aiMsg);
+        // 逐字打出
+        const p = aiMsg.querySelector('p');
+        let i = 0;
+        const typing = setInterval(() => {
+          p.textContent += answerText[i];
+          i++;
+          if(i >= answerText.length) clearInterval(typing);
+          chatContainer.parentElement.scrollTop = chatContainer.parentElement.scrollHeight;
+        }, 25);
+      }, 500);
+
+      inputBox.textContent = '输入问题...';
+      inputBox.style.color = '#64748b';
+      chatContainer.parentElement.scrollTop = chatContainer.parentElement.scrollHeight;
+    }
+
+    sendBtn.style.cursor = 'pointer';
+    sendBtn.addEventListener('click', e => { e.stopPropagation(); sendMessage(); });
+    inputBox.addEventListener('keydown', e => { if(e.key === 'Enter') { e.preventDefault(); sendMessage(); } });
+  })();
+
+  // P6: 按钮可点击反馈
+  document.querySelectorAll('#p6 button').forEach(btn => {
+    btn.style.cursor = 'pointer';
+    btn.style.transition = 'all 0.2s';
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const orig = this.textContent;
+      if(orig.includes('回拨')) {
+        this.textContent = '呼叫中...';
+        this.style.opacity = '0.7';
+        setTimeout(() => { this.textContent = '已连接 ✓'; this.style.background = '#10b981'; }, 1500);
+      } else if(orig.includes('位置')) {
+        this.textContent = '海淀区XX小区 📍';
+        this.style.border = '1px solid rgba(16,185,129,0.3)';
+        this.style.color = '#34d399';
+      }
+    });
+  });
+
+  // P7: 底部Tab切换视图
+  document.querySelectorAll('.app-tab-bar .app-tab').forEach(tab => {
+    tab.style.cursor = 'pointer';
+    tab.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const bar = this.parentElement;
+      bar.querySelectorAll('.app-tab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+      this.style.transform = 'scale(1.1)';
+      setTimeout(() => { this.style.transform = ''; }, 200);
+    });
+  });
+
+  // ===== 双屏联动：子女端 → 老人端 =====
+  // 子女端操作时向 localStorage 广播事件，老人端监听并弹出通知
+  function broadcastToElderly(type, message) {
+    localStorage.setItem('family_to_elderly', JSON.stringify({
+      type: type,
+      message: message,
+      timestamp: Date.now()
+    }));
+    // 显示已发送提示
+    showSyncToast('已同步到智能屏 ✓');
+  }
+
+  function showSyncToast(text) {
+    const existing = document.querySelector('.sync-toast');
+    if(existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.className = 'sync-toast';
+    toast.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;background:rgba(16,185,129,0.9);color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;font-weight:600;animation:bubbleIn 0.3s ease;backdrop-filter:blur(8px)';
+    toast.textContent = text;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2500);
+  }
+
+  // P4 开关切换时广播
+  document.querySelectorAll('#p4 .app-card').forEach(card => {
+    const label = card.querySelector('[style*="font-weight:600"]');
+    const toggle = card.querySelector('[style*="border-radius:9px"]');
+    if(!toggle || !label) return;
+    const origClick = toggle.onclick;
+    toggle.addEventListener('click', function() {
+      setTimeout(() => {
+        const isOn = this.style.background.includes('3b82f6');
+        const name = label.textContent;
+        if(isOn) broadcastToElderly('schedule', '子女为您开启了「' + name + '」提醒');
+        else broadcastToElderly('schedule_off', '子女关闭了「' + name + '」提醒');
+      }, 100);
+    });
+  });
+
+  // P5 AI问答发送时广播
+  const origSendBtn = document.querySelector('#p5 [style*="border-radius:50%"][style*="10b981"]');
+  if(origSendBtn) {
+    origSendBtn.addEventListener('click', () => {
+      setTimeout(() => broadcastToElderly('ai_query', '子女正在关注您的健康状态'), 600);
+    });
+  }
+
+  // P6 回拨按钮广播
+  document.querySelectorAll('#p6 button').forEach(btn => {
+    btn.addEventListener('click', function() {
+      if(this.textContent.includes('回拨') || this.textContent.includes('呼叫')) {
+        broadcastToElderly('call', '家人正在拨打您的电话，请注意接听');
+      }
+    });
+  });
+</script>
+</body>
+</html>

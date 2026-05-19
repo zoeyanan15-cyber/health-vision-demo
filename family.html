@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>百度健康家人关怀 — 子女端</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#060c18;--bg2:#0d1526;--bg3:#111f38;
+  --blue:#3b82f6;--blue2:#60a5fa;--blue3:#1d4ed8;
+  --green:#10b981;--green2:#34d399;
+  --gold:#f59e0b;--gold2:#fbbf24;
+  --red:#ef4444;--purple:#8b5cf6;--pink:#ec4899;--orange:#f97316;
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+  --border:rgba(59,130,246,0.12);
+  --card:rgba(13,21,38,0.8);
+}
+html,body{background:var(--bg);color:var(--text);font-family:'PingFang SC','Microsoft YaHei',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* ====== 顶部 ====== */
+#app-header{
+  position:sticky;top:0;z-index:20;
+  background:rgba(6,12,24,0.95);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:12px 16px;display:flex;align-items:center;gap:12px;
+}
+.app-logo{display:flex;align-items:center;gap:8px}
+.logo-dot{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--green),var(--blue3));display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 0 12px rgba(16,185,129,0.35)}
+.app-title{font-size:16px;font-weight:700;background:linear-gradient(90deg,var(--green2),var(--blue2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.app-sub{font-size:11px;color:var(--text3)}
+.header-right-btns{margin-left:auto;display:flex;align-items:center;gap:8px}
+.notif-btn{width:32px;height:32px;border-radius:50%;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);color:#f87171;font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative}
+.notif-badge{position:absolute;top:-2px;right:-2px;width:14px;height:14px;background:var(--red);border-radius:50%;font-size:8px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+
+/* ====== 主内容 ====== */
+#main-content{padding:16px;max-width:540px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+
+/* ====== 老人状态卡 ====== */
+#elder-card{
+  background:linear-gradient(135deg,rgba(13,21,38,0.9),rgba(8,13,26,0.95));
+  border:1px solid rgba(59,130,246,0.2);border-radius:20px;padding:18px;
+  position:relative;overflow:hidden;
+}
+#elder-card::before{content:'';position:absolute;top:-40px;right:-40px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(16,185,129,0.12),transparent);pointer-events:none}
+.elder-top{display:flex;align-items:center;gap:14px}
+.elder-avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#1a73e8,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:700;flex-shrink:0;box-shadow:0 0 16px rgba(59,130,246,0.3)}
+.elder-name{font-size:18px;font-weight:700;color:var(--text)}
+.elder-info{font-size:12px;color:var(--text2);margin-top:2px}
+.elder-status{display:flex;align-items:center;gap:5px;margin-top:4px;font-size:11px;color:var(--green2)}
+.elder-score-wrap{margin-left:auto;text-align:center}
+.elder-score{font-size:28px;font-weight:900;background:linear-gradient(90deg,var(--gold2),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
+.elder-score-label{font-size:10px;color:var(--text3);margin-top:2px}
+.score-bar{height:4px;background:rgba(255,255,255,0.06);border-radius:2px;margin-top:10px}
+.score-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--green),var(--gold));transition:width .8s ease}
+
+/* 今日概览 4格 */
+.metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.metric-mini{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:10px}
+.metric-icon{font-size:20px;flex-shrink:0}
+.metric-val{font-size:16px;font-weight:700}
+.metric-key{font-size:10px;color:var(--text3);margin-top:1px}
+
+/* ====== 异常提醒 ====== */
+#alerts-section{display:flex;flex-direction:column;gap:8px}
+.section-title{font-size:13px;font-weight:700;color:var(--text2);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.alert-card{
+  border-radius:14px;padding:12px 14px;display:flex;align-items:flex-start;gap:10px;
+  border:1px solid;animation:slideUp .3s ease-out;
+}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.alert-card.warn{background:rgba(245,158,11,0.08);border-color:rgba(245,158,11,0.2)}
+.alert-card.danger{background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.2)}
+.alert-card.ok{background:rgba(16,185,129,0.06);border-color:rgba(16,185,129,0.15)}
+.alert-icon{font-size:22px;flex-shrink:0;margin-top:2px}
+.alert-body{flex:1}
+.alert-title{font-size:13px;font-weight:600;color:var(--text)}
+.alert-desc{font-size:11px;color:var(--text2);margin-top:2px;line-height:1.5}
+.alert-time{font-size:10px;color:var(--text3);margin-top:4px}
+.alert-action{font-size:11px;padding:4px 12px;border-radius:8px;border:none;cursor:pointer;margin-top:6px;font-family:inherit}
+.alert-action.warn{background:rgba(245,158,11,0.15);color:var(--gold2)}
+.alert-action.danger{background:rgba(239,68,68,0.15);color:#f87171}
+
+/* ====== 用药情况 ====== */
+#med-section .med-timeline{display:flex;flex-direction:column;gap:8px}
+.med-item{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:12px}
+.med-time{font-size:11px;color:var(--text3);width:38px;flex-shrink:0;text-align:center}
+.med-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.med-dot.done{background:var(--green);box-shadow:0 0 6px var(--green)}
+.med-dot.pending{background:var(--gold);box-shadow:0 0 6px var(--gold);animation:gPulse 2s infinite}
+.med-dot.missed{background:var(--red);box-shadow:0 0 6px var(--red)}
+@keyframes gPulse{0%,100%{opacity:1}50%{opacity:.4}}
+.med-info{flex:1}
+.med-name{font-size:12px;font-weight:600;color:var(--text)}
+.med-dose{font-size:10px;color:var(--text3)}
+.med-status{font-size:11px;font-weight:600}
+.med-status.done{color:var(--green2)}
+.med-status.pending{color:var(--gold2)}
+.med-status.missed{color:#f87171}
+.med-streak{display:flex;align-items:center;gap:3px;margin-top:8px;padding:8px 14px;background:rgba(16,185,129,0.06);border-radius:10px;border:1px solid rgba(16,185,129,0.12)}
+.streak-dots{display:flex;gap:4px}
+.sd{width:10px;height:10px;border-radius:50%}
+.sd.done{background:var(--green2)}
+.sd.today{background:var(--blue2)}
+.sd.empty{background:rgba(255,255,255,0.08)}
+
+/* ====== 血压图表 ====== */
+#bp-section .bp-chart-wrap{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
+.bp-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.bp-stat{text-align:center}
+.bp-val{font-size:18px;font-weight:700}
+.bp-val.normal{color:var(--green2)}
+.bp-val.warn{color:var(--gold2)}
+.bp-key{font-size:10px;color:var(--text3);margin-top:1px}
+.bp-chart{display:flex;gap:4px;align-items:flex-end;height:72px;padding:0 4px}
+.bp-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px}
+.bp-bar{border-radius:3px 3px 0 0;width:100%;transition:height .5s}
+.bp-bar-label{font-size:9px;color:var(--text3)}
+.bp-bar-val{font-size:9px;color:var(--text2)}
+.bp-legend{display:flex;gap:12px;margin-top:8px;justify-content:center}
+.bp-legend-item{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3)}
+.bp-legend-dot{width:8px;height:8px;border-radius:2px}
+
+/* ====== 饮食评估 ====== */
+#diet-section .diet-cards{display:flex;flex-direction:column;gap:8px}
+.diet-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+.diet-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.diet-meal{font-size:12px;font-weight:600;color:var(--text)}
+.diet-score-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:8px}
+.diet-items{display:flex;flex-wrap:wrap;gap:5px}
+.diet-tag{font-size:10px;padding:3px 8px;border-radius:8px;border:1px solid}
+.diet-tag.good{background:rgba(16,185,129,0.08);border-color:rgba(16,185,129,0.2);color:var(--green2)}
+.diet-tag.warn{background:rgba(245,158,11,0.08);border-color:rgba(245,158,11,0.2);color:var(--gold2)}
+.diet-tag.bad{background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.2);color:#f87171}
+.diet-summary{display:flex;gap:8px;margin-top:8px}
+.diet-nut{flex:1;background:rgba(255,255,255,0.03);border-radius:8px;padding:6px 8px;text-align:center}
+.diet-nut-val{font-size:13px;font-weight:700;color:var(--blue2)}
+.diet-nut-key{font-size:9px;color:var(--text3)}
+
+/* ====== 健康总结 ====== */
+#summary-section .summary-goals{display:flex;flex-direction:column;gap:6px}
+.goal-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--card);border:1px solid var(--border);border-radius:10px}
+.goal-check{font-size:16px;flex-shrink:0}
+.goal-name{flex:1;font-size:12px;color:var(--text)}
+.goal-pts{font-size:11px;font-weight:600}
+.goal-pts.done{color:var(--green2)}
+.goal-pts.undone{color:var(--text3)}
+.trend-tip{font-size:11px;color:var(--text2);background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.15);border-radius:10px;padding:10px 12px;margin-top:8px;line-height:1.6}
+
+/* ====== AI 快问 ====== */
+#chat-section{background:var(--card);border:1px solid rgba(59,130,246,0.15);border-radius:16px;padding:14px}
+.chat-title{font-size:12px;font-weight:700;color:var(--text2);margin-bottom:10px}
+.chat-presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.chat-preset{font-size:11px;padding:5px 11px;border-radius:16px;cursor:pointer;background:rgba(59,130,246,0.07);border:1px solid rgba(59,130,246,0.18);color:var(--blue2);transition:all .15s}
+.chat-preset:hover{background:rgba(59,130,246,0.15)}
+.chat-history{max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.chat-history:empty::before{content:"向 AI 询问爸爸/妈妈今日健康情况";font-size:11px;color:var(--text3)}
+.ch-msg{font-size:12px;line-height:1.6;padding:8px 11px;border-radius:12px;max-width:88%;word-break:break-word;white-space:pre-wrap}
+.ch-msg.user{background:linear-gradient(135deg,var(--blue3),#1e40af);color:#fff;align-self:flex-end;border-radius:12px 12px 4px 12px}
+.ch-msg.bot{background:#121e35;border:1px solid rgba(59,130,246,0.15);color:var(--text);align-self:flex-start;border-radius:4px 12px 12px 12px}
+.ch-msg.loading{color:var(--text3)}
+.chat-input-row{display:flex;gap:8px}
+#family-chat-input{flex:1;background:#0d1728;border:1px solid rgba(59,130,246,0.2);border-radius:16px;padding:8px 12px;font-size:12px;color:var(--text);outline:none;font-family:inherit}
+#family-chat-input::placeholder{color:var(--text3)}
+#family-send-btn{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--blue3),var(--purple));border:none;cursor:pointer;color:#fff;font-size:14px;flex-shrink:0}
+
+/* ====== Tab 面板显隐（核心！） ====== */
+.tab-section{display:none}
+.tab-section.active{display:flex;flex-direction:column;gap:16px}
+
+/* ====== 底部 Tab ====== */
+#bottom-tab{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:rgba(6,12,24,0.98);backdrop-filter:blur(10px);
+  border-top:1px solid var(--border);
+  display:flex;padding:8px 0;
+  /* 小度 App / iOS WebView 安全区域适配 */
+  padding-bottom:calc(8px + env(safe-area-inset-bottom, 0px));
+}
+.btab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;border:none;background:transparent;color:var(--text3);transition:color .15s;padding:6px 0;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.btab.active{color:var(--blue2)}
+.btab-icon{font-size:20px;line-height:1}
+.btab-label{font-size:10px;line-height:1}
+body{padding-bottom:calc(72px + env(safe-area-inset-bottom, 0px))}
+
+/* ====== 工具按钮 ====== */
+.icon-btn{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--text2);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.icon-btn:hover{background:rgba(255,255,255,0.1)}
+.icon-btn.active{background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.3);color:var(--blue2)}
+
+/* ====== 手机端适配 ====== */
+@media (max-width: 480px) {
+  #main-content{padding:12px 10px;gap:12px}
+  #elder-card{padding:14px 12px;border-radius:16px}
+  .elder-avatar{width:48px;height:48px;font-size:18px}
+  .elder-name{font-size:16px}
+  .elder-info{font-size:11px}
+  .elder-score{font-size:24px}
+  .metrics-grid{gap:8px}
+  .metric-mini{padding:8px 10px}
+  .metric-val{font-size:14px}
+  .alert-card{padding:10px 12px;border-radius:12px}
+  .alert-title{font-size:12px}
+  .alert-desc{font-size:10px}
+  .med-item{padding:8px 10px}
+  .med-name{font-size:11px}
+  .diet-card{padding:10px 12px}
+  .diet-meal{font-size:11px}
+  #chat-section{padding:12px}
+  .chat-presets{gap:5px}
+  .chat-preset{font-size:10px;padding:4px 9px}
+  #family-chat-input{font-size:12px;padding:7px 10px}
+  .section-title{font-size:12px}
+  .goal-item{padding:7px 10px}
+  .goal-name{font-size:11px}
+  .app-title{font-size:14px}
+  .btab-icon{font-size:18px}
+  .btab-label{font-size:9px}
+  .icon-btn{width:28px;height:28px;font-size:12px}
+  .bp-chart{height:60px}
+}
+
+/* ====== 大字体模式 ====== */
+body.large-font{font-size:16px}
+body.large-font .elder-name{font-size:22px}
+body.large-font .med-name,.elder-info,.alert-title,.diet-meal{font-size:15px!important}
+body.large-font .metric-val{font-size:20px}
+body.large-font .btab-label,.btab-icon{font-size:14px!important}
+body.large-font .ch-msg{font-size:15px!important}
+body.large-font #family-chat-input{font-size:15px}
+
+/* ====== 夜间模式 ====== */
+body.night-mode{
+  --bg:#000;--bg2:#0a0a0a;--bg3:#111;
+  --text:#f0f0f0;--text2:#bbb;--text3:#666;
+  --border:rgba(255,255,255,0.08);
+  --card:rgba(20,20,20,0.9);
+}
+body.night-mode #app-header{background:rgba(0,0,0,0.98)}
+body.night-mode #bottom-tab{background:rgba(0,0,0,0.98)}
+body.night-mode #main-content{filter:brightness(0.9)}
+
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div id="app-header">
+  <div class="app-logo">
+    <div class="logo-dot">❤️</div>
+    <div>
+      <div class="app-title">家人关怀</div>
+      <div class="app-sub">百度健康 · 子女端</div>
+    </div>
+  </div>
+  <div class="header-right-btns">
+    <button class="icon-btn" onclick="toggleNight()" id="night-btn" title="夜间模式">🌙</button>
+    <button class="icon-btn" onclick="toggleFont()" id="font-btn" title="大字体">大字</button>
+    <div class="notif-btn">🔔<span class="notif-badge">1</span></div>
+  </div>
+</div>
+
+<!-- 主内容 -->
+<div id="main-content">
+
+  <!-- 老人状态总览卡 -->
+  <div id="elder-card">
+    <div class="elder-top">
+      <div class="elder-avatar">张</div>
+      <div>
+        <div class="elder-name">张爷爷</div>
+        <div class="elder-info">72岁 · 高血压 · 膝关节退行性变</div>
+        <div class="elder-status">
+          <span style="width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;box-shadow:0 0 5px var(--green)"></span>
+          今日状态良好 · 在家中
+        </div>
+      </div>
+      <div class="elder-score-wrap">
+        <div class="elder-score">45</div>
+        <div class="elder-score-label">今日健康分</div>
+        <div style="font-size:9px;color:var(--text3);margin-top:2px">满分60</div>
+      </div>
+    </div>
+    <div class="score-bar"><div class="score-fill" style="width:75%"></div></div>
+
+    <div class="metrics-grid">
+      <div class="metric-mini">
+        <span class="metric-icon">🦶</span>
+        <div>
+          <div class="metric-val" style="color:var(--green2)">8,432</div>
+          <div class="metric-key">今日步数</div>
+        </div>
+      </div>
+      <div class="metric-mini">
+        <span class="metric-icon">💓</span>
+        <div>
+          <div class="metric-val" style="color:var(--blue2)">72 bpm</div>
+          <div class="metric-key">当前心率</div>
+        </div>
+      </div>
+      <div class="metric-mini">
+        <span class="metric-icon">🩸</span>
+        <div>
+          <div class="metric-val" style="color:var(--gold2)">128/82</div>
+          <div class="metric-key">今日血压</div>
+        </div>
+      </div>
+      <div class="metric-mini">
+        <span class="metric-icon">😴</span>
+        <div>
+          <div class="metric-val" style="color:var(--purple)">7.5h</div>
+          <div class="metric-key">昨夜睡眠</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab 导航内容区 -->
+  <!-- 首页：提醒 + 快问 -->
+  <div id="tab-home" class="tab-section active">
+
+    <!-- 异常提醒 -->
+    <div id="alerts-section">
+      <div class="section-title">🔔 今日提醒</div>
+      <div class="alert-card warn">
+        <span class="alert-icon">💊</span>
+        <div class="alert-body">
+          <div class="alert-title">阿托伐他汀尚未服用</div>
+          <div class="alert-desc">20mg · 建议饭后服用，今日已服苯磺酸氨氯地平 ✓</div>
+          <div class="alert-time">⏰ 还剩约 2 小时到提醒时间</div>
+          <button class="alert-action warn" onclick="sendReminder(this)">📱 提醒爸爸服药</button>
+        </div>
+      </div>
+      <div class="alert-card ok">
+        <span class="alert-icon">🩺</span>
+        <div class="alert-body">
+          <div class="alert-title">今日血压控制良好</div>
+          <div class="alert-desc">128/82 mmHg，较上周下降 5mmHg，继续保持！</div>
+          <div class="alert-time">✅ 08:35 已完成自测</div>
+        </div>
+      </div>
+      <div class="alert-card warn">
+        <span class="alert-icon">🚶</span>
+        <div class="alert-body">
+          <div class="alert-title">步数目标未完成</div>
+          <div class="alert-desc">今日步数 8,432 步，距目标 10,000 步还差 1,568 步</div>
+          <div class="alert-time">🌙 距今日结束还有 3 小时</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI 快问 -->
+    <div id="chat-section">
+      <div class="chat-title">💬 向 AI 询问爸爸今日状态</div>
+      <div class="chat-presets">
+        <div class="chat-preset" onclick="familyAsk('爸爸今天血压状况怎么样？')">今日血压</div>
+        <div class="chat-preset" onclick="familyAsk('爸爸今天药吃了吗？')">服药情况</div>
+        <div class="chat-preset" onclick="familyAsk('爸爸今天吃得健康吗？')">饮食评估</div>
+        <div class="chat-preset" onclick="familyAsk('爸爸整体健康情况总结')">总体评估</div>
+      </div>
+      <div class="chat-history" id="family-chat-history"></div>
+      <div class="chat-input-row">
+        <input id="family-chat-input" type="text" placeholder="询问爸爸的健康状况…">
+        <button id="family-send-btn" onclick="familySend()">➤</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 用药 Tab -->
+  <div id="tab-med" class="tab-section">
+    <div class="section-title">💊 今日用药情况</div>
+    <div id="med-section">
+      <div class="med-timeline">
+        <div class="med-item">
+          <div class="med-time">08:30</div>
+          <div class="med-dot done"></div>
+          <div class="med-info">
+            <div class="med-name">苯磺酸氨氯地平</div>
+            <div class="med-dose">5mg · 降压 · 饭后服用</div>
+          </div>
+          <div class="med-status done">已服 ✓</div>
+        </div>
+        <div class="med-item">
+          <div class="med-time">14:00</div>
+          <div class="med-dot pending"></div>
+          <div class="med-info">
+            <div class="med-name">阿托伐他汀钙</div>
+            <div class="med-dose">20mg · 调脂 · 饭后服用</div>
+          </div>
+          <div class="med-status pending">待服</div>
+        </div>
+        <div class="med-item">
+          <div class="med-time">21:00</div>
+          <div class="med-dot empty" style="background:rgba(255,255,255,0.08)"></div>
+          <div class="med-info">
+            <div class="med-name">维生素 D3</div>
+            <div class="med-dose">400IU · 补充 · 随餐服用</div>
+          </div>
+          <div class="med-status pending" style="color:var(--text3)">未到时间</div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px">
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px">连续服药记录</div>
+        <div class="med-streak">
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--green2)">连续 23 天 🔥</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px">最近 7 天</div>
+          </div>
+          <div class="streak-dots" style="margin-left:auto">
+            <div class="sd done"></div><div class="sd done"></div><div class="sd done"></div>
+            <div class="sd done"></div><div class="sd done"></div><div class="sd done"></div>
+            <div class="sd today" style="box-shadow:0 0 5px var(--blue2)"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;padding:12px 14px;background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.15);border-radius:12px">
+        <div style="font-size:12px;font-weight:600;color:var(--gold2);margin-bottom:4px">⚠️ 注意事项</div>
+        <div style="font-size:11px;color:var(--text2);line-height:1.6">· 苯磺酸氨氯地平不可与葡萄柚同服<br>· 阿托伐他汀应避免与大量酒精同服<br>· 如出现肌肉酸痛请及时告知医生</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 健康指标 Tab -->
+  <div id="tab-health" class="tab-section">
+    <div class="section-title">📊 健康指标</div>
+    <div id="bp-section">
+      <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px">🩺 近7日血压趋势</div>
+      <div class="bp-chart-wrap">
+        <div class="bp-stats">
+          <div class="bp-stat">
+            <div class="bp-val warn">128/82</div>
+            <div class="bp-key">今日血压</div>
+          </div>
+          <div class="bp-stat">
+            <div class="bp-val normal">130/84</div>
+            <div class="bp-key">周均值</div>
+          </div>
+          <div class="bp-stat">
+            <div class="bp-val normal">↓5mmHg</div>
+            <div class="bp-key">较上周</div>
+          </div>
+        </div>
+        <div class="bp-chart" id="bp-chart"></div>
+        <div class="bp-legend">
+          <div class="bp-legend-item"><div class="bp-legend-dot" style="background:#3b82f6"></div>正常</div>
+          <div class="bp-legend-item"><div class="bp-legend-dot" style="background:#f59e0b"></div>偏高</div>
+          <div class="bp-legend-item"><div class="bp-legend-dot" style="background:#10b981"></div>良好</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:4px">
+      <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px">🏃 活动数据</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px">
+          <div style="font-size:10px;color:var(--text3)">今日步数</div>
+          <div style="font-size:14px;font-weight:700;color:var(--green);margin:3px 0">8,432 步</div>
+          <div style="font-size:9px;color:var(--text3)">目标 10,000步</div>
+          <div class="score-bar" style="margin-top:5px"><div class="score-fill" style="width:84%;background:var(--green)"></div></div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px">
+          <div style="font-size:10px;color:var(--text3)">活动时长</div>
+          <div style="font-size:14px;font-weight:700;color:var(--blue2);margin:3px 0">42 分钟</div>
+          <div style="font-size:9px;color:var(--text3)">目标 60分钟</div>
+          <div class="score-bar" style="margin-top:5px"><div class="score-fill" style="width:70%;background:var(--blue2)"></div></div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px">
+          <div style="font-size:10px;color:var(--text3)">消耗热量</div>
+          <div style="font-size:14px;font-weight:700;color:var(--orange);margin:3px 0">312 kcal</div>
+          <div style="font-size:9px;color:var(--text3)">目标 400kcal</div>
+          <div class="score-bar" style="margin-top:5px"><div class="score-fill" style="width:78%;background:var(--orange)"></div></div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px">
+          <div style="font-size:10px;color:var(--text3)">睡眠质量</div>
+          <div style="font-size:14px;font-weight:700;color:var(--purple);margin:3px 0">7.5h / 深睡2.1h</div>
+          <div style="font-size:9px;color:var(--text3)">目标 7h+</div>
+          <div class="score-bar" style="margin-top:5px"><div class="score-fill" style="width:100%;background:var(--purple)"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 饮食 Tab -->
+  <div id="tab-diet" class="tab-section">
+    <div class="section-title">🥗 今日饮食</div>
+    <div id="diet-section">
+      <div class="diet-cards">
+        <div class="diet-card">
+          <div class="diet-header">
+            <span class="diet-meal">🌅 早餐 · 07:45</span>
+            <span class="diet-score-badge" style="background:rgba(16,185,129,0.1);color:var(--green2)">优 92分</span>
+          </div>
+          <div class="diet-items">
+            <span class="diet-tag good">杂粮粥 (GI≈45)</span>
+            <span class="diet-tag good">水煮蛋×1</span>
+            <span class="diet-tag good">凉拌木耳</span>
+            <span class="diet-tag good">无糖豆浆</span>
+          </div>
+          <div class="diet-summary">
+            <div class="diet-nut"><div class="diet-nut-val">380</div><div class="diet-nut-key">热量 kcal</div></div>
+            <div class="diet-nut"><div class="diet-nut-val">1.2g</div><div class="diet-nut-key">钠含量</div></div>
+            <div class="diet-nut"><div class="diet-nut-val">低</div><div class="diet-nut-key">血糖指数</div></div>
+          </div>
+        </div>
+
+        <div class="diet-card">
+          <div class="diet-header">
+            <span class="diet-meal">☀️ 午餐 · 12:10</span>
+            <span class="diet-score-badge" style="background:rgba(245,158,11,0.1);color:var(--gold2)">良 74分</span>
+          </div>
+          <div class="diet-items">
+            <span class="diet-tag good">清蒸鱼</span>
+            <span class="diet-tag good">炒青菜</span>
+            <span class="diet-tag warn">白米饭 (GI≈72)</span>
+            <span class="diet-tag warn">味噌汤 (钠偏高)</span>
+          </div>
+          <div class="diet-summary">
+            <div class="diet-nut"><div class="diet-nut-val">620</div><div class="diet-nut-key">热量 kcal</div></div>
+            <div class="diet-nut"><div class="diet-nut-val">3.1g</div><div class="diet-nut-key">钠含量</div></div>
+            <div class="diet-nut"><div class="diet-nut-val">中</div><div class="diet-nut-key">血糖指数</div></div>
+          </div>
+        </div>
+
+        <div class="diet-card">
+          <div class="diet-header">
+            <span class="diet-meal">🌙 晚餐 · 待记录</span>
+            <span class="diet-score-badge" style="background:rgba(100,116,139,0.1);color:var(--text3)">待评分</span>
+          </div>
+          <div style="font-size:11px;color:var(--text3);padding:4px 0">AI 建议今晚：低盐杂粮套餐，少吃精制主食</div>
+        </div>
+      </div>
+
+      <div style="margin-top:4px;padding:12px;background:var(--card);border:1px solid var(--border);border-radius:12px">
+        <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px">今日营养汇总</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:3px"><span>总热量</span><span>1000/1800 kcal</span></div>
+            <div class="score-bar"><div class="score-fill" style="width:55%;background:var(--orange)"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:3px"><span>总钠摄入</span><span>4.3g / 5g限制</span></div>
+            <div class="score-bar"><div class="score-fill" style="width:86%;background:var(--gold)"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:3px"><span>蛋白质</span><span>48g / 60g目标</span></div>
+            <div class="score-bar"><div class="score-fill" style="width:80%;background:var(--blue2)"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-bottom:3px"><span>膳食纤维</span><span>18g / 25g目标</span></div>
+            <div class="score-bar"><div class="score-fill" style="width:72%;background:var(--green)"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 健康总结 Tab -->
+  <div id="tab-summary" class="tab-section">
+    <div class="section-title">📋 今日健康总结</div>
+    <div id="summary-section">
+      <div class="summary-goals">
+        <div class="goal-item">
+          <span class="goal-check">✅</span>
+          <span class="goal-name">按时服药<br><span style="font-size:10px;color:var(--green2)">完成</span></span>
+          <span class="goal-pts done">+10分</span>
+        </div>
+        <div class="goal-item">
+          <span class="goal-check">✅</span>
+          <span class="goal-name">测量血压<br><span style="font-size:10px;color:var(--green2)">完成</span></span>
+          <span class="goal-pts done">+10分</span>
+        </div>
+        <div class="goal-item">
+          <span class="goal-check">✅</span>
+          <span class="goal-name">八段锦跟练15分钟<br><span style="font-size:10px;color:var(--green2)">完成</span></span>
+          <span class="goal-pts done">+15分</span>
+        </div>
+        <div class="goal-item">
+          <span class="goal-check">✅</span>
+          <span class="goal-name">健脑答题3道<br><span style="font-size:10px;color:var(--green2)">完成</span></span>
+          <span class="goal-pts done">+10分</span>
+        </div>
+        <div class="goal-item">
+          <span class="goal-check">⭕</span>
+          <span class="goal-name">步行3000步<br><span style="font-size:10px;color:var(--text3)">未完成</span></span>
+          <span class="goal-pts undone">0分</span>
+        </div>
+        <div class="goal-item">
+          <span class="goal-check">⭕</span>
+          <span class="goal-name">晚餐少盐<br><span style="font-size:10px;color:var(--text3)">未记录</span></span>
+          <span class="goal-pts undone">0分</span>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding:12px 14px;background:rgba(167,139,250,0.07);border:1px solid rgba(167,139,250,0.15);border-radius:12px">
+        <div>
+          <div style="font-size:18px;font-weight:800;color:var(--purple)">45 / 60 分</div>
+          <div style="font-size:10px;color:var(--text3)">超过 78% 同龄用户</div>
+        </div>
+        <div style="text-align:right">
+          <div class="score-bar" style="width:120px"><div class="score-fill" style="width:75%;background:linear-gradient(90deg,var(--purple),var(--blue2))"></div></div>
+          <div style="font-size:10px;color:var(--text3);margin-top:4px">连续达标：7天 🔥</div>
+        </div>
+      </div>
+      <div class="trend-tip">
+        <b style="color:var(--purple)">AI 分析建议：</b><br>
+        张爷爷今日整体表现良好，血压稳定，用药按时。建议明晚提醒步数补充，晚餐注意少盐。<br>
+        <span style="color:var(--text3)">明日目标已自动调整：步数 3000步（降低难度），晚餐少盐（重点关注）</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 日程设置 Tab -->
+  <div id="tab-schedule" class="tab-section">
+    <div class="section-title">⚙️ 日程安排设置</div>
+    <div style="font-size:11px;color:var(--text3);margin-top:-8px;margin-bottom:4px">
+      小度将按以下日程主动提醒张爷爷，无需老人自己提问
+    </div>
+
+    <!-- 全局开关 -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.15);border-radius:12px">
+      <div>
+        <div style="font-size:13px;font-weight:600;color:var(--text)">小度主动服务模式</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:2px">开启后小度将按以下日程主动问候张爷爷</div>
+      </div>
+      <div id="global-toggle" onclick="toggleGlobal(this)" style="width:44px;height:24px;border-radius:12px;background:var(--blue);cursor:pointer;position:relative;transition:background .2s">
+        <div style="position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;background:#fff;transition:all .2s"></div>
+      </div>
+    </div>
+
+    <!-- 日程列表 -->
+    <div id="schedule-list" style="display:flex;flex-direction:column;gap:8px"></div>
+
+    <!-- 新增按钮 -->
+    <button onclick="addScheduleItem()" style="width:100%;padding:11px;border:1px dashed rgba(59,130,246,0.35);border-radius:12px;background:rgba(59,130,246,0.04);color:var(--blue2);font-size:13px;cursor:pointer;font-family:inherit">
+      ＋ 新增日程
+    </button>
+
+    <!-- 保存按钮 -->
+    <button id="save-schedule-btn" onclick="saveSchedule()" style="width:100%;padding:12px;border:none;border-radius:12px;background:linear-gradient(135deg,var(--blue3),var(--purple));color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
+      💾 保存日程安排
+    </button>
+  </div>
+
+</div><!-- end main-content -->
+
+<!-- 底部 Tab -->
+<div id="bottom-tab">
+  <button class="btab active" onclick="switchTab('home',this)"><span class="btab-icon">🏠</span><span class="btab-label">首页</span></button>
+  <button class="btab" onclick="switchTab('med',this)"><span class="btab-icon">💊</span><span class="btab-label">用药</span></button>
+  <button class="btab" onclick="switchTab('health',this)"><span class="btab-icon">📊</span><span class="btab-label">指标</span></button>
+  <button class="btab" onclick="switchTab('diet',this)"><span class="btab-icon">🥗</span><span class="btab-label">饮食</span></button>
+  <button class="btab" onclick="switchTab('summary',this)"><span class="btab-icon">📋</span><span class="btab-label">总结</span></button>
+  <button class="btab" onclick="switchTab('schedule',this)"><span class="btab-icon">⚙️</span><span class="btab-label">日程</span></button>
+</div>
+
+<script>
+// ====== Tab 切换 ======
+function switchTab(id, el){
+  document.querySelectorAll('.tab-section').forEach(function(s){ s.classList.remove('active'); });
+  document.querySelectorAll('.btab').forEach(function(b){ b.classList.remove('active'); });
+  var sec = document.getElementById('tab-'+id);
+  if(sec) sec.classList.add('active');
+  if(el) el.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// 血压柱状图
+(function buildBPChart(){
+  const days=['周一','周二','周三','周四','周五','周六','今天'];
+  const sys=[132,128,135,130,127,133,128];
+  const dia=[85,82,88,84,80,86,82];
+  const colors=['#3b82f6','#3b82f6','#f59e0b','#3b82f6','#10b981','#3b82f6','#60a5fa'];
+  const chart=document.getElementById('bp-chart');
+  const maxV=Math.max(...sys); const minV=Math.min(...dia)-10;
+  chart.innerHTML = days.map((d,i)=>{
+    const h=Math.round((sys[i]-minV)/(maxV-minV+10)*50)+10;
+    return `<div class="bp-bar-wrap">
+      <div class="bp-bar-val">${sys[i]}</div>
+      <div class="bp-bar" style="height:${h}px;background:${colors[i]}${i===6?';animation:gPulse 2s infinite':''}"></div>
+      <div class="bp-bar-label">${d}</div>
+    </div>`;
+  }).join('');
+})();
+
+// 提醒服药
+function sendReminder(btn){
+  btn.textContent = '✅ 已发送提醒';
+  btn.disabled = true;
+  btn.style.opacity = '.6';
+}
+
+// Family AI Chat
+let familyLoading = false;
+
+// ====== 离线回答库 ======
+const FAMILY_OFFLINE_REPLIES = {
+  '吃药': '张爷爷今日08:35已服用苯磺酸氨氯地平5mg，阿托伐他汀20mg已在晚餐后提醒服用。连续服药23天，状态良好。',
+  '血压': '今日血压128/82mmHg，较上周均值下降5mmHg，控制良好。本周趋势：周一132→周五127→今天128，整体稳定。',
+  '睡眠': '昨晚睡眠7.5小时，深睡2.1小时，睡眠质量良好。静息心率74bpm，略偏高但在安全范围。',
+  '步数': '今日步数8,432步，已完成目标的84%。活动时长42分钟，消耗312kcal。建议晚饭后再散步15分钟即可达标。',
+  '饮食': '今日饮食评分：早餐92分（优秀）、午餐74分（钠偏高）。总热量1000/1800kcal，总钠4.3g/5g限制。晚餐已建议低盐套餐。',
+  '运动': '今日八段锦跟练15分钟（已完成），步行8432步。膝关节状态平稳，未报告不适。',
+  '怎么样': '张爷爷今日整体状况良好！健康得分45/60（超过78%同龄人）。按时服药、血压稳定、完成锻炼。步数稍欠，晚餐需注意少盐。',
+  '提醒': '已向张爷爷发送提醒。小度会在下一个时间节点主动关怀，无需老人自己操作。',
+};
+
+function getOfflineReply(text){
+  for(var key in FAMILY_OFFLINE_REPLIES){
+    if(text.indexOf(key) >= 0) return FAMILY_OFFLINE_REPLIES[key];
+  }
+  return '张爷爷今日健康得分45/60，血压128/82控制良好，已按时服药。步数8432步，饮食评分74分。整体状态平稳，请放心。';
+}
+
+async function familyAsk(text){
+  document.getElementById('family-chat-input').value = text;
+  familySend();
+}
+async function familySend(){
+  const inp = document.getElementById('family-chat-input');
+  const text = inp.value.trim();
+  if(!text || familyLoading) return;
+  inp.value = ''; familyLoading = true;
+  document.getElementById('family-send-btn').disabled = true;
+
+  const hist = document.getElementById('family-chat-history');
+  const uMsg = document.createElement('div');
+  uMsg.className = 'ch-msg user'; uMsg.textContent = text;
+  hist.appendChild(uMsg);
+
+  const botMsg = document.createElement('div');
+  botMsg.className = 'ch-msg bot loading'; botMsg.textContent = '小度正在为您查询张爷爷的健康数据…';
+  hist.appendChild(botMsg);
+  hist.scrollTop = hist.scrollHeight;
+
+  // 构建子女端特殊 prompt
+  const familyMessages = [{role:'user', content:`【子女视角】关于父亲张爷爷（72岁，高血压+膝关节）的健康询问：${text}\n\n今日数据参考：步数8432步，血压128/82，已服苯磺酸氨氯地平，未服阿托伐他汀，睡眠7.5h，饮食评分74分，健康得分45/60。请简洁回答（60字内），用关心的口吻。`}];
+
+  try{
+    const resp = await fetch('/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({scene:'evening', messages: familyMessages, model:'deepseek-v3.2'})
+    });
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let content = ''; let done_flag = false;
+    botMsg.classList.remove('loading'); botMsg.textContent = '';
+    while(true){
+      const {done, value} = await reader.read(); if(done) break;
+      const chunk = decoder.decode(value);
+      for(const line of chunk.split('\n')){
+        if(!line.startsWith('data:')) continue;
+        const raw = line.slice(5).trim();
+        if(raw==='[DONE]'){ done_flag=true; break; }
+        try{
+          const d = JSON.parse(raw);
+          if(d.type==='content'){ content+=d.content; botMsg.textContent=content; hist.scrollTop=hist.scrollHeight; }
+        }catch(e){}
+      }
+      if(done_flag) break;
+    }
+    if(!content) botMsg.textContent = '暂时无法获取数据，请稍后再试。';
+  }catch(e){
+    botMsg.classList.remove('loading');
+    botMsg.textContent = getOfflineReply(text);
+  }
+  familyLoading=false;
+  document.getElementById('family-send-btn').disabled=false;
+}
+
+document.getElementById('family-chat-input').addEventListener('keydown', function(e){
+  if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); familySend(); }
+});
+
+// 夜间模式
+function toggleNight(){
+  document.body.classList.toggle('night-mode');
+  const btn=document.getElementById('night-btn');
+  const on=document.body.classList.contains('night-mode');
+  btn.textContent=on?'☀️':'🌙';
+  btn.classList.toggle('active',on);
+}
+
+// 大字体切换
+function toggleFont(){
+  document.body.classList.toggle('large-font');
+  const btn=document.getElementById('font-btn');
+  btn.classList.toggle('active',document.body.classList.contains('large-font'));
+}
+
+// ====== 日程设置 ======
+var scheduleData = null;
+var TYPE_LABELS = {
+  greeting:'晨间问候', measurement:'体征测量', medication:'服药提醒',
+  exercise:'运动锻炼', brain:'健脑训练', live:'健康直播', diet:'饮食管理', summary:'健康总结'
+};
+// 类型 → 默认图标映射
+var TYPE_ICONS = {
+  greeting:'🌅', measurement:'🩺', medication:'💊',
+  exercise:'🧘', brain:'🧠', live:'📺', diet:'🥗', summary:'📋'
+};
+var TYPE_COLORS = {
+  greeting:'var(--gold)',measurement:'var(--blue2)',medication:'var(--red)',
+  exercise:'var(--green)',brain:'var(--purple)',live:'var(--orange)',diet:'var(--green2)',summary:'var(--blue2)'
+};
+var SCENE_OPTIONS = ['morning','medication','consultation','brain','live','diet','sos','evening'];
+var SCENE_LABELS  = {morning:'晨起',medication:'用药',consultation:'问诊',brain:'健脑',live:'直播',diet:'饮食',sos:'SOS',evening:'晚间'};
+
+// ====== 离线默认日程 ======
+var DEFAULT_FAMILY_SCHEDULE = {
+  elder_name: "张爷爷",
+  schedule: [
+    {id:"s1", scene:"morning", time:"07:30", type:"greeting", icon:"🌅", title:"晨间问候+天气关怀", proactive_msg:"张爷爷早上好！", quick_replies:["今天天气怎么样？","我的血压正常吗？"], enabled:true},
+    {id:"s2", scene:"medication", time:"08:30", type:"medication", icon:"💊", title:"用药提醒+血压自测", proactive_msg:"张爷爷，到吃药时间啦！", quick_replies:["该吃什么药？","忘吃药了还能补吗？"], enabled:true},
+    {id:"s3", scene:"consultation", time:"10:00", type:"exercise", icon:"🩺", title:"AI问诊+八段锦跟练", proactive_msg:"张爷爷，运动时间到！", quick_replies:["膝盖疼怎么办？","八段锦怎么做？"], enabled:true},
+    {id:"s4", scene:"brain", time:"15:00", type:"brain", icon:"🧠", title:"健脑答题+辟谣科普", proactive_msg:"来做健康测验吧！", quick_replies:["再来一道题","骨头汤能补钙吗？"], enabled:true},
+    {id:"s5", scene:"live", time:"16:30", type:"live", icon:"📺", title:"三甲专家健康直播", proactive_msg:"今天有骨科直播", quick_replies:["直播讲什么？","帮我预约挂号"], enabled:true},
+    {id:"s6", scene:"diet", time:"17:00", type:"diet", icon:"🥗", title:"备餐干预+饮食管控", proactive_msg:"晚餐建议少盐", quick_replies:["推荐低盐食谱","饮食评分"], enabled:true},
+    {id:"s7", scene:"sos", time:"24:00", type:"greeting", icon:"🆘", title:"紧急求助+亲友联动", proactive_msg:"", quick_replies:[], enabled:true},
+    {id:"s8", scene:"evening", time:"21:00", type:"summary", icon:"🌙", title:"晚间复盘+健康总结", proactive_msg:"今日健康日报", quick_replies:["今天总结","发给我儿子"], enabled:true}
+  ]
+};
+
+async function loadSchedule(){
+  try{
+    var r=await fetch('/api/schedule');
+    scheduleData=await r.json();
+    renderScheduleList();
+  }catch(e){
+    // 离线降级：使用内嵌默认数据
+    scheduleData = DEFAULT_FAMILY_SCHEDULE;
+    renderScheduleList();
+  }
+}
+
+function renderScheduleList(){
+  if(!scheduleData||!scheduleData.schedule) return;
+  var list=document.getElementById('schedule-list');
+  list.innerHTML=scheduleData.schedule.map(function(item,idx){
+    var color=TYPE_COLORS[item.type]||'var(--text2)';
+    var typeLabel=TYPE_LABELS[item.type]||item.type;
+    var enabled=item.enabled!==false;
+    var isEditing=item._editing||false;
+
+    var viewRow=
+      '<div style="display:flex;align-items:center;gap:10px">'
+        +'<span style="font-size:20px;flex-shrink:0">'+item.icon+'</span>'
+        +'<div style="flex:1;min-width:0">'
+          +'<div style="font-size:12px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+item.title+'</div>'
+          +'<div style="display:flex;align-items:center;gap:6px;margin-top:2px">'
+            +'<span style="font-size:11px;color:var(--blue2);font-weight:600">⏰ '+item.time+'</span>'
+            +'<span style="font-size:9px;padding:1px 6px;border-radius:6px;background:rgba(255,255,255,0.06);color:'+color+'">'+typeLabel+'</span>'
+            +'<span style="font-size:9px;color:var(--text3)">'+( SCENE_LABELS[item.scene]||item.scene)+'</span>'
+          +'</div>'
+        +'</div>'
+        +'<button onclick="editItem('+idx+')" style="font-size:11px;padding:3px 9px;border-radius:8px;border:1px solid rgba(59,130,246,0.25);background:rgba(59,130,246,0.07);color:var(--blue2);cursor:pointer;white-space:nowrap">编辑</button>'
+        +'<div onclick="toggleItem('+idx+')" style="width:36px;height:20px;border-radius:10px;background:'+(enabled?'var(--blue)':'rgba(255,255,255,0.08)')+';cursor:pointer;position:relative;flex-shrink:0;transition:background .2s">'
+          +'<div style="position:absolute;top:2px;'+(enabled?'right:2px':'left:2px')+';width:16px;height:16px;border-radius:50%;background:#fff;transition:all .2s"></div>'
+        +'</div>'
+      +'</div>';
+
+    var editForm = isEditing ? (
+      '<div style="margin-top:10px;display:flex;flex-direction:column;gap:8px;border-top:1px solid rgba(255,255,255,0.07);padding-top:10px">'
+        // 图标 + 标题
+        +'<div style="display:flex;gap:8px">'
+          +'<div style="flex:0 0 56px">'
+            +'<div style="font-size:9px;color:var(--text3);margin-bottom:3px">图标</div>'
+            +'<input id="sch-icon-'+idx+'" value="'+item.icon+'" style="width:100%;padding:6px 8px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#0d1728;color:var(--text);font-size:16px;text-align:center;font-family:inherit">'
+          +'</div>'
+          +'<div style="flex:1">'
+            +'<div style="font-size:9px;color:var(--text3);margin-bottom:3px">日程名称</div>'
+            +'<input id="sch-title-'+idx+'" value="'+item.title.replace(/"/g,'&quot;')+'" style="width:100%;padding:6px 8px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#0d1728;color:var(--text);font-size:12px;font-family:inherit">'
+          +'</div>'
+        +'</div>'
+        // 时间 + 类型
+        +'<div style="display:flex;gap:8px">'
+          +'<div style="flex:1">'
+            +'<div style="font-size:9px;color:var(--text3);margin-bottom:3px">提醒时间</div>'
+            +'<input id="sch-time-'+idx+'" type="time" value="'+item.time+'" style="width:100%;padding:6px 8px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#0d1728;color:var(--text);font-size:12px;font-family:inherit">'
+          +'</div>'
+          +'<div style="flex:1">'
+            +'<div style="font-size:9px;color:var(--text3);margin-bottom:3px">类型</div>'
+            +'<select id="sch-type-'+idx+'" onchange="_syncTypeDefaults('+idx+')" style="width:100%;padding:6px 8px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#0d1728;color:var(--text);font-size:12px;font-family:inherit">'
+            +Object.keys(TYPE_LABELS).map(function(k){ return '<option value="'+k+'"'+(k===item.type?' selected':'')+'>'+TYPE_ICONS[k]+' '+TYPE_LABELS[k]+'</option>'; }).join('')
+            +'</select>'
+          +'</div>'
+        +'</div>'
+        // 场景
+        +'<div>'
+          +'<div style="font-size:9px;color:var(--text3);margin-bottom:3px">对应场景</div>'
+          +'<select id="sch-scene-'+idx+'" style="width:100%;padding:6px 8px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:#0d1728;color:var(--text);font-size:12px;font-family:inherit">'
+          +SCENE_OPTIONS.map(function(s){ return '<option value="'+s+'"'+(s===item.scene?' selected':'')+'>'+( SCENE_LABELS[s]||s)+'</option>'; }).join('')
+          +'</select>'
+        +'</div>'
+        // 操作按钮
+        +'<div style="display:flex;gap:8px">'
+          +'<button onclick="saveItem('+idx+')" style="flex:1;padding:7px;border:none;border-radius:9px;background:var(--blue3);color:#fff;font-size:12px;cursor:pointer;font-family:inherit">✓ 保存</button>'
+          +'<button onclick="cancelEdit('+idx+')" style="flex:1;padding:7px;border:1px solid rgba(255,255,255,0.1);border-radius:9px;background:transparent;color:var(--text2);font-size:12px;cursor:pointer;font-family:inherit">取消</button>'
+          +'<button onclick="deleteItem('+idx+')" style="padding:7px 12px;border:1px solid rgba(239,68,68,0.3);border-radius:9px;background:rgba(239,68,68,0.07);color:#f87171;font-size:12px;cursor:pointer;font-family:inherit">🗑</button>'
+        +'</div>'
+      +'</div>'
+    ) : '';
+
+    return '<div id="sch-'+idx+'" style="background:var(--card);border:1px solid '+(enabled?'rgba(59,130,246,0.18)':'rgba(255,255,255,0.05)')+';border-radius:14px;padding:12px 14px">'
+      +viewRow+editForm+'</div>';
+  }).join('');
+}
+
+function editItem(idx){
+  if(!scheduleData) return;
+  scheduleData.schedule.forEach(function(item){ item._editing=false; });
+  scheduleData.schedule[idx]._editing=true;
+  renderScheduleList();
+  // 滚动到编辑行
+  setTimeout(function(){ var el=document.getElementById('sch-'+idx); if(el) el.scrollIntoView({behavior:'smooth',block:'nearest'}); },80);
+}
+
+function cancelEdit(idx){
+  if(!scheduleData) return;
+  scheduleData.schedule[idx]._editing=false;
+  renderScheduleList();
+}
+
+// 类型切换时自动同步图标（icon 输入框）
+function _syncTypeDefaults(idx){
+  var typeEl=document.getElementById('sch-type-'+idx);
+  var iconEl=document.getElementById('sch-icon-'+idx);
+  if(!typeEl||!iconEl) return;
+  var t=typeEl.value;
+  if(TYPE_ICONS[t]) iconEl.value=TYPE_ICONS[t];
+}
+
+function saveItem(idx){
+  if(!scheduleData) return;
+  var item=scheduleData.schedule[idx];
+  item.icon  = document.getElementById('sch-icon-'+idx).value.trim()||item.icon;
+  item.title = document.getElementById('sch-title-'+idx).value.trim()||item.title;
+  item.time  = document.getElementById('sch-time-'+idx).value||item.time;
+  item.type  = document.getElementById('sch-type-'+idx).value;
+  item.scene = document.getElementById('sch-scene-'+idx).value;
+  item._editing=false;
+  renderScheduleList();
+  // 自动保存到服务器
+  saveSchedule();
+}
+
+function deleteItem(idx){
+  if(!scheduleData) return;
+  scheduleData.schedule.splice(idx,1);
+  renderScheduleList();
+  saveSchedule();
+}
+
+function toggleItem(idx){
+  if(!scheduleData) return;
+  scheduleData.schedule[idx].enabled = !scheduleData.schedule[idx].enabled;
+  renderScheduleList();
+  saveSchedule();
+}
+
+function addScheduleItem(){
+  if(!scheduleData) return;
+  var newItem={
+    id:'custom_'+Date.now(),
+    scene:'medication',
+    time:'09:00',
+    type:'medication',
+    icon:'💊',
+    title:'新增提醒',
+    proactive_msg:'张爷爷，该按时服药了！',
+    quick_replies:['已经吃了','我等下吃'],
+    enabled:true,
+    _editing:true
+  };
+  scheduleData.schedule.forEach(function(item){ item._editing=false; });
+  scheduleData.schedule.push(newItem);
+  renderScheduleList();
+  setTimeout(function(){
+    var list=document.getElementById('schedule-list');
+    if(list) list.lastElementChild&&list.lastElementChild.scrollIntoView({behavior:'smooth',block:'nearest'});
+  },80);
+}
+
+function toggleGlobal(el){
+  el.classList.toggle('off');
+  var isOn=!el.classList.contains('off');
+  el.style.background=isOn?'var(--blue)':'rgba(255,255,255,0.08)';
+  el.querySelector('div').style.right=isOn?'2px':'auto';
+  el.querySelector('div').style.left=isOn?'auto':'2px';
+}
+
+async function saveSchedule(){
+  if(!scheduleData) return;
+  // 关闭所有编辑态再保存
+  scheduleData.schedule.forEach(function(item){ item._editing=false; });
+  var btn=document.getElementById('save-schedule-btn');
+  if(btn){ btn.textContent='保存中…'; btn.disabled=true; }
+
+  // ====== localStorage 广播给老人端（离线联动） ======
+  var broadcastPayload=JSON.parse(JSON.stringify(scheduleData));
+  broadcastPayload.schedule.forEach(function(item){ delete item._editing; });
+  localStorage.setItem('schedule_sync', JSON.stringify(broadcastPayload));
+
+  try{
+    var payload=JSON.parse(JSON.stringify(scheduleData));
+    payload.schedule.forEach(function(item){ delete item._editing; });
+    await fetch('/api/schedule',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+    // 保存成功后重新从服务器拉取，确保列表与持久化状态一致
+    var r=await fetch('/api/schedule');
+    scheduleData=await r.json();
+    renderScheduleList();
+    if(btn){
+      btn.textContent='✅ 已保存';
+      btn.style.background='linear-gradient(135deg,var(--green),#059669)';
+      setTimeout(function(){ btn.textContent='💾 保存日程安排'; btn.disabled=false; btn.style.background=''; },2000);
+    }
+  }catch(e){
+    // 离线时也算保存成功（已通过 localStorage 广播）
+    renderScheduleList();
+    if(btn){
+      btn.textContent='✅ 已保存（本地）';
+      btn.style.background='linear-gradient(135deg,var(--green),#059669)';
+      setTimeout(function(){ btn.textContent='💾 保存日程安排'; btn.disabled=false; btn.style.background=''; },2000);
+    }
+  }
+}
+
+// tab 切换时每次都重新拉取最新日程
+var _origSwitchTab=switchTab;
+switchTab=function(id,el){
+  _origSwitchTab(id,el);
+  if(id==='schedule') loadSchedule();
+};
+
+// 页面加载时预加载日程数据（确保日程Tab有内容）
+loadSchedule();
+</script>
+</body>
+</html>
